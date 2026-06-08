@@ -1,0 +1,5 @@
+schema_version: 1
+harbor:
+  timeout_multiplier: 2
+grading:
+  mode: aces_plus_custom

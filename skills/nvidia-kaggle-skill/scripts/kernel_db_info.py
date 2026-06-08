@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""Show kernel database statistics and list available competitions."""
+
+import argparse
+import sys
+from pathlib import Path
+
+from rich.console import Console
+from rich.table import Table
+
+
+_SCRIPTS_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPTS_DIR))
+
+from db_info import show_competition_detail
+from kernels.database import KernelDatabase
+from kernels.paths import default_db_path
+from runtime import load_project_env
+from support.constants import DATE_PREVIEW_CHARS
+
+load_project_env()
+
+
+def _show_overview(console: Console, db: KernelDatabase) -> None:
+    competitions = db.list_competitions()
+
+    if not competitions:
+        console.print("[yellow]Database is empty. Run kernel_ingest.py to populate it.[/yellow]")
+        return
+
+    table = Table(title="Competitions in Database")
+    table.add_column("Competition ID", style="cyan")
+    table.add_column("Kernels", justify="right", style="green")
+    table.add_column("First Ingest", style="dim")
+    table.add_column("Last Ingest", style="dim")
+
+    for comp in competitions:
+        table.add_row(
+            comp["competition_id"],
+            str(comp["cnt"]),
+            str(comp["first_ingest"])[:DATE_PREVIEW_CHARS],
+            str(comp["last_ingest"])[:DATE_PREVIEW_CHARS],
+        )
+
+    console.print(table)
+    console.print(f"\n[bold]Total:[/bold] {len(competitions)} competitions, {sum(c['cnt'] for c in competitions)} kernels")
+
+
+def db_info(competition_id: str = None):
+    console = Console()
+    db_path = default_db_path()
+
+    if not Path(db_path).exists():
+        console.print("[yellow]Database not found. Run kernel_ingest.py first to populate it.[/yellow]")
+        return
+
+    with KernelDatabase(db_path) as db:
+        if competition_id:
+            show_competition_detail(
+                console,
+                db,
+                competition_id,
+                count_attr="kernel_count",
+                entity_plural="kernels",
+                author_count_label="Kernels",
+            )
+        else:
+            _show_overview(console, db)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Show kernel database statistics")
+    parser.add_argument("competition_id", nargs="?", default=None, help="Show details for a specific competition")
+    args = parser.parse_args()
+    db_info(args.competition_id)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,61 @@
+════════════════════════════════════════════════════════════
+NV-BASE Tier 2 — Semantic Governance
+  Target: /Users/kaggle-user/projects/kaggle-skills/skills
+════════════════════════════════════════════════════════════
+
+── Inter-Skill Similarity Check ─────────────────────────
+
+Similarity Check
+[PASS] Validation passed
+
+  [OK] index_built: Indexed 1 skill entries
+  [OK] similarity_check: No duplicates detected (threshold: 0.5)
+
+── Intra-Skill Context Optimization ─────────────────────
+INFO     Collecting files from /Users/kaggle-user/projects/kaggle-skills/skills...
+INFO     Collected 38 file(s)                                                                                                                                                                                                                                                                   
+INFO     Chunking 38 file(s)...                                                                                                                                                                                                                                                                 
+INFO     Extracted 108 chunk(s)                                                                                                                                                                                                                                                                 
+INFO     Embedding 108 chunk(s) via NVIDIA API...                                                                                                                                                                                                                                               
+INFO       Embedding batch 1/2 (64 chunks)...                                                                                                                                                                                                                                                   
+INFO       Embedding batch 2/2 (44 chunks)...                                                                                                                                                                                                                                                   
+INFO     Embedding complete                                                                                                                                                                                                                                                                     
+INFO     Clustering 108 chunks (threshold: 0.80)...                                                                                                                                                                                                                                             
+INFO     Found 11 cluster(s)                                                                                                                                                                                                                                                                    
+INFO     Running LLM analysis on 11 cluster(s) concurrently...                                                                                                                                                                                                                                  
+INFO        Analyzing cluster (38 chunks, max similarity: 1.000)...                                                                                                                                                                                                                             
+INFO        Analyzing cluster (4 chunks, max similarity: 0.944)...                                                                                                                                                                                                                              
+INFO        Analyzing cluster (2 chunks, max similarity: 0.925)...                                                                                                                                                                                                                              
+INFO        Analyzing cluster (5 chunks, max similarity: 0.910)...                                                                                                                                                                                                                              
+INFO        Analyzing cluster (2 chunks, max similarity: 0.884)...                                                                                                                                                                                                                              
+INFO        Verdict: RELATED_BUT_DISTINCT (confidence: 0.85)                                                                                                                                                                                                                                    
+INFO        Analyzing cluster (3 chunks, max similarity: 0.867)...                                                                                                                                                                                                                              
+INFO        Verdict: INTENTIONAL_DETAIL (confidence: 0.92)                                                                                                                                                                                                                                      
+INFO        Analyzing cluster (2 chunks, max similarity: 0.850)...                                                                                                                                                                                                                              
+INFO        Verdict: INTENTIONAL_DETAIL (confidence: 0.95)                                                                                                                                                                                                                                      
+INFO        Analyzing cluster (2 chunks, max similarity: 0.840)...                                                                                                                                                                                                                              
+INFO        Verdict: RELATED_BUT_DISTINCT (confidence: 0.88)                                                                                                                                                                                                                                    
+INFO        Analyzing cluster (2 chunks, max similarity: 0.819)...                                                                                                                                                                                                                              
+INFO        Verdict: INTENTIONAL_DETAIL (confidence: 0.97)                                                                                                                                                                                                                                      
+INFO        Analyzing cluster (2 chunks, max similarity: 0.811)...                                                                                                                                                                                                                              
+INFO        Verdict: RELATED_BUT_DISTINCT (confidence: 0.92)                                                                                                                                                                                                                                    
+INFO        Analyzing cluster (2 chunks, max similarity: 0.805)...                                                                                                                                                                                                                              
+INFO        Verdict: RELATED_BUT_DISTINCT (confidence: 0.88)                                                                                                                                                                                                                                    
+INFO        Verdict: INTENTIONAL_DETAIL (confidence: 0.91)                                                                                                                                                                                                                                      
+INFO        Verdict: INTENTIONAL_DETAIL (confidence: 0.92)                                                                                                                                                                                                                                      
+INFO        Verdict: INTENTIONAL_DETAIL (confidence: 0.93)                                                                                                                                                                                                                                      
+INFO        Verdict: RELATED_BUT_DISTINCT (confidence: 0.88)                                                                                                                                                                                                                                    
+
+[Context Optimization Check]
+Detect redundant content within a skill directory
+Summary:
+  • Checks performed: 2
+[PASS] Validation passed
+
+Details:
+  [OK] file_collection: Collected 38 file(s) (file_count=38)
+  [OK] chunking: Extracted 108 chunk(s) (chunk_count=108)
+
+════════════════════════════════════════════════════════════
+RESULT: All Tier 2 checks PASSED
+════════════════════════════════════════════════════════════
