@@ -1,0 +1,25 @@
+{
+  "name": "nvidia-kaggle",
+  "version": "0.1.0",
+  "description": "Codex plugin for Kaggle competition workflows.",
+  "author": {
+    "name": "nvidia-kaggle maintainers"
+  },
+  "license": "MIT",
+  "keywords": ["kaggle", "competition", "plugin", "data-science"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "NVIDIA Kaggle",
+    "shortDescription": "Kaggle competition plugin",
+    "longDescription": "A reusable Codex plugin for Kaggle competition research, setup, submission, discussions, kernels, writeups, and datasets.",
+    "developerName": "nvidia-kaggle maintainers",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "Fetch Kaggle competition details",
+      "Research top Kaggle kernels",
+      "Prepare a Kaggle kernel submission"
+    ],
+    "brandColor": "#20BEFF"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "nvidia-kaggle",
+  "owner": {
+    "name": "nvidia-kaggle maintainers"
+  },
+  "metadata": {
+    "description": "Claude Code marketplace for the NVIDIA Kaggle plugin.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "nvidia-kaggle",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/NVIDIA/nvidia-kaggle.git",
+        "ref": "main"
+      },
+      "description": "Claude Code plugin for Kaggle competition workflows.",
+      "category": "data-science",
+      "tags": ["kaggle", "competition", "plugin"]
+    }
+  ]
+}

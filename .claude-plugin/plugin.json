@@ -1,0 +1,11 @@
+{
+  "name": "nvidia-kaggle",
+  "description": "Claude Code plugin for Kaggle competition workflows.",
+  "version": "0.1.0",
+  "skills": [
+    "./skills/nvidia-kaggle-skill/"
+  ],
+  "author": {
+    "name": "nvidia-kaggle maintainers"
+  }
+}
