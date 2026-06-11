@@ -9,6 +9,8 @@ NVIDIA Kaggle Plugin gives agents end-to-end Kaggle competition workflows throug
 
 The skill accepts whatever's natural — a competition slug, a Kaggle URL, a kernel ref, a writeup URL, or a local path — and picks the right script to run based on the request.
 
+![Demo: asking Claude Code to summarize the top AIMO Progress Prize 2 solutions](demo/demo.gif)
+
 | Workflow | What it does |
 |---|---|
 | Competition context | Fetches the overview, rules, evaluation, timeline, and dataset description. |
