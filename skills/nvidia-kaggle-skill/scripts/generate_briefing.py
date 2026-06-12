@@ -312,6 +312,161 @@ def build_discussions(slug: str, top_k: int) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Structured collectors (power the --json output and the synthesis prompt)
+# ---------------------------------------------------------------------------
+#
+# These return raw structured data rather than rendered markdown. The closed-
+# class entities (competition slug, kernel refs, team handles, discussion
+# authors) are surfaced as discrete fields so a downstream verifier can do pure
+# set-membership checks against them without re-parsing prose.
+
+
+def collect_writeups(slug: str, top_k: int) -> list[dict]:
+    """Return discovered writeup links as structured records (no body fetch).
+
+    Bodies are intentionally not fetched here — the JSON/synthesis layer cares
+    about the entity set (rank/team/url), not the full prose.
+    """
+    if top_k <= 0:
+        return []
+    from fetch_leaderboard_writeups import fetch_writeup_links
+
+    leaderboard_url = f"https://www.kaggle.com/competitions/{slug}/leaderboard"
+    try:
+        links = fetch_writeup_links(leaderboard_url)
+    except Exception:
+        return []
+    records = []
+    for item in links:
+        records.append(
+            {
+                "rank": item.get("rank") or "",
+                "team": item.get("team") or "",
+                "url": item.get("writeup_url") or "",
+            }
+        )
+    return records
+
+
+def collect_kernels(slug: str, top_k: int) -> list[dict]:
+    """Return top kernels as structured records, or [] when unavailable."""
+    if not _has_token():
+        return []
+    try:
+        from kernels.kaggle_client import KaggleKernelClient
+
+        client = KaggleKernelClient()
+        kernels = client.list_kernels(
+            competition=slug,
+            sort_by="voteCount",
+            page_size=max(top_k, 20),
+            max_pages=1,
+        )
+    except Exception:
+        return []
+
+    top = kernels[:top_k]
+    scores: dict[str, object] = {}
+    try:
+        from kernels.kaggle_search import KaggleKernelSearchClient
+
+        search = KaggleKernelSearchClient()
+        for k in top:
+            try:
+                scores[k.ref] = search.get_kernel_score(k.ref)
+            except Exception:
+                break  # rate-limited; leave the rest unscored
+    except Exception:
+        pass
+
+    records = []
+    for k in top:
+        sc = scores.get(k.ref)
+        records.append(
+            {
+                "ref": k.ref or "",
+                "title": k.title or "",
+                "score": getattr(sc, "score", None) if sc else None,
+                "votes": k.total_votes if k.total_votes is not None else None,
+                "url": f"https://www.kaggle.com/code/{k.ref}" if k.ref else "",
+            }
+        )
+    return records
+
+
+def collect_discussions(slug: str, top_k: int) -> list[dict]:
+    """Return top discussions as structured records, or [] when unavailable."""
+    if not _has_token():
+        return []
+    try:
+        from discussion_ingest import ingest
+        from discussions.database import DiscussionDatabase
+        from discussions.paths import default_db_path
+
+        ingest(
+            slug,
+            max_pages=BRIEFING_DISCUSSION_MAX_PAGES,
+            sort_by="votes",
+            fetch_comments=False,
+        )
+        with DiscussionDatabase(default_db_path()) as db:
+            discussions = db.query_discussions(
+                slug, sort_by="votes", sort_order="DESC", limit=top_k
+            )
+    except Exception:
+        return []
+
+    records = []
+    for d in discussions:
+        records.append(
+            {
+                "title": d.title or "",
+                "author": d.author or "",
+                "votes": d.votes,
+            }
+        )
+    return records
+
+
+def collect_briefing_data(
+    slug: str,
+    *,
+    top_writeups: int,
+    top_kernels: int,
+    top_discussions: int,
+    skip_writeups: bool,
+) -> dict:
+    """Gather all briefing tiers as structured data.
+
+    The ``entities`` block is the closed-class allow-list for downstream
+    synthesis verification: competition slug, kernel refs, team handles, and
+    discussion authors — the things that are objectively hallucinations if a
+    model invents them.
+    """
+    writeups = [] if skip_writeups else collect_writeups(slug, top_writeups)
+    kernels = collect_kernels(slug, top_kernels)
+    discussions = collect_discussions(slug, top_discussions)
+
+    return {
+        "competition_slug": slug,
+        "competition_url": f"https://www.kaggle.com/competitions/{slug}",
+        "auth_tier_enabled": _has_token(),
+        "overview": build_overview(slug),
+        "dataset": build_dataset(slug),
+        "writeups": writeups,
+        "kernels": kernels,
+        "discussions": discussions,
+        "entities": {
+            "competition_slug": slug,
+            "kernel_refs": [k["ref"] for k in kernels if k["ref"]],
+            "teams": [w["team"] for w in writeups if w["team"]],
+            "authors": [d["author"] for d in discussions if d["author"]],
+            "discussion_titles": [d["title"] for d in discussions if d["title"]],
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
 # Assembly
 # ---------------------------------------------------------------------------
 
@@ -358,9 +513,42 @@ def main() -> None:
     parser.add_argument("--top-discussions", type=int, default=DEFAULT_TOP_DISCUSSIONS)
     parser.add_argument("--skip-writeups", action="store_true", help="Skip the writeup tier")
     parser.add_argument("--print", dest="do_print", action="store_true", help="Print markdown to stdout")
+    parser.add_argument(
+        "--json",
+        dest="as_json",
+        action="store_true",
+        help="Emit structured JSON (tiers + closed-class entities) instead of markdown",
+    )
     args = parser.parse_args()
 
     slug = competition_slug(args.competition)
+
+    # --json mode: structured data for the synthesis layer. Default output path
+    # switches to .json; prints to stdout when no --output is given.
+    if args.as_json:
+        import json
+
+        try:
+            data = collect_briefing_data(
+                slug,
+                top_writeups=args.top_writeups,
+                top_kernels=args.top_kernels,
+                top_discussions=args.top_discussions,
+                skip_writeups=args.skip_writeups,
+            )
+        except Exception as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            traceback.print_exc()
+            raise SystemExit(1) from exc
+
+        payload = json.dumps(data, indent=2, ensure_ascii=False)
+        if args.output:
+            Path(args.output).write_text(payload, encoding="utf-8")
+            print(f"Briefing JSON written to {args.output} ({len(payload):,} chars)")
+        else:
+            print(payload)
+        return
+
     output_path = Path(args.output) if args.output else Path(f"{slug}_briefing.md")
 
     try:
