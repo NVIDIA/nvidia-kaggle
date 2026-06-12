@@ -15,5 +15,6 @@ __pycache__/
 data/
 *.db
 
-# Generated briefing artifacts
+# Generated briefing artifacts (but keep the checked-in demo sample)
 *_briefing.md
+!demo/competition-intel-briefing/llm-20-questions_briefing.md
