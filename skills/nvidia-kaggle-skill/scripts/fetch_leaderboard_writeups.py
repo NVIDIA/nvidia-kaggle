@@ -14,13 +14,32 @@ from support.constants import LONG_BROWSER_TIMEOUT_MS
 
 
 def fetch_writeup_links(leaderboard_url: str) -> list[dict]:
-    """Return list of {rank, team, writeup_url} from the leaderboard."""
+    """Return list of {rank, team, writeup_url} from the leaderboard.
+
+    The Kaggle leaderboard is a virtualized/lazy-loaded SPA, so we first scroll
+    to the bottom repeatedly to force all rows (and their writeup links) to
+    render, then collect the links. Results are de-duplicated by URL.
+    """
     results = evaluate_page(
         leaderboard_url,
         r"""
-        () => {
+        async () => {
             const base = 'https://www.kaggle.com';
             const writeupLinks = [];
+            const seen = new Set();
+
+            // The leaderboard lazy-loads rows on scroll. Scroll to the bottom
+            // until the page height stops growing (bounded), so every row's
+            // writeup link is in the DOM before we collect.
+            const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+            let lastHeight = -1;
+            for (let i = 0; i < 25; i++) {
+                window.scrollTo(0, document.body.scrollHeight);
+                await sleep(400);
+                const h = document.body.scrollHeight;
+                if (h === lastHeight) break;
+                lastHeight = h;
+            }
 
             // Find all writeup anchor tags (their href contains /writeups/)
             document.querySelectorAll('a[href*="/writeups/"]').forEach(a => {
@@ -70,6 +89,11 @@ def fetch_writeup_links(leaderboard_url: str) -> list[dict]:
                 }
 
                 const fullUrl = href.startsWith('http') ? href : base + href;
+                // De-dupe: the same writeup link can appear more than once
+                // (e.g. team-name anchor + a separate icon anchor in the row).
+                const key = fullUrl.split(/[?#]/)[0];
+                if (seen.has(key)) return;
+                seen.add(key);
                 writeupLinks.push({rank, team, writeup_url: fullUrl});
             });
 

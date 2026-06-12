@@ -93,6 +93,16 @@ python ./scripts/fetch_dataset_info.py <competition-slug-or-url>
 
 The scripts accept a bare competition slug or `https://www.kaggle.com/competitions/<slug>` URL and extract the slug automatically. Convert output to markdown when the user asks for saved documentation, using `{slug}_competition_overview.md` and `{slug}_dataset_description.md` in the current working directory.
 
+### Competition Intel Briefing
+
+Use this when the user wants a single polished markdown briefing for a competition. It chains the other workflows and degrades gracefully: the no-token tier (overview + dataset + top solution writeups) always runs via public scraping, and the auth tier (top public kernels, top discussions) fills in when `KAGGLE_API_TOKEN` is set, otherwise renders clear "requires token" placeholders.
+
+```bash
+python ./scripts/generate_briefing.py <competition-slug-or-url> [--output PATH] [--top-writeups N] [--top-kernels N] [--top-discussions N] [--skip-writeups] [--print]
+```
+
+Writes `{slug}_briefing.md` in the current working directory by default. Use `--skip-writeups` for a fast overview+dataset-only run.
+
 ### Writeups
 
 Use this when the user asks to fetch one writeup, fetch top-k writeups, discover leaderboard writeup links, or summarize solution posts. Read `./writeups.md`.
