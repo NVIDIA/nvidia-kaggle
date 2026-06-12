@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Kaggle API](https://img.shields.io/badge/Kaggle-API-20BEFF?style=flat&logo=kaggle&logoColor=white)](https://www.kaggle.com/docs/api)
 [![Agent Skills Spec](https://img.shields.io/badge/Agent%20Skills-Specification-blue?style=flat)](https://agentskills.io)
+[![Kaggle Grandmasters Playbook](https://img.shields.io/badge/Kaggle%20Grandmasters-Playbook-76B900?style=flat&logo=nvidia&logoColor=white)](https://developer.nvidia.com/blog/the-kaggle-grandmasters-playbook-7-battle-tested-modeling-techniques-for-tabular-data/)
 
 NVIDIA Kaggle Plugin gives agents end-to-end Kaggle competition workflows through a single skill, `nvidia-kaggle-skill`. It can gather competition context, study public writeups and notebooks, reproduce kernels locally, submit to competitions, and manage Kaggle datasets.
 
