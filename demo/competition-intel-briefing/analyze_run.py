@@ -86,39 +86,101 @@ class RunAnalysis:
     subagent_outputs_visible: bool = True  # did granular outputs surface in-trace?
 
 
-def _iter_command_outputs(trace_path: Path, runtime: str):
-    """Yield (command_str, output_str) for each tool execution in the trace."""
-    for line in trace_path.read_text(encoding="utf-8", errors="replace").splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            o = json.loads(line)
-        except json.JSONDecodeError:
-            continue
+def _iter_command_outputs(trace_paths, runtime: str):
+    """Yield (command_str, output_str) for each tool execution across one or more
+    traces. `trace_paths` may be a single path (back-compat — codex passes one
+    trace) or a list (Claude folds in subagent traces; see _resolve_trace_paths).
 
-        if runtime == "codex":
-            if o.get("type") == "item.completed":
-                it = o.get("item", {})
-                if it.get("type") == "command_execution":
-                    yield it.get("command", ""), it.get("aggregated_output", "")
-        else:  # claude stream-json
-            if o.get("type") == "assistant":
-                for blk in o.get("message", {}).get("content", []):
-                    if isinstance(blk, dict) and blk.get("type") == "tool_use":
-                        inp = blk.get("input", {})
-                        cmd = inp.get("command", "") if isinstance(inp, dict) else ""
-                        yield cmd, ""
-            elif o.get("type") == "user":
-                # tool_result blocks carry the output of the prior tool_use
-                for blk in o.get("message", {}).get("content", []):
-                    if isinstance(blk, dict) and blk.get("type") == "tool_result":
-                        content = blk.get("content", "")
-                        if isinstance(content, list):
-                            content = " ".join(
-                                c.get("text", "") for c in content if isinstance(c, dict)
-                            )
-                        yield "", str(content)
+    SOUNDNESS / no-laundering: for Claude we yield ONLY `tool_use` command args
+    and `tool_result` outputs — never assistant prose. So a value the agent only
+    *reasoned about* (in the parent OR a subagent) never enters the gathered set;
+    only real tool I/O does. Widening to subagent traces therefore cannot launder
+    a fabricated value into "gathered" — it can only surface the genuine workflow
+    outputs that ran inside a delegated agent. (Verified by the oracle control:
+    a fabricated value present only in subagent prose still FAILs.)"""
+    if isinstance(trace_paths, (str, Path)):
+        trace_paths = [trace_paths]
+    for tp in trace_paths:
+        try:
+            lines = Path(tp).read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                o = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            yield from _emit_command_output(o, runtime)
+
+
+def _emit_command_output(o: dict, runtime: str):
+    """Yield (command, output) tuples from a single parsed trace record.
+
+    Claude's on-disk subagent traces (`subagents/agent-*.jsonl`) share the same
+    assistant/user + message.content[] shape as the parent `stream-json`, so the
+    same extraction applies unchanged."""
+    if runtime == "codex":
+        if o.get("type") == "item.completed":
+            it = o.get("item", {})
+            if it.get("type") == "command_execution":
+                yield it.get("command", ""), it.get("aggregated_output", "")
+    else:  # claude stream-json (parent) or on-disk subagent jsonl (same shape)
+        if o.get("type") == "assistant":
+            for blk in o.get("message", {}).get("content", []):
+                if isinstance(blk, dict) and blk.get("type") == "tool_use":
+                    inp = blk.get("input", {})
+                    cmd = inp.get("command", "") if isinstance(inp, dict) else ""
+                    yield cmd, ""
+        elif o.get("type") == "user":
+            # tool_result blocks carry the output of the prior tool_use
+            for blk in o.get("message", {}).get("content", []):
+                if isinstance(blk, dict) and blk.get("type") == "tool_result":
+                    content = blk.get("content", "")
+                    if isinstance(content, list):
+                        content = " ".join(
+                            c.get("text", "") for c in content if isinstance(c, dict)
+                        )
+                    yield "", str(content)
+
+
+def _resolve_trace_paths(primary_trace: Path, runtime: str, extra=None) -> list:
+    """The full set of traces to read for one run.
+
+    For codex this is just the primary trace — codex has no subagent traces, so
+    the resolved set is exactly `[primary]` and behavior is byte-identical to the
+    pre-change single-trace path (the codex oracle is unaffected by construction).
+
+    For claude we ALSO fold in the run's shipped subagent traces. Claude may
+    delegate the skill's workflows to sub-agents (Task/Agent tool), in which case
+    the real workflow calls + tool_results live in `subagents/agent-*.jsonl`, not
+    the parent stream. To keep the run REPRODUCIBLE for a maintainer, the harness
+    copies those subagent jsonl files into `<run_dir>/subagents/` (so the gate
+    reads them from the committed run dir, never from an ephemeral ~/.claude
+    path). `extra` (from --subagent-traces) is unioned in for ad-hoc gating.
+
+    De-duped, order-stable (primary first), existing files only."""
+    paths: list = [Path(primary_trace)]
+    if runtime == "claude":
+        sub_dir = Path(primary_trace).parent / "subagents"
+        if sub_dir.is_dir():
+            paths += sorted(sub_dir.glob("agent-*.jsonl"))
+            # tolerate a flat naming too (agent traces dropped directly in dir)
+            paths += sorted(p for p in sub_dir.glob("*.jsonl")
+                            if not p.name.startswith("agent-"))
+    for e in (extra or []):
+        paths.append(Path(e))
+    seen: set = set()
+    resolved: list = []
+    for p in paths:
+        rp = p.resolve()
+        if rp in seen or not p.is_file():
+            continue
+        seen.add(rp)
+        resolved.append(p)
+    return resolved
 
 
 # A kernel ref the agent passed to a workflow command (e.g.
@@ -190,27 +252,36 @@ def _extract_path_candidates(text: str) -> set:
     return cands
 
 
-def _count_subagent_dispatches(trace_path: Path, runtime: str) -> int:
+def _count_subagent_dispatches(trace_paths, runtime: str) -> int:
     """Claude may delegate research to sub-agents via the Task/Agent tool. Count
-    those dispatches — if granular fetch_* calls happened inside sub-agents and
-    their outputs don't surface in this trace, the gathered-set is only partly
-    recoverable, which we must report honestly (never paper over)."""
+    those dispatches across the parent trace (the Task/Agent tool_use records live
+    in the PARENT stream). Used together with subagent-trace visibility: if the
+    agent delegated but we DID fold in the subagent traces (so workflows + outputs
+    are now visible), the gathered-set IS recoverable; the honest DEGRADE only
+    fires when delegation happened and the outputs are still nowhere to be seen."""
     if runtime != "claude":
         return 0
+    if isinstance(trace_paths, (str, Path)):
+        trace_paths = [trace_paths]
     n = 0
-    for line in trace_path.read_text(encoding="utf-8", errors="replace").splitlines():
-        line = line.strip()
-        if not line:
-            continue
+    for tp in trace_paths:
         try:
-            o = json.loads(line)
-        except json.JSONDecodeError:
+            lines = Path(tp).read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
             continue
-        if o.get("type") == "assistant":
-            for blk in o.get("message", {}).get("content", []):
-                if isinstance(blk, dict) and blk.get("type") == "tool_use" \
-                        and blk.get("name") in ("Task", "Agent"):
-                    n += 1
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                o = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if o.get("type") == "assistant":
+                for blk in o.get("message", {}).get("content", []):
+                    if isinstance(blk, dict) and blk.get("type") == "tool_use" \
+                            and blk.get("name") in ("Task", "Agent"):
+                        n += 1
     return n
 
 
@@ -281,11 +352,17 @@ def _harvest_gathered_artifacts(run_dir: Path) -> tuple[str, set]:
     return "\n".join(text_parts), refs
 
 
-def analyze_trace(trace_path: Path, runtime: str) -> RunAnalysis:
+def analyze_trace(trace_paths, runtime: str) -> RunAnalysis:
+    # `trace_paths` is the resolved set (primary + any Claude subagent traces);
+    # a single path is accepted for back-compat. The run dir is the primary
+    # trace's parent.
+    if isinstance(trace_paths, (str, Path)):
+        trace_paths = [trace_paths]
+    run_dir = Path(trace_paths[0]).parent
     a = RunAnalysis(runtime=runtime)
     cmd_refs: set = set()          # refs with clean command-arg provenance
     path_candidates: set = set()   # ambiguous cached-path owner_slug splits
-    for cmd, out in _iter_command_outputs(trace_path, runtime):
+    for cmd, out in _iter_command_outputs(trace_paths, runtime):
         blob = f"{cmd}\n{out}"
         if "SKILL.md" in blob:
             a.read_skill_md = True
@@ -307,7 +384,7 @@ def analyze_trace(trace_path: Path, runtime: str) -> RunAnalysis:
     # codex --json may not have echoed into trace.jsonl. Without this, a real
     # gathered value (e.g. a kernel vote in research/kernels_top.json) gets
     # false-flagged as fabricated. Guardrailed to gathering-output dirs only.
-    _gathered_text, _gathered_refs = _harvest_gathered_artifacts(trace_path.parent)
+    _gathered_text, _gathered_refs = _harvest_gathered_artifacts(run_dir)
     a.gathered_refs |= _gathered_refs
     a.gathered_artifact_text = _gathered_text
     # NOTE: cached-notebook provenance is NOT applied here by blindly splitting
@@ -322,10 +399,13 @@ def analyze_trace(trace_path: Path, runtime: str) -> RunAnalysis:
     a.distinct_workflows = len(a.workflows_invoked)
     # We can reconstruct a grounding set if we actually captured tool output.
     a.reconstructable = a.tool_output_chars > 0
-    a.subagent_dispatches = _count_subagent_dispatches(trace_path, runtime)
-    # If the agent delegated to sub-agents BUT we still see no workflow calls /
-    # no tool output at the parent level, the granular invocations likely live
-    # in sub-agent traces this stream did not expose → flag as not visible.
+    a.subagent_dispatches = _count_subagent_dispatches(trace_paths, runtime)
+    # If the agent delegated to sub-agents BUT we STILL see no workflow calls /
+    # no tool output after folding in all resolved traces, the granular
+    # invocations live in subagent traces we didn't get → flag as not visible
+    # (honest DEGRADE). When the run dir ships its subagents/ traces, those calls
+    # ARE now visible, distinct_workflows/tool_output_chars are > 0, and the run
+    # is no longer degraded — that's the whole point of the widening.
     if a.subagent_dispatches > 0 and (a.distinct_workflows == 0 or a.tool_output_chars == 0):
         a.subagent_outputs_visible = False
     return a
@@ -476,9 +556,19 @@ def main() -> None:
     ap.add_argument("--runtime", choices=["claude", "codex"], required=True)
     ap.add_argument("--synthesis", help="Path to the agent's strategy brief (for grounding-eval)")
     ap.add_argument("--briefing-json", help="Optional captured briefing JSON for richer allow-list")
+    ap.add_argument("--subagent-traces", nargs="*", default=None,
+                    help="Extra Claude subagent trace JSONLs to fold into the "
+                         "gathered set (in addition to any auto-discovered under "
+                         "<run_dir>/subagents/). Lets a maintainer gate a "
+                         "delegated run reproducibly.")
     args = ap.parse_args()
 
-    analysis = analyze_trace(Path(args.trace), args.runtime)
+    # Resolve the full trace set ONCE: primary + (for claude) shipped subagent
+    # traces + any explicit --subagent-traces. codex resolves to [primary] only,
+    # so its behavior is byte-identical to the single-trace path.
+    trace_paths = _resolve_trace_paths(Path(args.trace), args.runtime, args.subagent_traces)
+
+    analysis = analyze_trace(trace_paths, args.runtime)
 
     print("=" * 62)
     print(f" Agentic-behavior evidence — runtime: {args.runtime}")
@@ -489,6 +579,9 @@ def main() -> None:
         print(f"    - {name} (x{n})")
     print(f"  tool output captured: {analysis.tool_output_chars:,} chars")
     print(f"  gathered kernel refs: {len(analysis.gathered_refs)}")
+    if len(trace_paths) > 1:
+        print(f"  traces folded in:     {len(trace_paths)} "
+              f"(primary + {len(trace_paths) - 1} subagent)")
     if analysis.subagent_dispatches:
         vis = "outputs visible in trace" if analysis.subagent_outputs_visible \
             else "OUTPUTS NOT EXPOSED — gathered-set only partly recoverable"
@@ -587,7 +680,7 @@ def main() -> None:
     # kernel-ref grounding above never inspects). Build the run's gathered text
     # (trace outputs + research/ + raw/) and confirm every plotted value traces.
     run_dir = Path(args.trace).parent
-    trace_out = "\n".join(out for _, out in _iter_command_outputs(Path(args.trace), args.runtime))
+    trace_out = "\n".join(out for _, out in _iter_command_outputs(trace_paths, args.runtime))
     gathered_text = trace_out + "\n" + analysis.gathered_artifact_text
     plot_findings = check_plot_provenance(run_dir, gathered_text)
     plot_fabrications = [pf for pf in plot_findings if pf[1] == "fabrication"]
