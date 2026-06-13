@@ -78,6 +78,7 @@ class RunAnalysis:
     workflows_invoked: dict = field(default_factory=dict)   # script -> count
     distinct_workflows: int = 0
     gathered_refs: set = field(default_factory=set)
+    gathered_artifact_text: str = ""  # concatenated research/ + raw/ gathering output
     notebook_path_segs: set = field(default_factory=set)  # cached-notebook dir names (owner_slug)
     tool_output_chars: int = 0
     reconstructable: bool = False  # could we rebuild the gathered set?
@@ -213,6 +214,47 @@ def _count_subagent_dispatches(trace_path: Path, runtime: str) -> int:
     return n
 
 
+# Run-dir subdirs that hold the agent's *gathered output* (skill workflow
+# results it saved), as opposed to its *authored output* (brief.md, plots/).
+# A value present in one of these is gathered-this-run evidence, the same as a
+# value in the trace — codex --json doesn't echo every workflow's stdout into
+# the trace, so a real gathered number (e.g. a kernel's vote count written to
+# research/kernels_top.json) can be absent from trace.jsonl yet genuinely
+# fetched. We harvest refs from these too so we stop false-flagging correct
+# gathered data. GUARDRAIL: only these gathering-output subdirs are counted —
+# NOT brief.md or plots/ (the agent's own output, which is what we're checking),
+# and NOT data/ (multi-GB downloaded CSVs, handled via recompute-and-match). A
+# fabricated ref absent from trace + these dirs still fails (verified on
+# _004/_008), so this widening doesn't weaken fabrication detection.
+_GATHERED_ARTIFACT_DIRS = ("research", "raw")
+_GATHERED_ARTIFACT_EXTS = (".json", ".txt", ".tsv", ".csv", ".md")
+
+
+def _harvest_gathered_artifacts(run_dir: Path) -> tuple[str, set]:
+    """Return (concatenated text, refs) from the run's gathering-output files.
+
+    Reads only the allow-listed gathering subdirs (research/, raw/) — never the
+    agent-authored brief.md / plots/, and never data/. The text is returned so
+    callers can also do per-value provenance against gathered artifacts (not
+    just trace.jsonl); refs feed the gathered-ref allow-list.
+    """
+    text_parts: list = []
+    refs: set = set()
+    for sub in _GATHERED_ARTIFACT_DIRS:
+        d = run_dir / sub
+        if not d.is_dir():
+            continue
+        for f in sorted(d.rglob("*")):
+            if f.is_file() and f.suffix.lower() in _GATHERED_ARTIFACT_EXTS:
+                try:
+                    txt = f.read_text(encoding="utf-8", errors="replace")
+                except OSError:
+                    continue
+                text_parts.append(txt)
+                refs |= _extract_refs(txt)
+    return "\n".join(text_parts), refs
+
+
 def analyze_trace(trace_path: Path, runtime: str) -> RunAnalysis:
     a = RunAnalysis(runtime=runtime)
     cmd_refs: set = set()          # refs with clean command-arg provenance
@@ -234,6 +276,14 @@ def analyze_trace(trace_path: Path, runtime: str) -> RunAnalysis:
             a.notebook_path_segs |= set(_NOTEBOOK_PATH_SEG_RE.findall(out))
     # Command-arg refs are sound provenance → always admitted.
     a.gathered_refs |= cmd_refs
+    # Widen the gathered set with refs from the run's gathering-output files
+    # (research/, raw/) — these are skill-workflow results the agent saved that
+    # codex --json may not have echoed into trace.jsonl. Without this, a real
+    # gathered value (e.g. a kernel vote in research/kernels_top.json) gets
+    # false-flagged as fabricated. Guardrailed to gathering-output dirs only.
+    _gathered_text, _gathered_refs = _harvest_gathered_artifacts(trace_path.parent)
+    a.gathered_refs |= _gathered_refs
+    a.gathered_artifact_text = _gathered_text
     # NOTE: cached-notebook provenance is NOT applied here by blindly splitting
     # `owner_slug` path segments (that reverse-split is ambiguous — owners and
     # slugs both contain underscores). Instead, cached fetches are matched at
@@ -268,6 +318,98 @@ def build_allow_list_from_trace(analysis: RunAnalysis, fallback_json: dict | Non
         "discussion_titles": [],
     }
     return {"entities": entities}
+
+
+def _plot_value_in_gathered(value, gathered_text: str) -> bool:
+    """True if a plotted value appears in the run's gathered text (trace +
+    research + raw), matched at token boundaries so a small integer can't
+    coincidentally substring-match inside a larger number.
+
+    For numeric values we also accept NUMERIC EQUIVALENCE, not just the exact
+    string: a plotted `6.72` must match a gathered `6.720` (trailing zero) and
+    vice-versa — the gathered CSV and the agent's sidecar can format the same
+    number differently. We find every number token in the text near the value's
+    integer part and compare as floats. This avoids false-flagging a clean run
+    on pure formatting (caught _013: gathered `6.720` vs plotted `6.72`)."""
+    s = str(value).strip()
+    if not s:
+        return False
+    # 1) exact token match (covers strings/labels and exactly-formatted numbers)
+    if re.search(r"(?<![\w.])" + re.escape(s) + r"(?![\w.])", gathered_text):
+        return True
+    # 2) numeric equivalence for numbers (handles trailing-zero / formatting)
+    try:
+        fv = float(s)
+    except ValueError:
+        return False
+    # scan number tokens in the text and compare as floats (tight tolerance:
+    # this is formatting equivalence, NOT fuzzy matching — 6.72 == 6.720, but
+    # 6.72 != 6.73). Pre-filter by leading digits to keep the scan cheap.
+    lead = re.escape(s.lstrip("-").split(".")[0][:3])
+    for m in re.finditer(r"-?\d+(?:\.\d+)?", gathered_text):
+        tok = m.group(0)
+        if lead and lead not in tok:
+            continue
+        try:
+            if abs(float(tok) - fv) < 1e-9:
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+def check_plot_provenance(run_dir: Path, gathered_text: str) -> list:
+    """Per-plot, per-value provenance over the run's plot sidecars — the check
+    that actually catches plot fabrications (which live in the sidecar JSON, not
+    the brief text the kernel-ref grounding inspects).
+
+    For each `plots/*.json` sidecar, every `series[].value` must appear in the
+    run's gathered text (trace + research/ + raw/). A `source` that names a
+    downloaded dataset is NOT a free pass — but small-integer aggregates
+    (histogram bucket counts) coincidentally appear everywhere, so a plot whose
+    `source` marks it a downloaded/derived dataset metric AND whose values don't
+    all token-match is reported as UNVERIFIED-derived (caller decides), not a
+    hard fabrication. A plot with NON-dataset source and untraceable values is a
+    fabrication (the `_004`/`_008` mode: invented leaderboard/discussion rows).
+
+    Returns a list of (plot_name, kind, detail) where kind ∈
+    {"fabrication","derived-unverified"}. Empty list = all plots clean.
+    """
+    findings = []
+    plots_dir = run_dir / "plots"
+    if not plots_dir.is_dir():
+        return findings
+    for f in sorted(plots_dir.glob("*.json")):
+        try:
+            d = json.loads(f.read_text(encoding="utf-8", errors="replace"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        series = d.get("series") if isinstance(d, dict) else (d if isinstance(d, list) else [])
+        if not isinstance(series, list) or not series:
+            continue
+        source = str(d.get("source", "")).lower() if isinstance(d, dict) else ""
+        is_dataset = any(k in source for k in ("dataset", "download", "competition_dataset", "csv"))
+        untraced = []
+        for e in series:
+            if not isinstance(e, dict):
+                continue
+            val = e.get("value")
+            if val is None:
+                continue
+            if not _plot_value_in_gathered(val, gathered_text):
+                untraced.append((e.get("label"), val))
+        if not untraced:
+            continue
+        if is_dataset:
+            # Derived/dataset-computed: values are computed over downloaded CSVs
+            # (recompute-and-match is the proper rebuttal; token-match can't
+            # verify a computed aggregate). Report as unverified, not fabrication.
+            findings.append((f.name, "derived-unverified", untraced))
+        else:
+            # Gathered-entity plot (votes/comments/leaderboard) with values that
+            # appear in NO gathered artifact = fabricated rows. The _004/_008 mode.
+            findings.append((f.name, "fabrication", untraced))
+    return findings
 
 
 def main() -> None:
@@ -383,6 +525,25 @@ def main() -> None:
                        if not any(m in f for m in HEADER_LENGTH_MARKERS)]
     format_notes = [f for f in result.hard_failures
                     if any(m in f for m in HEADER_LENGTH_MARKERS)]
+
+    # PLOT-VALUE PROVENANCE — the check that actually catches plot fabrications
+    # (_004/_008-style invented rows live in the plot sidecar JSON, which the
+    # kernel-ref grounding above never inspects). Build the run's gathered text
+    # (trace outputs + research/ + raw/) and confirm every plotted value traces.
+    run_dir = Path(args.trace).parent
+    trace_out = "\n".join(out for _, out in _iter_command_outputs(Path(args.trace), args.runtime))
+    gathered_text = trace_out + "\n" + analysis.gathered_artifact_text
+    plot_findings = check_plot_provenance(run_dir, gathered_text)
+    plot_fabrications = [pf for pf in plot_findings if pf[1] == "fabrication"]
+    plot_derived = [pf for pf in plot_findings if pf[1] == "derived-unverified"]
+    for name, _kind, untraced in plot_fabrications:
+        ex = ", ".join(f"{lab}={val}" for lab, val in untraced[:3])
+        grounding_fails.append(
+            f"plot '{name}' has {len(untraced)} value(s) in NO gathered artifact "
+            f"(fabricated rows): {ex}")
+    for name, _kind, untraced in plot_derived:
+        print(f"  NOTE (derived/dataset plot — needs recompute-vs-CSV, not token-trace): "
+              f"'{name}' {len(untraced)} computed value(s)")
 
     for f in grounding_fails:
         print(f"  FAIL (grounding/chrome): {f}")
