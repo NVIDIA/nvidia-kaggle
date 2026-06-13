@@ -414,21 +414,7 @@ def check_plot_provenance(run_dir: Path, gathered_text: str) -> list:
         if not isinstance(series, list) or not series:
             continue
         source = str(d.get("source", "")).lower() if isinstance(d, dict) else ""
-        # A plot's values soften to "derived-unverified" (note, not fabrication)
-        # only when the plot's SOURCE is objectively a downloaded-data input:
-        # either a dataset/csv keyword OR a real local competition-data path
-        # (the agent downloads competition CSVs under `/data/competitions/<slug>/`,
-        # and a per-well aggregate like median(eval-fraction) is computed off
-        # those files but can't be token-matched against gathered text). The key
-        # is the PATH/keyword in `source`, NOT the entry's `provenance:"derived"`
-        # tag — keying on the agent's own label would let a fabricated value dodge
-        # the hard-FAIL by self-labelling "derived" (the rejected trust-the-subject
-        # anti-pattern). Score-ladder fabrications cite notebook titles as `source`
-        # (no data path, no dataset keyword), so they correctly stay hard-FAIL.
-        is_dataset = (
-            any(k in source for k in ("dataset", "download", "competition_dataset", "csv"))
-            or "/data/competitions/" in source
-        )
+        is_dataset = any(k in source for k in ("dataset", "download", "competition_dataset", "csv"))
         untraced = []          # untraced values, soft on dataset/derived plots
         verified_bad = []      # provenance:"verified" but untraced -> ALWAYS hard
         schema_bad = []        # entries missing/invalid `provenance` (R3 convention)

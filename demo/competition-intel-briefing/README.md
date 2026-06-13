@@ -79,14 +79,23 @@ demo's evidence:
   guarantee. In its score-ladder plot the agent invented two notebooks that
   appear in no gathered artifact — `ROGII: Geostat, Softmax NCC Hybrid` (LB
   `9.946`) and `ROGII 10.239 Weblore Predicition` (LB `10.239`). The committed
-  gate catches both: **`GROUNDING RESULT: FAIL`** on exactly those two
-  fabricated rows, while **`SCHEMA CONFORMANCE: PASS`** — so the run is
-  presentation-clean yet accuracy-caught, which is precisely what the
-  two-verdict design is for. This exhibit is *expected* to fail grounding; that
-  is its whole purpose. (Re-derive it and confirm it still FAILs on the `9.946`
-  and `10.239` ungathered kernels. The same plot's legitimately-derived metric
-  — median per-well eval fraction computed off the downloaded competition CSVs
-  — is correctly *not* flagged.)
+  gate catches both: **`GROUNDING RESULT: FAIL`**, while **`SCHEMA CONFORMANCE:
+  PASS`** — so the run is presentation-clean yet accuracy-caught, which is
+  precisely what the two-verdict design is for. This exhibit is *expected* to
+  fail grounding; that is its whole purpose. The `9.946` and `10.239` rows are
+  the real fabrications, and they FAIL on any clone because the values are
+  absent from the run's shipped trace.
+
+  The grounding FAIL also lists a third value — `median hidden eval fraction =
+  0.7399…` from the dataset-shape plot. That one is a *legitimately-derived*
+  metric the agent computed from the downloaded competition CSVs, not a
+  fabrication. The gate flags it because it can only token-trace values against
+  gathered text and can't recompute this aggregate without the local data — and
+  those CSVs are deliberately not shipped in the PR (multi-GB, gitignored). This
+  is a known, honest narrowness: a derived value the gate can't auto-verify
+  from PR-included artifacts. It does not undermine the exhibit — the two real
+  fabrications are the headline, and they are provably ungathered from the
+  shipped trace alone.
 - **`runs/codex_rogii-wellbore-geology-prediction_019/`** — the clean
   readability exemplar: human-legible plot labels (no bare ids), claim-vs-verified
   visual honesty (verified public-LB bars solid, author title-claims hatched),
