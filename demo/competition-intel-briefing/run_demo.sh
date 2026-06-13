@@ -85,118 +85,36 @@ mkdir -p "$PLOTS_DIR"
 #    PNG is provably a rendering of the JSON, and a verifier checking each
 #    (label,value) against the trace governs the image. Plots whose values can't
 #    be traced to gathered data are illustrative-only. Agent decides WHAT to plot.
-# Prompt variant. Default is `natural` — a real-user-style ask ("research this
-# competition and brief me, with links and a few charts") that names no scripts
-# and no schema. The citation + plot-auditability conventions live in the SKILL
+# The TASK is a single natural, real-user-style ask ("research this competition
+# and brief me, with links and a few charts") — it names no scripts and no
+# schema. The citation + plot-auditability conventions live in the SKILL
 # (`research-brief.md`), so the agent picks them up automatically; validated to
 # hold the full bar (agentic + grounded hyperlinks + coupled provenance-traceable
 # plots) on rogii + spaceship under independent re-derive. This is the shipped
-# behavior and what we iterate on. The older spelled-out prompts are retained as
-# `PROMPT_VARIANT` options: `moderate` (13-line explicit), `full` (30-line
-# verbose); `aggressive` (8 lines) is kept for reference but was REJECTED —
-# cutting the explicit plot-data schema made the agent emit bare [{label,value}]
-# arrays with truncated labels, breaking plot-provenance auditability.
-# Override with PROMPT_VARIANT=moderate|full|aggressive.
-PROMPT_VARIANT="${PROMPT_VARIANT:-natural}"
-
-case "$PROMPT_VARIANT" in
-  natural)
-    # A real-user-style request: no schema, no step-by-step. The citation +
-    # plot-auditability conventions live in the skill (research-brief.md), so
-    # the agent should pick them up automatically. The open question this
-    # variant tests: does the agent honor skill-embedded conventions as
-    # reliably as prompt-spelled-out ones (schema + coupling intact)?
+# behavior. (Earlier iterations A/B-tested more spelled-out prompts — moderate /
+# full / aggressive — against this one; the natural prompt won, so those
+# variants and the PROMPT_VARIANT switch were removed.)
 read -r -d '' TASK <<EOF || true
 Research the ${SLUG} Kaggle competition with the nvidia-kaggle skill and write me
 a strategy brief on what it takes to do well. Include the key public notebooks
 and discussions as links, and a few plots for insight. Save the brief to ${BRIEF}
 and put any plot files under ${PLOTS_DIR}.
 EOF
-    ;;
-  full)
-read -r -d '' TASK <<EOF || true
-I'm starting the ${SLUG} Kaggle competition. Use the nvidia-kaggle skill to
-research it and brief me on the strategies that win. Investigate the
-competition overview, the dataset, what the community discusses, and what the
-top public notebooks do — then write me a strategy brief grounded in what you
-find.
-
-Cite your sources as clickable markdown links. For public notebooks/kernels,
-link them as [title](https://www.kaggle.com/code/<owner>/<slug>) using the real
-owner/slug you gathered — do not invent refs. Link discussions and the
-competition page too where relevant.
-
-Include 2-4 plots that give real insight (e.g. distribution of kernel votes,
-discussion engagement, public-score spread, leaderboard trends). For EACH plot,
-follow this exact coupled flow so the figure is auditable:
-  1. Write the data you will plot to ${PLOTS_DIR}/<name>.json in this schema:
-     {"title": "...",
-      "source": "<which skill workflow produced it: kernel_query | fetch_top_kernel_scores | discussion_query | leaderboard>",
-      "series": [{"label": "<owner/slug for kernels, or discussion id>", "value": <number>}, ...]}
-     Each value MUST be a number you actually gathered from the skill — no
-     invented or interpolated values. If a quantity is incomplete (e.g. some
-     public scores 429'd), include only what you have and note it in the title.
-  2. Write ${PLOTS_DIR}/<name>.py that READS ${PLOTS_DIR}/<name>.json and renders
-     ${PLOTS_DIR}/<name>.png from it (matplotlib). The PNG must be a rendering of
-     that JSON — do not plot from any other in-memory data.
-  3. Run the script to produce the PNG, then embed it in the brief with the
-     relative path plots/<name>.png.
-
-Give me a focused brief — prioritize the highest-signal sources rather than
-reading everything exhaustively, and make sure you finish and save the brief to
-${BRIEF}.
-EOF
-    ;;
-  moderate)
-    # Compress research+hyperlink preamble to ~3 lines; keep the plot coupling
-    # block essentially intact (it's the fragile, must-be-explicit part).
-read -r -d '' TASK <<EOF || true
-Research the ${SLUG} Kaggle competition with the nvidia-kaggle skill (overview,
-data, discussions, top notebooks) and write me a strategy brief grounded in what
-you gather. Cite kernels as clickable links [title](https://www.kaggle.com/code/<owner>/<slug>)
-using the real owner/slug you gathered — never invent refs.
-
-Add 2-4 insight plots. For EACH, the figure must be auditable via this coupled flow:
-  1. Write its data to ${PLOTS_DIR}/<name>.json as
-     {"title","source","series":[{"label":"<owner/slug or discussion id>","value":<number>}]}
-     — only numbers you actually gathered, no invented/interpolated values.
-  2. Write ${PLOTS_DIR}/<name>.py that READS that JSON and renders
-     ${PLOTS_DIR}/<name>.png from it (matplotlib) — do not plot from any other data.
-  3. Run it; embed plots/<name>.png in the brief.
-Save the brief to ${BRIEF}.
-EOF
-    ;;
-  aggressive)
-    # Shrink the plot block too — test whether the agent infers coupling from a
-    # terse instruction (Reviewer wants repeat runs here; coupling is at risk).
-read -r -d '' TASK <<EOF || true
-Use the nvidia-kaggle skill to research ${SLUG} (overview, data, discussions, top
-notebooks) and write a strategy brief to ${BRIEF}, grounded in what you gather.
-Cite kernels as [title](https://www.kaggle.com/code/<owner>/<slug>) links with the
-real owner/slug — no invented refs.
-Include 2-4 insight plots; for each, save its plotted data to
-${PLOTS_DIR}/<name>.json (a {label,value} series of numbers you actually gathered),
-a ${PLOTS_DIR}/<name>.py that reads that JSON and renders ${PLOTS_DIR}/<name>.png,
-then embed plots/<name>.png.
-EOF
-    ;;
-  *) echo "ERROR: unknown PROMPT_VARIANT '$PROMPT_VARIANT'" >&2; exit 2 ;;
-esac
 
 echo "=============================================================="
 echo " Agentic Competition Intel demo — agent orchestrates the skill"
 echo "   runtime:     $RUNTIME"
 echo "   competition: $SLUG"
-echo "   prompt:      $PROMPT_VARIANT"
+echo "   prompt:      natural"
 echo "   trace:       $TRACE"
 echo "=============================================================="
 
-# Record the prompt variant + the exact TASK for BOTH runtimes, so every run is
-# independently auditable (which variant + the literal user prompt used). codex
-# --json does not echo the prompt into its trace, so without this the prompt is
-# unrecoverable from artifacts.
+# Record the exact TASK for BOTH runtimes, so every run is independently
+# auditable (the literal user prompt used). codex --json does not echo the
+# prompt into its trace, so without this the prompt is unrecoverable from
+# artifacts.
 {
-    echo "# runtime=$RUNTIME  competition=$SLUG  prompt_variant=$PROMPT_VARIANT"
+    echo "# runtime=$RUNTIME  competition=$SLUG  prompt_variant=natural"
     echo "# --- TASK (verbatim user prompt) ---"
     printf '%s\n' "$TASK"
 } > "$RUN_DIR/prompt.txt"
