@@ -78,10 +78,13 @@ Two honesty rules that protect accuracy:
 Include a few (2–4) plots that give real insight. **Spend the plot budget on
 performance, not popularity.** Concretely:
 
-- **A score / leaderboard plot is REQUIRED and comes FIRST** whenever leaderboard
-  or public-score data is available (top-N LB scores, or a score ladder of the
-  gathered solution scores). The score spread is the single most decision-relevant
-  thing a competitor wants — it shows the target ladder visually. Lead with it.
+- **A score / leaderboard plot is REQUIRED and comes FIRST whenever you gathered
+  leaderboard or public-score data — you MUST include it; do NOT omit it.** If the
+  leaderboard/score data was fetched this run, a score plot is mandatory (top-N LB
+  scores, or a score ladder of the gathered solution scores). The score spread is
+  the single most decision-relevant thing a competitor wants — it shows the target
+  ladder visually. Lead with it. Discussing the band in prose is NOT a substitute
+  for the plot.
   - **Show the score DISTRIBUTION / bands, not a wall of names the brief never
     discusses.** What a competitor wants from a leaderboard plot is *where scores
     cluster, how tight the top is, and the gap to beat* — not 20 opaque team
@@ -90,7 +93,9 @@ performance, not popularity.** Concretely:
     score **distribution/bands** (e.g. top score, top-10 band, median, the cluster
     of strong solutions), OR plot only the few teams/solutions you actually
     discuss in the brief — never 20 named-but-unreferenced rows. The plot's job is
-    the score landscape, not a roster.
+    the score landscape, not a roster. **The permitted variation is bands-vs-
+    discussed-teams — NEVER present-vs-absent: when you gathered the data, the plot
+    must exist.**
 - **Vote / comment-count plots are at most ONE**, and its title must label it as
   *engagement / popularity, not performance* (e.g. "Top notebooks by votes
   — popularity, not leaderboard rank"). Do NOT fill the plot budget with two or
@@ -158,6 +163,16 @@ real, not invented:
    Every `value` must be a number you actually gathered from the skill — no
    invented or interpolated values. If a quantity is incomplete (e.g. some public
    scores were rate-limited), include only what you have and say so in the title.
+
+   **This schema is universal — EVERY plot, EVERY entry.** Each series entry of
+   EVERY plot (score ladder, votes, discussion engagement, dataset stats — all of
+   them) MUST carry `label`, a single numeric `value`, `provenance`, and `id`
+   where the entry is an entity. Do not use ad-hoc per-plot shapes (e.g. separate
+   `votes`/`comments` keys with no `value`, or a bare `{label,value}` that drops
+   `provenance`) — the renderer and the verifier rely on the common shape, and the
+   tag-aware gate checks `provenance` on every plot. Pick ONE number as `value`
+   (if you want both votes and comments, make two plots or a derived combined
+   metric, each entry still `{label, value, provenance, id?}`).
 
    **Each entry carries `id` and `provenance`:**
    - **`id`** — the stable key (kernel `owner/slug`, discussion id, leaderboard
