@@ -107,13 +107,29 @@ case "$RUNTIME" in
             "$TASK" > "$TRACE" 2>&1 || true
         ;;
     claude)
-        # Claude Code, headless, STRUCTURED trace via stream-json. Claude may
-        # orchestrate by dispatching sub-agents; analyze_run.py reads tool
-        # outputs from the stream to reconstruct what was gathered.
-        claude -p "$TASK" \
-            --add-dir "$REPO_ROOT" \
-            --allowedTools "Bash Read Write Skill" \
-            --output-format stream-json --verbose > "$TRACE" 2>&1 || true
+        # Claude Code, headless, STRUCTURED trace via stream-json. Normal
+        # `claude -p` — this main entry point does NOT mutate any global config.
+        #
+        # NOTE on Claude orchestration depth: in an environment whose global
+        # ~/.claude/CLAUDE.md instructs "invoke Agent Skills inside a subagent",
+        # Claude may delegate skill work to sub-agents, which can make the
+        # gathered set unrecoverable from the parent trace (analyze_run.py then
+        # reports DEGRADED, honestly). That is an ENVIRONMENT CONFIG effect, not
+        # a property of this runner. We deliberately do NOT neutralize it here:
+        # editing a global file from the casual demo command is a footgun. The
+        # one-off config-suppression experiment was run SEPARATELY and is
+        # quarantined in run_claude_config_suppressed.sh (trap-restored); see
+        # DESIGN.md for the n=1 finding.
+        CLAUDE_CMD=(claude -p "$TASK"
+            --add-dir "$REPO_ROOT"
+            --allowedTools "Bash Read Write Skill"
+            --output-format stream-json --verbose)
+        {
+            echo "# Claude invocation (normal claude -p; no config mutation)"
+            printf '%q ' "${CLAUDE_CMD[@]}"
+            echo
+        } > "$RUN_DIR/cmd.txt"
+        "${CLAUDE_CMD[@]}" > "$TRACE" 2>&1 || true
         ;;
 esac
 
