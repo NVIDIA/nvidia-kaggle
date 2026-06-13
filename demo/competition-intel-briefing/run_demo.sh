@@ -85,15 +85,19 @@ mkdir -p "$PLOTS_DIR"
 #    PNG is provably a rendering of the JSON, and a verifier checking each
 #    (label,value) against the trace governs the image. Plots whose values can't
 #    be traced to gathered data are illustrative-only. Agent decides WHAT to plot.
-# Prompt variant. Default is `moderate` (13 lines, down from `full`'s 30) — it
-# was verified to RELIABLY hold the full bar (agentic + grounded hyperlinks +
-# coupled provenance-traceable plots) under independent re-derive, so it's the
-# shipped prompt. `full` is retained as a more verbose fallback; `aggressive`
-# (8 lines) is retained for reference but was REJECTED — cutting the explicit
-# plot-data schema made the agent emit bare [{label,value}] arrays (no
-# source/title) with truncated labels, breaking plot-provenance auditability.
-# Override with PROMPT_VARIANT=full|aggressive.
-PROMPT_VARIANT="${PROMPT_VARIANT:-moderate}"
+# Prompt variant. Default is `natural` — a real-user-style ask ("research this
+# competition and brief me, with links and a few charts") that names no scripts
+# and no schema. The citation + plot-auditability conventions live in the SKILL
+# (`research-brief.md`), so the agent picks them up automatically; validated to
+# hold the full bar (agentic + grounded hyperlinks + coupled provenance-traceable
+# plots) on rogii + spaceship under independent re-derive. This is the shipped
+# behavior and what we iterate on. The older spelled-out prompts are retained as
+# `PROMPT_VARIANT` options: `moderate` (13-line explicit), `full` (30-line
+# verbose); `aggressive` (8 lines) is kept for reference but was REJECTED —
+# cutting the explicit plot-data schema made the agent emit bare [{label,value}]
+# arrays with truncated labels, breaking plot-provenance auditability.
+# Override with PROMPT_VARIANT=moderate|full|aggressive.
+PROMPT_VARIANT="${PROMPT_VARIANT:-natural}"
 
 case "$PROMPT_VARIANT" in
   natural)
