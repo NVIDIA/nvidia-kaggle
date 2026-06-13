@@ -82,6 +82,15 @@ performance, not popularity.** Concretely:
   or public-score data is available (top-N LB scores, or a score ladder of the
   gathered solution scores). The score spread is the single most decision-relevant
   thing a competitor wants — it shows the target ladder visually. Lead with it.
+  - **Show the score DISTRIBUTION / bands, not a wall of names the brief never
+    discusses.** What a competitor wants from a leaderboard plot is *where scores
+    cluster, how tight the top is, and the gap to beat* — not 20 opaque team
+    names. A top-20 chart whose teams are mostly never mentioned in the prose is a
+    wall of orphans: the reader can look up almost none of the bars. So plot the
+    score **distribution/bands** (e.g. top score, top-10 band, median, the cluster
+    of strong solutions), OR plot only the few teams/solutions you actually
+    discuss in the brief — never 20 named-but-unreferenced rows. The plot's job is
+    the score landscape, not a roster.
 - **Vote / comment-count plots are at most ONE**, and its title must label it as
   *engagement / popularity, not performance* (e.g. "Top notebooks by votes
   — popularity, not leaderboard rank"). Do NOT fill the plot budget with two or
@@ -106,11 +115,17 @@ provenance-clean but unreadable is a failure. Three rules, all required:
   traces the `value`, not the label text, so a readable label never regresses the
   accuracy floor — but keeping the id makes the cross-reference check trivial.)
 - **Every plotted entity must also appear in the brief's prose/tables.** Anything
-  you plot — a notebook, a discussion, a leaderboard team — must be cross-
-  referenced in the brief's text or a table (ideally with its link), so a reader
-  who sees a bar can find that entity and follow up. No orphan entities: if it's
-  worth plotting, it's worth a row/mention; if it's not worth mentioning, don't
-  plot it.
+  you plot that is an *entity* — a notebook, a discussion, a leaderboard team —
+  must be cross-referenced in the brief's text or a table (ideally with its link),
+  so a reader who sees a bar can find that entity and follow up. No orphan
+  entities: if it's worth plotting, it's worth a row/mention; if it's not worth
+  mentioning, don't plot it. (This is the general case of the leaderboard-plot
+  rule above: a top-N chart of mostly-undiscussed teams is a wall of orphans.)
+  Non-entity bars — histogram buckets, derived distributions, conceptual rungs
+  like "407–3,263 rows" — have nothing to cross-reference and this rule does not
+  apply to them. This is checked by a **human reader, not a mechanical gate**:
+  judging "real orphan vs. legitimate bucket/concept" is exactly the call a gate
+  can't make soundly.
 - **Every plot earns its place with a one-line takeaway.** Next to each embedded
   plot, write a single sentence stating what the reader should conclude from it
   (e.g. "the top public score sits ~2 RMSE below the strong-solution cluster, so
@@ -147,13 +162,21 @@ real, not invented:
    **Each entry carries `id` and `provenance`:**
    - **`id`** — the stable key (kernel `owner/slug`, discussion id, leaderboard
      team) even when `label` is a human-readable title. The reader sees `label`;
-     `id` keeps the entity cross-referenceable to the brief's prose and lets the
-     verifier check it mechanically.
+     `id` keeps the entity cross-referenceable to the brief's prose. It is a
+     reader/author aid, **not a gate key** — orphan-checking (does this entity
+     appear in the prose?) is a human-read judgment, because a gate can't reliably
+     tell a real orphan from a legitimate bucket/derived bar, and opaque ids
+     (e.g. a numeric leaderboard team id) aren't what a reader cross-references by.
    - **`provenance`** — must be one of exactly three, and it is NOT a free
      self-assertion:
      - **`verified`** — the value is present in this run's gathered tool output
        (the committed verifier can confirm it traces). Only tag `verified` when
-       the value genuinely came from gathered data; the gate will check.
+       the value genuinely came from gathered data. **The gate now checks this on
+       EVERY plot regardless of `source`: a `verified`-tagged value that does not
+       trace to gathered data is a hard FAIL** (it cannot hide behind a
+       dataset/derived plot source). So `verified` is a falsifiable claim, never a
+       label of convenience — if you can't point to where this run gathered the
+       value, tag it `title-claim` or `derived`, not `verified`.
      - **`title-claim`** — the value was parsed from a notebook/discussion *title*
        (e.g. `9.251` from a "9.251 …"-named kernel). Legitimately unverified — it
        is the author's claim, not a score you measured.
@@ -190,7 +213,9 @@ real, not invented:
    mistake a claimed score for a measured one; a flat chart that draws `7.776`
    (title-claim) and a measured RMSE as identical bars quietly overstates
    confidence — the visual equivalent of fabrication. Style by the `provenance`
-   field so the distinction is coupled to the data, not hand-drawn.
+   field so the distinction is coupled to the data, not hand-drawn. **Sort bars by
+   value within each `provenance` group** (don't interleave a 9.956 above a 9.251)
+   so the ordering reads cleanly and a reader can scan each band monotonically.
 3. Run the script to produce the PNG, then embed it in the brief with a relative
    path.
 
