@@ -1,8 +1,0 @@
-Fetching discussions for competition: rogii-wellbore-geology-prediction
-  sort-by=votes, max-pages=3
-Fetched 90 discussions from Kaggle API
-Fetching comments per discussion...
-Fetching comments... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
-Fetched 524 comments across 90 discussions
-Competition metric: Mean Squared Error
-Done: 2 new, 88 updated in /nvidia-kaggle/data/discussions.db

@@ -98,21 +98,11 @@ The scripts accept a bare competition slug or `https://www.kaggle.com/competitio
 Use this when the user asks you to **research a competition and write a strategy
 brief** in natural terms (e.g. "research this competition and brief me, with
 links and a few charts"). You chain the skill's individual research workflows
-yourself and write the brief. Read `./research-brief.md` for the conventions that
-keep the brief accurate and auditable — how to cite sources as `kaggle.com/code/<owner>/<slug>`
-links, and how to make plots provenance-traceable (write a `{title,source,series}`
-sidecar JSON, render the PNG from that JSON). These conventions live in the skill
-so the user does not have to spell them out.
-
-### Competition Intel Briefing
-
-Use this when the user wants a single polished markdown briefing for a competition. It chains the other workflows and degrades gracefully: the no-token tier (overview + dataset + top solution writeups) always runs via public scraping, and the auth tier (top public kernels, top discussions) fills in when `KAGGLE_API_TOKEN` is set, otherwise renders clear "requires token" placeholders.
-
-```bash
-python ./scripts/generate_briefing.py <competition-slug-or-url> [--output PATH] [--top-writeups N] [--top-kernels N] [--top-discussions N] [--skip-writeups] [--print]
-```
-
-Writes `{slug}_briefing.md` in the current working directory by default. Use `--skip-writeups` for a fast overview+dataset-only run.
+yourself, write your own analysis/plotting code, and produce the brief. Read
+`./research-brief.md` for the principles that keep the brief accurate, informative,
+and useful to a reader — how to cite real sources as links, and how to make plots
+honest and legible (every plotted number traces to what you gathered). These
+principles live in the skill so the user does not have to spell them out.
 
 ### Writeups
 

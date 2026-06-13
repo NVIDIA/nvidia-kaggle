@@ -8,7 +8,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from browser import read_page_text
 from runtime import competition_slug
 from support.constants import DEFAULT_BROWSER_TIMEOUT_MS
-from support.page_text import clean_page_lines
 
 
 def parse_slug(slug_or_url: str) -> str:
@@ -36,7 +35,10 @@ def get_competition_overview(competition_slug: str) -> str:
 
     description = text[start + len(start_marker): end + len(end_marker) if end != -1 else None]
 
-    lines = clean_page_lines(description.splitlines())
+    # Drop residual nav-bar items that may slip through
+    nav_items = {"Data", "Code", "Models", "Discussion", "Leaderboard", "Rules", "Overview"}
+    lines = [line.strip() for line in description.splitlines()]
+    lines = [line for line in lines if line and line not in nav_items]
     return "\n\n".join(lines)
 
 

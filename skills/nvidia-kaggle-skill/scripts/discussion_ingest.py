@@ -2,7 +2,6 @@
 """Fetch Kaggle competition discussions and store them in the local database."""
 
 import argparse
-import os
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -149,15 +148,6 @@ def main():
     parser.add_argument("--page-size", type=int, default=DEFAULT_PAGE_SIZE)
     parser.add_argument("--nofetch-comments", action="store_true", help="Skip fetching comments")
     args = parser.parse_args()
-
-    if not os.environ.get("KAGGLE_API_TOKEN"):
-        print(
-            "Error: No Kaggle credentials found.\n"
-            "Set the KAGGLE_API_TOKEN environment variable to fetch discussions.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
     ingest(
         args.competition_id,
         max_pages=args.max_pages,

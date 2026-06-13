@@ -15,23 +15,5 @@ __pycache__/
 data/
 *.db
 
-# Generated briefing artifacts (but keep the checked-in demo sample)
+# Generated briefing artifacts
 *_briefing.md
-!demo/competition-intel-briefing/llm-20-questions_briefing.md
-
-# Local CLI skill-discovery symlink (environment-specific, not portable)
-.claude/
-
-# Agentic demo run dirs: ignore everything under runs/ EXCEPT the committed
-# verified exhibits (negated below). Keeps scratch run churn out of the repo
-# while the demo's evidence dirs stay tracked.
-demo/competition-intel-briefing/runs/*
-# Minimum PR: TWO committed exemplars proving "one skill, two frameworks,
-# gate-verified" — Codex clean (_019) and Claude clean (_001), both PASS on both
-# verdicts. All other runs are scratch / preserved off-repo.
-!demo/competition-intel-briefing/runs/codex_rogii-wellbore-geology-prediction_019/
-!demo/competition-intel-briefing/runs/claude_rogii-wellbore-geology-prediction_001/
-# ...but never the multi-GB downloaded competition dataset an agent may fetch
-# into a run dir; the brief/trace/plots are the exhibit, not the raw data.
-demo/competition-intel-briefing/runs/*/data/
-

@@ -113,91 +113,19 @@ def poll_kernel(api, slug: str, poll_interval: int, timeout: int) -> tuple[str, 
         time.sleep(poll_interval)
 
 
-def _list_submissions(api, competition: str):
-    """Return submissions newest-first by date.
-
-    The Kaggle SDK already defaults to ``SUBMISSION_SORT_BY_DATE``, but we pass
-    it explicitly so we don't silently depend on that default (and so the
-    newest-row fallback in poll_submission is genuinely the most recent one).
-    Falls back to the default call if the enum import is unavailable.
-    """
-    try:
-        from kagglesdk.competitions.types.competition_enums import SubmissionSortBy
-
-        return api.competition_submissions(
-            competition, sort=SubmissionSortBy.SUBMISSION_SORT_BY_DATE
-        )
-    except Exception:
-        return api.competition_submissions(competition)
-
-
-def _submission_key(sub) -> str:
-    """Stable-ish identifier for a submission row across polls.
-
-    Prefer an explicit ref/id; fall back to a composite of immutable-ish
-    fields so we can distinguish one submission from another even when several
-    share the same description (e.g. repeated runs with the default message).
-    """
-    for attr in ("ref", "id"):
-        val = getattr(sub, attr, None)
-        if val:
-            return str(val)
-    return f"{getattr(sub, 'date', '')}|{getattr(sub, 'file_name', '')}|{getattr(sub, 'description', '')}"
-
-
-def snapshot_submissions(api, competition: str) -> set[str]:
-    """Capture the set of submission keys that exist *before* we submit.
-
-    Polling then waits for a key NOT in this set, so we never report the score
-    of a stale prior submission that happens to share our message.
-    """
-    try:
-        return {_submission_key(s) for s in _list_submissions(api, competition)}
-    except Exception:
-        # If we can't snapshot, fall back to an empty set; poll_submission will
-        # still prefer the newest row and warn it could not isolate the new one.
-        return set()
-
-
-def submit_to_competition(api, slug: str, competition: str, file: str, version: int, message: str) -> tuple[bool, str | None]:
-    """Submit and return (ok, submission_ref).
-
-    ``competition_submit_code`` returns an ApiCreateCodeSubmissionResponse that
-    carries a ``ref`` for the new submission. We surface it so polling can match
-    on the exact submission instead of guessing by description/recency.
-    """
+def submit_to_competition(api, slug: str, competition: str, file: str, version: int, message: str) -> bool:
     print(f"\nSubmitting to '{competition}' (file: {file}, version: {version}) ...")
     try:
-        resp = api.competition_submit_code(file, message, competition, kernel=slug, kernel_version=version)
-        submit_ref = getattr(resp, "ref", None) if resp is not None else None
-        print(f"Submission accepted." + (f" (ref: {submit_ref})" if submit_ref else ""))
-        return True, (str(submit_ref) if submit_ref else None)
+        api.competition_submit_code(file, message, competition, kernel=slug, kernel_version=version)
+        print("Submission accepted.")
+        return True
     except Exception as e:
         print(f"Submission failed: {e}", file=sys.stderr)
-        return False, None
+        return False
 
 
-def poll_submission(
-    api,
-    competition: str,
-    message: str,
-    poll_interval: int,
-    timeout: int,
-    submit_ref: str | None = None,
-    before_keys: set[str] | None = None,
-) -> tuple[str, str | None, float]:
-    """Poll submission evaluation. Returns (status_name, public_score, elapsed).
-
-    Identifies *our* submission with layered strategies, most precise first:
-      1. Exact ``ref`` match against the ref returned by the submit call.
-      2. Newest row whose key was absent from the pre-submit snapshot
-         (``before_keys``) — preferring one whose description matches.
-      3. Newest row overall (with a warning) when neither is available.
-
-    This avoids reporting a stale public score from an earlier submission that
-    happens to share our description.
-    """
-    before_keys = before_keys or set()
+def poll_submission(api, competition: str, message: str, poll_interval: int, timeout: int) -> tuple[str, str | None, float]:
+    """Poll submission evaluation. Returns (status_name, public_score, elapsed)."""
     start = time.time()
     print(f"\nPolling evaluation every {poll_interval}s (timeout {format_duration(timeout)}) ...")
     while True:
@@ -207,37 +135,21 @@ def poll_submission(
             return "timeout", None, elapsed
 
         try:
-            subs = _list_submissions(competition=competition, api=api)
+            subs = api.competition_submissions(competition)
         except Exception as e:
             print(f"  [{format_duration(elapsed)}] API error: {e}")
             time.sleep(poll_interval)
             continue
 
+        # Match by message; if multiple match, take the most recent (first in list)
         target = None
-
-        # Strategy 1: exact ref match (most precise).
-        if submit_ref:
-            for s in subs:
-                if str(getattr(s, "ref", "")) == submit_ref:
-                    target = s
-                    break
-
-        # Strategy 2: newest row not present before we submitted.
-        if target is None:
-            new_subs = [s for s in subs if _submission_key(s) not in before_keys]
-            if new_subs:
-                for s in new_subs:
-                    if s.description == message:
-                        target = s
-                        break
-                if target is None:
-                    target = new_subs[0]
-            elif subs and not before_keys and not submit_ref:
-                # Strategy 3: nothing to disambiguate with — take the most
-                # recent submission (subs is sorted newest-first by date) + warn.
-                target = subs[0]
-                print(f"  [{format_duration(elapsed)}] warning: could not isolate the new "
-                      f"submission (no ref or pre-submit snapshot); reporting newest-by-date row")
+        for s in subs:
+            if s.description == message:
+                target = s
+                break
+        # Fallback: if default message, just take the most recent submission
+        if target is None and subs:
+            target = subs[0]
 
         if target is None:
             print(f"  [{format_duration(elapsed)}] submission not found yet")
@@ -333,16 +245,11 @@ def main():
             print("Submission:  skipped (--file not specified; read the notebook to find the output filename)")
         elif status == "complete":
             for comp in competitions:
-                # Snapshot existing submissions BEFORE submitting so polling can
-                # isolate the new one even if the submit response lacks a ref.
-                before_keys = snapshot_submissions(api, comp)
-                ok, submit_ref = submit_to_competition(api, slug, comp, args.file, version, args.message)
+                ok = submit_to_competition(api, slug, comp, args.file, version, args.message)
                 print(f"Submission:  {comp} — {'success' if ok else 'failed'}")
                 if ok:
                     eval_status, score, eval_elapsed = poll_submission(
                         api, comp, args.message, args.poll_interval, args.timeout,
-                        submit_ref=submit_ref,
-                        before_keys=before_keys,
                     )
                     print(f"Eval time:   {format_duration(eval_elapsed)} (±{args.poll_interval}s)")
                     if score:
