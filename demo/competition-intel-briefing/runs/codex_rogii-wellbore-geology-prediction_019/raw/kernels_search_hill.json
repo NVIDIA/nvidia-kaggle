@@ -1,0 +1,62 @@
+[
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "ravaghi/wellbore-geology-prediction-hill-climbing",
+    "title": "Wellbore Geology Prediction | Hill Climbing",
+    "author": "Mahdi Ravaghi",
+    "total_votes": 195,
+    "last_run_time": "2026-06-08T10:57:32.340000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250201Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "jaemin3404/rogii-ravaghi-hillclimb-cpu-v1",
+    "title": "rogii-ravaghi-hillclimb-cpu-v1",
+    "author": "JAEMIN",
+    "total_votes": 1,
+    "last_run_time": "2026-06-09T02:13:32.627000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:03.041374Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "jaemin3404/rogii-ravaghi-hillclimb-copy-v1",
+    "title": "rogii-ravaghi-hillclimb-copy-v1",
+    "author": "JAEMIN",
+    "total_votes": 1,
+    "last_run_time": "2026-06-09T02:08:57.153000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:03.041379Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "karnakbaevarthur/rogii-dwt-hillclimbing-combined",
+    "title": "Rogii dwt hillclimbing combined ",
+    "author": "Karnakbayev Artur",
+    "total_votes": 1,
+    "last_run_time": "2026-05-17T19:45:54.990000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:10.240615Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "nannichaphrapersonal/rogii-dwt-lgb-catboost-hill-climbing",
+    "title": "ROGII DWT - LGB + CatBoost + Hill Climbing",
+    "author": "Nannicha Phraemetta",
+    "total_votes": 0,
+    "last_run_time": "2026-05-25T09:36:29.087000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:04.742112Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "gaopengren/ravaghi-hill-codex-v2",
+    "title": "Ravaghi Hill Codex v2",
+    "author": "Gaopeng Ren",
+    "total_votes": 0,
+    "last_run_time": "2026-05-12T13:57:46.183000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:06.434579Z"
+  }
+]

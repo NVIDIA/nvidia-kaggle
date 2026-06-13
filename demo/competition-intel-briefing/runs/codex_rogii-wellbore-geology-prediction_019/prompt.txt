@@ -1,0 +1,6 @@
+# runtime=codex  competition=rogii-wellbore-geology-prediction  prompt_variant=natural
+# --- TASK (verbatim user prompt) ---
+Research the rogii-wellbore-geology-prediction Kaggle competition with the nvidia-kaggle skill and write me
+a strategy brief on what it takes to do well. Include the key public notebooks
+and discussions as links, and a few plots for insight. Save the brief to /nvidia-kaggle/demo/competition-intel-briefing/runs/codex_rogii-wellbore-geology-prediction_019/brief.md
+and put any plot files under /nvidia-kaggle/demo/competition-intel-briefing/runs/codex_rogii-wellbore-geology-prediction_019/plots.

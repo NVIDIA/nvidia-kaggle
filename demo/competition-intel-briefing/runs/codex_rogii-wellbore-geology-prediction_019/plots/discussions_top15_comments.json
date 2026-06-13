@@ -1,0 +1,96 @@
+{
+  "title": "Top 15 discussions by comment count (activity depth)",
+  "source": "discussion_query rogii-wellbore-geology-prediction --limit 80 --as-json after discussion_ingest",
+  "series": [
+    {
+      "label": "multi-trajectory prediction (MTP) with deep CNN for welllog inversion",
+      "id": "699853",
+      "value": 92,
+      "provenance": "verified"
+    },
+    {
+      "label": "Share an UI visualizer ",
+      "id": "700424",
+      "value": 61,
+      "provenance": "verified"
+    },
+    {
+      "label": "besides regression, also dwt (time warping)! ",
+      "id": "697431",
+      "value": 36,
+      "provenance": "verified"
+    },
+    {
+      "label": "Submission Scoring Error \u2014 Is the scorer live yet?",
+      "id": "697329",
+      "value": 30,
+      "provenance": "verified"
+    },
+    {
+      "label": "ML to learn generator for forward simulation",
+      "id": "702474",
+      "value": 21,
+      "provenance": "verified"
+    },
+    {
+      "label": "How to get started + Competition's Official Discord",
+      "id": "694973",
+      "value": 18,
+      "provenance": "verified"
+    },
+    {
+      "label": "cv and lb correlations .....",
+      "id": "701691",
+      "value": 16,
+      "provenance": "verified"
+    },
+    {
+      "label": "Welcome to ROGII - Wellbore Geology Prediction!",
+      "id": "697416",
+      "value": 14,
+      "provenance": "verified"
+    },
+    {
+      "label": "Defintion of tvt",
+      "id": "698282",
+      "value": 13,
+      "provenance": "verified"
+    },
+    {
+      "label": "Is the public LB test set (26%) fixed? ",
+      "id": "701995",
+      "value": 13,
+      "provenance": "verified"
+    },
+    {
+      "label": "PNG files don't match the data",
+      "id": "705210",
+      "value": 12,
+      "provenance": "verified"
+    },
+    {
+      "label": "The battle for LB9.0\u2193",
+      "id": "703038",
+      "value": 11,
+      "provenance": "verified"
+    },
+    {
+      "label": "Can a single model achieve LB/CV below 10.0?",
+      "id": "699207",
+      "value": 10,
+      "provenance": "verified"
+    },
+    {
+      "label": "Diagram of the problem",
+      "id": "697418",
+      "value": 9,
+      "provenance": "verified"
+    },
+    {
+      "label": "PF baseline got LB 8.863 - any ideas to make it learnable with NN?",
+      "id": "707613",
+      "value": 7,
+      "provenance": "verified"
+    }
+  ]
+}

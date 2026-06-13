@@ -1,0 +1,802 @@
+[
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "nihilisticneuralnet/9-251-rogii-wellbore-geology-prediction-dwt-based",
+    "title": "9.251 ROGII-Wellbore Geology Prediction: DWT-based",
+    "author": "parthenos",
+    "total_votes": 589,
+    "last_run_time": "2026-05-13T06:31:11.020000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250164Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "ravaghi/wellbore-geology-prediction-ridge",
+    "title": "Wellbore Geology Prediction | Ridge",
+    "author": "Mahdi Ravaghi",
+    "total_votes": 227,
+    "last_run_time": "2026-06-06T02:07:29.667000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250189Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "pixiux/rogii-dual-pipeline-blend",
+    "title": "rogii_dual_pipeline_blend",
+    "author": "PyJa",
+    "total_votes": 196,
+    "last_run_time": "2026-06-10T11:24:57.013000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250196Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "ravaghi/wellbore-geology-prediction-hill-climbing",
+    "title": "Wellbore Geology Prediction | Hill Climbing",
+    "author": "Mahdi Ravaghi",
+    "total_votes": 195,
+    "last_run_time": "2026-06-08T10:57:32.340000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250201Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "romantamrazov/rogii-super-solution-lb-top-3",
+    "title": "[ROGII] SUPER SOLUTION |LB: TOP 3 ",
+    "author": "Roman Tamrazov",
+    "total_votes": 169,
+    "last_run_time": "2026-05-08T08:57:56.697000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250206Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "nina2025/rogii-h-blend-v1",
+    "title": "ROGII |\ud83d\udc3c h-blend v1",
+    "author": "f.a.nina",
+    "total_votes": 164,
+    "last_run_time": "2026-05-16T18:57:54.677000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250211Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "cdeotte/xgb-starter-cv-15",
+    "title": "XGB Starter - [CV 15]",
+    "author": "Chris Deotte",
+    "total_votes": 159,
+    "last_run_time": "2026-05-06T03:21:07.053000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250216Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "pilkwang/rogii-eda-target-free-alignment-for-tvt",
+    "title": "\ud83d\udee2\ufe0f ROGII EDA + Target-Free Alignment for TVT",
+    "author": "Pilkwang Kim",
+    "total_votes": 150,
+    "last_run_time": "2026-06-05T12:30:39.217000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250228Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "jaemin3404/rogii-sp45-fleongg-blend-v2",
+    "title": "rogii-sp45-fleongg-blend-v2",
+    "author": "JAEMIN",
+    "total_votes": 148,
+    "last_run_time": "2026-06-08T15:56:24.870000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250233Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "ravaghi/wellbore-geology-prediction-lightgbm",
+    "title": "Wellbore Geology Prediction | LightGBM",
+    "author": "Mahdi Ravaghi",
+    "total_votes": 147,
+    "last_run_time": "2026-06-08T10:57:22.413000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250238Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "mitchgansemer/gr-features-outlier-detection-rogii-wellbore",
+    "title": "GR Features / Outlier Detection \u2014 ROGII Wellbore",
+    "author": "Mitch",
+    "total_votes": 144,
+    "last_run_time": "2026-05-27T13:37:47.287000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250243Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "pilkwang/rogii-target-free-tvt-geosteering",
+    "title": "\ud83e\udded ROGII Target-Free TVT Geosteering",
+    "author": "Pilkwang Kim",
+    "total_votes": 137,
+    "last_run_time": "2026-06-13T06:02:13.983000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250247Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "aidensong123/rogii-sel15-rerun",
+    "title": "rogii-sel15-rerun",
+    "author": "AidenSong123",
+    "total_votes": 130,
+    "last_run_time": "2026-06-01T17:29:40.817000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250252Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "cdeotte/eda-starter",
+    "title": "EDA Starter",
+    "author": "Chris Deotte",
+    "total_votes": 116,
+    "last_run_time": "2026-05-05T16:28:59.513000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250260Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "mitchgansemer/drift-targeting-ncc-tree-based-rogii-wellbore",
+    "title": "Drift Targeting + NCC: Tree-based ROGII Wellbore",
+    "author": "Mitch",
+    "total_votes": 109,
+    "last_run_time": "2026-05-27T13:20:11.353000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250270Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "sunnywu27/rogii-wellbore-tvt-physical-model",
+    "title": "ROGII Wellbore TVT \u2014 Physical Model",
+    "author": "Sunnywu27",
+    "total_votes": 108,
+    "last_run_time": "2026-05-31T18:55:44.247000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250278Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "cdeotte/nn-starter-cv-15-5",
+    "title": "NN Starter - [CV 15.5]",
+    "author": "Chris Deotte",
+    "total_votes": 107,
+    "last_run_time": "2026-05-06T02:11:41.070000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250283Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "yuriygreben/rogii-wellbore-geology-ridge-sp-pipeline",
+    "title": "ROGII Wellbore Geology | Ridge SP Pipeline",
+    "author": "Yuriy Greben",
+    "total_votes": 104,
+    "last_run_time": "2026-06-08T07:41:39.690000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250288Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "karnakbaevarthur/physics-informed-baseline",
+    "title": "Physics-Informed Baseline",
+    "author": "Karnakbayev Artur",
+    "total_votes": 100,
+    "last_run_time": "2026-05-11T20:57:09.253000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251147Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "svanikkolli/aeroridge-engine-v2",
+    "title": "AeroRidge Engine v2",
+    "author": "Svanik Kolli",
+    "total_votes": 94,
+    "last_run_time": "2026-05-21T00:10:38.070000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251161Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "romantamrazov/rogii-better-solution-lb-9-956",
+    "title": "[ROGII] BETTER SOLUTION | LB: 9.956",
+    "author": "Roman Tamrazov",
+    "total_votes": 92,
+    "last_run_time": "2026-05-10T10:12:21.040000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251166Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "yaroslavkholmirzayev/rogii-sel15-forced-selector",
+    "title": "ROGII SEL15 Forced Selector",
+    "author": "Yaroslav kholmirzayev",
+    "total_votes": 86,
+    "last_run_time": "2026-06-12T15:34:26.873000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251171Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "lightningv08/lb-7-776-rogii-ridge-sp",
+    "title": "[LB 7.776]rogii-ridge-sp",
+    "author": "Vladislav Lavrentev",
+    "total_votes": 85,
+    "last_run_time": "2026-06-07T16:28:33.390000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251176Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "aiwody/physical-model-less-overfitting-noise",
+    "title": "Physical model - less overfitting noise",
+    "author": "\u8424\u706b2018",
+    "total_votes": 78,
+    "last_run_time": "2026-06-04T01:30:54.907000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251181Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "kojimar/rogii-physical-pf-signal-meets-artifact-stack",
+    "title": "ROGII: Physical PF Signal Meets Artifact Stack",
+    "author": "islet",
+    "total_votes": 78,
+    "last_run_time": "2026-06-01T23:25:39.413000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251185Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "nina2025/rogii-h-blend-v2",
+    "title": "ROGII | \ud83d\udc3b\u200d\u2744\ufe0f h-blend v2",
+    "author": "f.a.nina",
+    "total_votes": 74,
+    "last_run_time": "2026-05-13T14:01:50.053000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251190Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "iaztec/rogii-wellbore-geology-sp45-fleongg-eda",
+    "title": "ROGII - Wellbore Geology | SP45 + Fleongg | EDA",
+    "author": "i-aztec",
+    "total_votes": 71,
+    "last_run_time": "2026-06-11T14:50:45.440000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251201Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "needless090/lb-8-860-rogii-sel15-256seeds",
+    "title": "\u3010LB 8.860\u3011rogii-sel15-256seeds",
+    "author": "\u6ca1\u843d\u8005",
+    "total_votes": 69,
+    "last_run_time": "2026-06-02T14:46:09.567000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251206Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "kojimar/rogii-inference-stack-with-pf-beam-and-tabicl",
+    "title": "ROGII: Inference Stack with PF, Beam and TabICL",
+    "author": "islet",
+    "total_votes": 69,
+    "last_run_time": "2026-05-19T05:50:51.647000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251211Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "fleongg/fle3n-rogii-v4",
+    "title": "fle3n ROGII v4",
+    "author": "fle3n",
+    "total_votes": 68,
+    "last_run_time": "2026-06-09T18:39:01.300000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251216Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "thbdh5765/rogii-v10-fresh-artifact-infer",
+    "title": "ROGII v10 Fresh Artifact Infer",
+    "author": "Hoang Phuc (K18 HCM)",
+    "total_votes": 65,
+    "last_run_time": "2026-05-12T03:09:00.910000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251224Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "fleongg/fle3n-rogii-v5f-probe",
+    "title": "fle3n ROGII v5f probe",
+    "author": "fle3n",
+    "total_votes": 61,
+    "last_run_time": "2026-06-11T06:47:04.967000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251228Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "shinyanagai123/triple-signal-beam-search-dual-pf-lightgbm",
+    "title": "Triple-Signal Beam Search + Dual PF + LightGBM",
+    "author": "shinya",
+    "total_votes": 59,
+    "last_run_time": "2026-05-09T02:56:20.213000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251233Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "needless090/score-10-081-score-lb-32-rank",
+    "title": "Score 10.081 score\u3010LB 32 rank\u3011",
+    "author": "\u6ca1\u843d\u8005",
+    "total_votes": 56,
+    "last_run_time": "2026-05-10T23:32:00.270000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251242Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "konbu17/rogii-plane-fit-formation-top-knn",
+    "title": "rogii plane fit formation top knn",
+    "author": "konbu17",
+    "total_votes": 54,
+    "last_run_time": "2026-05-07T07:20:35.827000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251249Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "byronodhiambo/rogii-wellbore-geology",
+    "title": "rogii-wellbore-geology",
+    "author": "Byron Odhiambo",
+    "total_votes": 51,
+    "last_run_time": "2026-06-06T06:10:50.297000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251253Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "svanikkolli/aeroridge-engine",
+    "title": "AeroRidge Engine",
+    "author": "Svanik Kolli",
+    "total_votes": 49,
+    "last_run_time": "2026-05-10T14:06:06.813000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251258Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "aidensong123/rogii-wellbore-geology-lightgbm-baseline",
+    "title": "ROGII Wellbore Geology: LightGBM Baseline",
+    "author": "AidenSong123",
+    "total_votes": 48,
+    "last_run_time": "2026-05-05T17:29:24.280000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251262Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "alisalmanrana/wellbore-geology-prediction-ridge-8d98aa",
+    "title": "Wellbore Geology Prediction | Ridge 8d98aa",
+    "author": "OverfitOracle",
+    "total_votes": 46,
+    "last_run_time": "2026-06-05T09:25:48.713000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251273Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "ravi20076/rogii2026-public-blend-v2",
+    "title": "ROGII2026|Public|Blend|V2",
+    "author": "Ravi Ramakrishnan",
+    "total_votes": 46,
+    "last_run_time": "2026-06-05T03:43:43.710000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251277Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "fleongg/fle3n-rogii-v5",
+    "title": "fle3n ROGII v5",
+    "author": "fle3n",
+    "total_votes": 45,
+    "last_run_time": "2026-06-11T06:38:34.047000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612135Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "beicicc/rogii-0525-nannicha-dwt-hc",
+    "title": "rogii-0525-nannicha-dwt-hc",
+    "author": "Kun Zhang",
+    "total_votes": 41,
+    "last_run_time": "2026-05-25T12:05:54.797000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612148Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "rauffauzanrambe/9-538-rogii-wellbore-geologyprediction-training",
+    "title": "9.538 ROGII-Wellbore GeologyPrediction Training",
+    "author": "Ra'uf Fauzan Rambe",
+    "total_votes": 41,
+    "last_run_time": "2026-05-20T23:22:32.980000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612154Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "yaroslavkholmirzayev/reproduce-strongest-reference-aeroridge-v34",
+    "title": "Reproduce Strongest Reference: AeroRidge v34",
+    "author": "Yaroslav kholmirzayev",
+    "total_votes": 41,
+    "last_run_time": "2026-06-03T11:29:30.580000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612159Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "afr1ste/rogii-pf-beam-tabicl-stack-guide-9-062",
+    "title": "ROGII PF Beam TabICL Stack Guide (9.062)",
+    "author": "Afr1ste",
+    "total_votes": 40,
+    "last_run_time": "2026-06-04T05:07:22.983000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612163Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "raunakdey07/rogii-ultra-sub-9-rmse",
+    "title": "ROGII Ultra || Sub-9 RMSE",
+    "author": "Raunak Dey",
+    "total_votes": 37,
+    "last_run_time": "2026-05-17T21:34:39.267000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612168Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "titericz/last-value-baseline",
+    "title": "Last Value Baseline",
+    "author": "Giba",
+    "total_votes": 35,
+    "last_run_time": "2026-05-05T23:13:22.700000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612191Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "svanikkolli/aeroridge-engine-v3",
+    "title": "AeroRidge Engine v3",
+    "author": "Svanik Kolli",
+    "total_votes": 34,
+    "last_run_time": "2026-05-24T17:08:49.787000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612203Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "tasmim/lb-9-259-rogii-wellbore-geology-prediction",
+    "title": "LB-9.259:  ROGII - Wellbore Geology Prediction ",
+    "author": "Tasmim",
+    "total_votes": 34,
+    "last_run_time": "2026-06-01T04:58:41.550000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612208Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "ajayrao43/rogii-wellbore-geology-prediction",
+    "title": "ROGII - Wellbore Geology Prediction",
+    "author": "Ajay_Rao_43",
+    "total_votes": 34,
+    "last_run_time": "2026-06-02T02:37:03.623000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612196Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "qamarmath/ml-physics-wellbore-geology-prediction",
+    "title": "ML + Physics Wellbore Geology Prediction",
+    "author": "Qamar usman",
+    "total_votes": 33,
+    "last_run_time": "2026-06-05T13:58:18.367000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612212Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "sanidhyavijay24/9-946-rogii-geostat-softmax-ncc-hybrid",
+    "title": "[9.946] ROGII: Geostat, Softmax NCC Hybrid",
+    "author": "Sanidhya Vijay24",
+    "total_votes": 33,
+    "last_run_time": "2026-05-11T09:26:46.500000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612217Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "carion/rogii-wellbore-v001-baseline",
+    "title": "rogii-wellbore-v001-baseline",
+    "author": "jeanhenockviayinon",
+    "total_votes": 32,
+    "last_run_time": "2026-05-15T16:56:27.297000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612232Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "mpwolke/geosteering-wells-rogii",
+    "title": "Geosteering & Wells - ROGII ",
+    "author": "Mar\u00edlia Prata",
+    "total_votes": 32,
+    "last_run_time": "2026-05-05T23:14:54.817000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612240Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "hengck23/cnn-sdf-example",
+    "title": "CNN+SDF example",
+    "author": "hengck23",
+    "total_votes": 32,
+    "last_run_time": "2026-05-22T09:03:42.417000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612221Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "hengck23/cnn-mtp-example",
+    "title": "CNN MTP example",
+    "author": "hengck23",
+    "total_votes": 31,
+    "last_run_time": "2026-05-17T14:20:08.050000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612245Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "sadamtorres/rogii-lgbm-xgb-catboost-ensemble",
+    "title": "ROGII-LGBM/XGB/Catboost Ensemble",
+    "author": "Sadam Torres",
+    "total_votes": 31,
+    "last_run_time": "2026-06-04T12:55:04.817000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612249Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "pilkwang/rogii-h-blend-model-package-sidecar",
+    "title": "\ud83d\udee2\ufe0f ROGII H-Blend + Model-Package Sidecar",
+    "author": "Pilkwang Kim",
+    "total_votes": 30,
+    "last_run_time": "2026-06-02T05:18:06.013000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612255Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "vishwasmishra1234/rogii-wellbore-geology-prediction",
+    "title": "ROGII-Wellbore-Geology-Prediction",
+    "author": "Vishwas Mishra",
+    "total_votes": 29,
+    "last_run_time": "2026-05-05T23:45:15.807000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612263Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "ruhul20/temporal-cnn-tcn-baseline-rogii-wellbore",
+    "title": "Temporal CNN (TCN) Baseline rogii-wellbore",
+    "author": "Ruhul Amin",
+    "total_votes": 26,
+    "last_run_time": "2026-05-23T02:21:11.007000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612267Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "thermostatic/rogii-plane-top2-gate-blend-safe",
+    "title": "ROGII Plane Top2 Gate Blend SAFE",
+    "author": "Irving Ernesto",
+    "total_votes": 26,
+    "last_run_time": "2026-05-08T02:04:06.390000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612274Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "beicicc/rogii-0525-yoshi74-exact080",
+    "title": "rogii-0525-yoshi74-exact080",
+    "author": "Kun Zhang",
+    "total_votes": 25,
+    "last_run_time": "2026-05-25T07:47:47.387000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612283Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "thermostatic/rogii-gpu-lightgbm-baseline-lb-14-128",
+    "title": "ROGII GPU LightGBM Baseline LB 14.128",
+    "author": "Irving Ernesto",
+    "total_votes": 25,
+    "last_run_time": "2026-05-05T23:05:48.970000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612288Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "fleongg/rogii-drift-geosteering-infer",
+    "title": "ROGII drift geosteering (infer)",
+    "author": "fle3n",
+    "total_votes": 25,
+    "last_run_time": "2026-06-07T20:03:43.647000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612279Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "misakamikoto66/rogii-tree-models-and-physics-blend",
+    "title": "ROGII Tree Models and Physics Blend",
+    "author": "Misaka Mikoto",
+    "total_votes": 24,
+    "last_run_time": "2026-06-05T14:22:22.877000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612292Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "needless090/rogii-sel15-vc-spread5-5",
+    "title": "rogii-sel15-vc-spread5-5",
+    "author": "\u6ca1\u843d\u8005",
+    "total_votes": 24,
+    "last_run_time": "2026-06-03T06:40:36.520000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612297Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "safar1/lb-score-8-863",
+    "title": "[LB] [SCORE] [8.863]",
+    "author": "Safarbek",
+    "total_votes": 23,
+    "last_run_time": "2026-06-02T14:58:22.487000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612310Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "stpeteishii/wellbore-geology-tcn",
+    "title": "Wellbore Geology TCN",
+    "author": "stpete_ishii",
+    "total_votes": 23,
+    "last_run_time": "2026-05-10T07:11:56.997000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612314Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "songhow/well-prediction-eda-exploratory",
+    "title": "Well Prediction-EDA exploratory",
+    "author": "sghwr",
+    "total_votes": 23,
+    "last_run_time": "2026-05-06T03:57:07.737000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612322Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "yukrxfo/rogiii",
+    "title": "ROGIII",
+    "author": "Yu_Krxfo _",
+    "total_votes": 23,
+    "last_run_time": "2026-05-09T14:27:09.690000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612326Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "aiwody/rogii-sp45-fleongg-blend-v2",
+    "title": "rogii-sp45-fleongg-blend-v2",
+    "author": "\u8424\u706b2018",
+    "total_votes": 23,
+    "last_run_time": "2026-06-08T23:46:41.233000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612305Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "romanrozen/catboost-baseline",
+    "title": "CATBOOST baseline\ud83d\udd25",
+    "author": "Roman Rozen",
+    "total_votes": 22,
+    "last_run_time": "2026-05-06T06:52:42.490000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612330Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "llkh0a/rogii-lgbm-aug-online-training",
+    "title": "ROGII | LGBM Aug Online training",
+    "author": "Kh0a",
+    "total_votes": 19,
+    "last_run_time": "2026-05-08T11:13:57.737000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612335Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "jamienojek/rogii-sunny-physical-pf-v12",
+    "title": "ROGII Sunny Physical PF v12",
+    "author": "Jamie Nojek",
+    "total_votes": 18,
+    "last_run_time": "2026-06-01T01:43:12.773000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612342Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "thbdh5765/rogii-v4-aeroridge-cache-tabicl",
+    "title": "ROGII v4 AeroRidge Cache TabICL",
+    "author": "Hoang Phuc (K18 HCM)",
+    "total_votes": 18,
+    "last_run_time": "2026-05-11T05:47:18.470000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612347Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "aadigupta1601/rogii-10-239-weblore-predicition",
+    "title": "[ROGII] 10.239 Weblore Predicition",
+    "author": "Aadi Gupta",
+    "total_votes": 18,
+    "last_run_time": "2026-05-12T00:53:20.380000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612354Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "evgendvorkin/baseline-catboost",
+    "title": "Baseline CatBoost",
+    "author": "\u0414\u0432\u043e\u0440\u043a\u0438\u043d \u0415\u0432\u0433\u0435\u043d\u0438\u0439 \u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440\u043e\u0432\u0438\u0447",
+    "total_votes": 18,
+    "last_run_time": "2026-05-14T14:02:14.860000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612359Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "dimplebhardwaj536/rogii-wellbore-geology-prediction",
+    "title": "ROGII(Wellbore Geology Prediction)!!",
+    "author": "Dimple Bhardwaj",
+    "total_votes": 17,
+    "last_run_time": "2026-06-02T11:40:30.720000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612368Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "biohack44/aeroridge-engine-v2-repeat-notebook",
+    "title": "AeroRidge Engine v2 repeat notebook ",
+    "author": "Emre Cirak",
+    "total_votes": 17,
+    "last_run_time": "2026-05-25T12:51:01.307000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612372Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "tasmim/9-804-rogii-wellbore-geology-prediction",
+    "title": "9.804 -ROGII \u2013 Wellbore Geology Prediction",
+    "author": "Tasmim",
+    "total_votes": 17,
+    "last_run_time": "2026-05-17T07:47:19.873000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612377Z"
+  }
+]

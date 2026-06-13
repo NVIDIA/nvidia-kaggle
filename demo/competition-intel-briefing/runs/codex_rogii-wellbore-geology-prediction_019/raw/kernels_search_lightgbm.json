@@ -1,0 +1,192 @@
+[
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "ravaghi/wellbore-geology-prediction-lightgbm",
+    "title": "Wellbore Geology Prediction | LightGBM",
+    "author": "Mahdi Ravaghi",
+    "total_votes": 147,
+    "last_run_time": "2026-06-08T10:57:22.413000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.250238Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "shinyanagai123/triple-signal-beam-search-dual-pf-lightgbm",
+    "title": "Triple-Signal Beam Search + Dual PF + LightGBM",
+    "author": "shinya",
+    "total_votes": 59,
+    "last_run_time": "2026-05-09T02:56:20.213000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251233Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "aidensong123/rogii-wellbore-geology-lightgbm-baseline",
+    "title": "ROGII Wellbore Geology: LightGBM Baseline",
+    "author": "AidenSong123",
+    "total_votes": 48,
+    "last_run_time": "2026-05-05T17:29:24.280000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.251262Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "thermostatic/rogii-gpu-lightgbm-baseline-lb-14-128",
+    "title": "ROGII GPU LightGBM Baseline LB 14.128",
+    "author": "Irving Ernesto",
+    "total_votes": 25,
+    "last_run_time": "2026-05-05T23:05:48.970000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.612288Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "avikdas567/rogii-wellbore-tvt-prediction-lightgbm-ensemble",
+    "title": "ROGII Wellbore TVT Prediction | LightGBM Ensemble",
+    "author": "Avik Das",
+    "total_votes": 12,
+    "last_run_time": "2026-05-16T04:57:29.727000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.910427Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "yuki16/rogii-wpg-baseline-lightgbm-gr-typewellcorrelation",
+    "title": "ROGII_WPG_baseline_LightGBM_GR_TypewellCorrelation",
+    "author": "yuki16",
+    "total_votes": 12,
+    "last_run_time": "2026-05-13T08:45:59.137000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.910435Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "jek1wantaufik/rogii-tvt-prediction-with-lightgbm",
+    "title": "ROGII TVT Prediction with LightGBM",
+    "author": "Jeki Wan Taufik",
+    "total_votes": 11,
+    "last_run_time": "2026-05-23T04:38:47.290000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.910443Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "yusukeoi/lightgbm-simple-baseline-rogii-wellbore",
+    "title": "LightGBM Simple Baseline - ROGII Wellbore",
+    "author": "usk",
+    "total_votes": 10,
+    "last_run_time": "2026-05-06T14:17:55.047000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T12:25:03.910511Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "pavloivanin/baseline-lightgbm-with-groupkfold",
+    "title": "\ud83d\udee2\ufe0f Baseline: LightGBM with GroupKFold",
+    "author": "Pavlo Ivanin",
+    "total_votes": 9,
+    "last_run_time": "2026-05-05T23:00:15.900000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:07.479718Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "mikhailkomkin/rogii-baseline-lightgbm",
+    "title": "ROGII Baseline LightGBM",
+    "author": "Mikhail_Komkin",
+    "total_votes": 6,
+    "last_run_time": "2026-05-06T19:55:34.127000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:07.221727Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "royceleetech/rogii-baseline-lightgbm-version-15",
+    "title": "ROGII Baseline - LightGBM - Version 15",
+    "author": "RoyceLee",
+    "total_votes": 5,
+    "last_run_time": "2026-05-21T09:33:09.070000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:06.969002Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "oskarseweryn/rogii-wellbore-geology-eda-lightgbm-baseline",
+    "title": "ROGII Wellbore Geology: EDA + LightGBM Baseline",
+    "author": "Oskar Seweryn",
+    "total_votes": 4,
+    "last_run_time": "2026-05-10T11:59:50.850000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:06.694119Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "jirkaborovec/rogii-drill-geosteer-lightgbm-catboost-ridge",
+    "title": "ROGII\ud83d\udc77drill: geosteer + LightGBM/CatBoost/Ridge",
+    "author": "Jirka",
+    "total_votes": 3,
+    "last_run_time": "2026-05-11T19:40:09.440000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:08.024274Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "z1493916656/rogii-wellbore-lightgbm-baseline",
+    "title": "ROGII Wellbore - LightGBM Baseline",
+    "author": "Zhongyuan Zhang",
+    "total_votes": 1,
+    "last_run_time": "2026-06-13T06:01:05.647000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:09.337096Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "artgor/rogii-idw-lightgbm-residual",
+    "title": "ROGII: IDW + LightGBM Residual",
+    "author": "Andrew Lukyanenko",
+    "total_votes": 1,
+    "last_run_time": "2026-05-06T10:36:59.950000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:06.434529Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "habiburrahman15/rogii-baseline-lightgbm",
+    "title": "ROGII Baseline LightGBM",
+    "author": "Habibur_Rahman",
+    "total_votes": 1,
+    "last_run_time": "2026-05-20T04:42:47.917000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:06.434603Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "royceleetech/rogii-baseline-lightgbm",
+    "title": "ROGII Baseline - LightGBM",
+    "author": "RoyceLee",
+    "total_votes": 0,
+    "last_run_time": "2026-05-24T02:37:17.357000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:05.257516Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "suneetsaini/rogii-wellbore-geology-xgboost-lightgbm",
+    "title": "ROGII Wellbore Geology - XGBoost_LightGBM",
+    "author": "Suneet Kumar Saini",
+    "total_votes": 0,
+    "last_run_time": "2026-05-12T06:54:12.857000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:07.738155Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "masakane/eware-the-feature-drop-robust-lightgbm-baseline",
+    "title": "eware the Feature Drop! Robust LightGBM Baseline",
+    "author": "masahiro",
+    "total_votes": 0,
+    "last_run_time": "2026-05-08T15:31:55.900000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:10.525142Z"
+  }
+]

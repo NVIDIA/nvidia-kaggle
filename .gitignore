@@ -34,6 +34,7 @@ demo/competition-intel-briefing/runs/*
 !demo/competition-intel-briefing/runs/codex_rogii-wellbore-geology-prediction_015/
 !demo/competition-intel-briefing/runs/codex_rogii-wellbore-geology-prediction_017/
 !demo/competition-intel-briefing/runs/codex_rogii-wellbore-geology-prediction_018/
+!demo/competition-intel-briefing/runs/codex_rogii-wellbore-geology-prediction_019/
 # ...but never the multi-GB downloaded competition dataset an agent may fetch
 # into a run dir; the brief/trace/plots are the exhibit, not the raw data.
 demo/competition-intel-briefing/runs/*/data/

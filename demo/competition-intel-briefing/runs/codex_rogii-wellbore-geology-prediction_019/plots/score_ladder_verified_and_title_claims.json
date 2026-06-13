@@ -1,0 +1,48 @@
+{
+  "title": "Score ladder: verified public LB bands plus notebook-title claims",
+  "source": "leaderboard_snapshot.csv and kernels_top80_vote.json titles; title claims are unverified",
+  "series": [
+    {
+      "label": "Public LB #1 snapshot",
+      "id": "15891270",
+      "value": 5.785,
+      "provenance": "verified"
+    },
+    {
+      "label": "Public LB #20 snapshot",
+      "id": "15869111",
+      "value": 7.116,
+      "provenance": "verified"
+    },
+    {
+      "label": "[LB 7.776] rogii-ridge-sp title",
+      "id": "lightningv08/lb-7-776-rogii-ridge-sp",
+      "value": 7.776,
+      "provenance": "title-claim"
+    },
+    {
+      "label": "[ROGII] BETTER SOLUTION title",
+      "id": "romantamrazov/rogii-better-solution-lb-9-956",
+      "value": 9.956,
+      "provenance": "title-claim"
+    },
+    {
+      "label": "DWT-based title",
+      "id": "nihilisticneuralnet/9-251-rogii-wellbore-geology-prediction-dwt-based",
+      "value": 9.251,
+      "provenance": "title-claim"
+    },
+    {
+      "label": "XGB Starter title CV",
+      "id": "cdeotte/xgb-starter-cv-15",
+      "value": 15.0,
+      "provenance": "title-claim"
+    },
+    {
+      "label": "NN Starter title CV",
+      "id": "cdeotte/nn-starter-cv-15-5",
+      "value": 15.5,
+      "provenance": "title-claim"
+    }
+  ]
+}
