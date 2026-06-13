@@ -51,12 +51,48 @@ A run takes a few minutes (the agent is doing live research). Pick a competition
 with public kernels and discussions — the brief is only as rich as what's
 publicly available.
 
+## How verification works
+
+`analyze_run.py` emits **two independent verdicts** off the run's structured
+trace, so accuracy and presentation never get conflated:
+
+- **`GROUNDING RESULT`** (accuracy floor, applies to every run) — every value a
+  plot shows and every `owner/slug` ref the brief cites must trace to the
+  agent's *actual gathered output* (trace + the run's `research/`/`raw/` query
+  files). A value present in no gathered artifact is a fabrication → **FAIL**. A
+  value tagged `provenance:"verified"` that doesn't trace is a hard FAIL on any
+  plot (the tag is falsifiable; the gate checks it). Dataset-derived values are
+  re-computed against the downloaded CSVs, not coincidence-matched.
+- **`SCHEMA CONFORMANCE`** — every plot sidecar entry must carry a `provenance`
+  from the closed set `{verified, title-claim, derived}`.
+
+Exit codes are distinct (1 = accuracy fail, 2 = grounding not-exercised,
+4 = schema-only fail, 0 = clean) so a schema lapse is never misread as a
+fabrication.
+
 ## Verified exhibits
 
-Three frozen, independently re-derived runs are committed under `runs/` as the
-demo's evidence. See [`EXHIBITS.md`](./EXHIBITS.md) for the index, md5s, and the
-exact grounding claim, and [`DESIGN.md`](./DESIGN.md) for the design and the
-honest cross-runtime findings.
+Two frozen, independently re-derived runs are committed under `runs/` as the
+demo's evidence:
+
+- **`runs/codex_FAIL_caught_hallucination/`** — the accuracy guarantee. The
+  agent cited `vdebout/315987` as a kernel, but that is a *discussion* id it
+  conflated into a fake `owner/slug`. The committed gate catches it:
+  **`GROUNDING RESULT: FAIL`** — this exhibit is *expected* to fail; that is its
+  whole purpose. (Re-derive it and confirm it still FAILs on `vdebout/315987`.)
+- **`runs/codex_rogii-wellbore-geology-prediction_019/`** — the clean
+  readability exemplar: human-legible plot labels (no bare ids), claim-vs-verified
+  visual honesty (verified public-LB bars solid, author title-claims hatched),
+  every plotted value traces. **`GROUNDING: PASS` + `SCHEMA: PASS`.**
+
+**What this demo honestly establishes:** the gate *guarantees* the plots don't
+lie (it mechanically caught every fabrication/schema lapse across many runs);
+it does **not** guarantee they're *useful* — e.g. a leaderboard plot can be
+gate-clean yet show a wall of teams the brief never discusses. "Is this plot
+useful to a reader?" is editorial judgment, not a falsifiable check, so it stays
+a human-review responsibility. The skill conventions (`research-brief.md`) raise
+the typical quality; the gate guarantees accuracy; usefulness still needs a human
+reading the brief.
 
 ## Where the logic lives
 
