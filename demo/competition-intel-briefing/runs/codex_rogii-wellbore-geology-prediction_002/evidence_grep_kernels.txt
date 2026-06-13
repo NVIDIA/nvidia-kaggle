@@ -1,0 +1,1134 @@
+\n### kernel_read_cdeotte_nn-starter-cv-15-5.txt
+1:### cdeotte/nn-starter-cv-15-5
+2:Reading kernel: cdeotte/nn-starter-cv-15-5
+6:┃          Neural Network Starter - ROGII Wellbore Geology Prediction          ┃
+9:This notebook is a PyTorch starter for the ROGII - Wellbore Geology Prediction  
+12:The task is to predict tvt (True Vertical Thickness) for the hidden/evaluation  
+13:interval of each horizontal well. The visible TVT_input column gives the known  
+14:interpreted TVT before the prediction start; after that point it becomes missing
+20: • The model sees full-row features available at test time: trajectory, GR,     
+21:   TVT_input mask, baseline features, and Typewell GR alignment features.       
+22: • It predicts a residual over the final known TVT_input baseline.              
+23: • Loss is computed only on the hidden/evaluation zone, matching the submission 
+25: • Validation uses GroupKFold by well ID.                                       
+26: • Fold models are averaged for the final submission.csv.                       
+49: from sklearn.model_selection import GroupKFold                                 
+69: GRAD_CLIP = 1.0                                                                
+99:         Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction"),  
+106: "sample_submission.csv").is_file():                                            
+108:     raise FileNotFoundError("Could not find train/ and sample_submission.csv") 
+113: SAMPLE_SUB_PATH = DATA_ROOT / "sample_submission.csv"                          
+138: print(f"Sample submission rows:        {len(sample_sub)}")                     
+144:                             3. Feature Engineering                             
+148:baseline_tvt = last_known_tvt                                                   
+151:as features:                                                                    
+153: • baseline_tvt_all_slope                                                       
+154: • baseline_tvt_recent_slope                                                    
+155: • slope_tvt_md_all                                                             
+156: • slope_tvt_md_recent                                                          
+158:All other feature engineering and NN settings are kept the same as nn.ipynb.    
+160:Training ignores formation-surface columns such as ANCC, ASTNU, etc. Those are  
+165: def rmse(y_true, y_pred):                                                      
+197: def make_test_row_map(submission):                                             
+199:     for well_id, row_idx in zip(submission["well_id"], submission["row_index"] 
+209:     return pd.DataFrame({"TVT": [], "GR": []})                                 
+221:     known_mask = h["TVT_input"].notna().to_numpy()                             
+222:     missing_mask = h["TVT_input"].isna().to_numpy()                            
+224:         target_mask = missing_mask & h["TVT"].notna().to_numpy()               
+237:         known["TVT_input"] = np.nan                                            
+247:     ps_gr = float(last_known.get("GR", np.nan))                                
+248:     last_known_tvt = float(last_known.get("TVT_input", np.nan))                
+250:     slope_all = robust_slope(known["MD"], known["TVT_input"])                  
+252:     slope_recent = robust_slope(recent["MD"], recent["TVT_input"],             
+254:     slope_z_recent = robust_slope(recent["Z"], recent["TVT_input"])            
+260:     gr_raw = h["GR"].astype(float)                                             
+261:     gr_filled = gr_raw.interpolate(limit_direction="both")                     
+262:     if gr_filled.isna().all():                                                 
+263:         gr_filled = pd.Series(np.zeros(n), index=h.index, dtype=float)         
+265:         gr_filled = gr_filled.fillna(gr_filled.mean())                         
+267:     tvt_input = h["TVT_input"].astype(float)                                   
+268:     tvt_input_filled = tvt_input.ffill().bfill().fillna(last_known_tvt)        
+277:     baseline_all = last_known_tvt + slope_all * md_from_ps                     
+278:     baseline_recent = last_known_tvt + slope_recent * md_from_ps               
+279:     baseline = np.full(n, last_known_tvt, dtype=np.float64)                    
+281:     feature_dict = {                                                           
+286:         "GR_filled": gr_filled.to_numpy(dtype=float),                          
+287:         "GR_missing": gr_raw.isna().astype(float).to_numpy(),                  
+290:         "known_tvt_mask": known_mask.astype(float),                            
+291:         "TVT_input_filled": tvt_input_filled.to_numpy(dtype=float),            
+292:         "TVT_input_delta_last": tvt_input_filled.to_numpy(dtype=float) -       
+293: last_known_tvt,                                                                
+294:         "last_known_tvt": np.full(n, last_known_tvt),                          
+295:         "known_tvt_range": np.full(n, known["TVT_input"].max() -               
+296: known["TVT_input"].min()),                                                     
+297:         "known_tvt_std": np.full(n, known["TVT_input"].std()),                 
+298:         "known_gr_mean": np.full(n, gr_raw[known_mask].mean()),                
+299:         "known_gr_std": np.full(n, gr_raw[known_mask].std()),                  
+300:         "last_known_gr": np.full(n, ps_gr),                                    
+301:         "slope_tvt_md_all": np.full(n, slope_all),                             
+302:         "slope_tvt_md_recent": np.full(n, slope_recent),                       
+303:         "slope_tvt_z_recent": np.full(n, slope_z_recent),                      
+311:         "baseline_tvt": baseline,                                              
+312:         "baseline_tvt_all_slope": baseline_all,                                
+313:         "baseline_tvt_recent_slope": baseline_recent,                          
+314:         "GR_minus_last_known": gr_filled.to_numpy(dtype=float) - ps_gr,        
+318:         roll = gr_filled.rolling(window=window, center=True, min_periods=max(2 
+320:         feature_dict[f"GR_roll_mean_{window}"] =                               
+322:         feature_dict[f"GR_roll_std_{window}"] =                                
+324:     feature_dict["GR_diff_1"] =                                                
+325: gr_filled.diff(1).fillna(0).to_numpy(dtype=float)                              
+326:     feature_dict["GR_diff_10"] =                                               
+327: gr_filled.diff(10).fillna(0).to_numpy(dtype=float)                             
+\n### kernel_read_cdeotte_xgb-starter-cv-15.txt
+1:### cdeotte/xgb-starter-cv-15
+2:Reading kernel: cdeotte/xgb-starter-cv-15
+6:┃             XGBoost Starter - ROGII Wellbore Geology Prediction              ┃
+9:This notebook is a compact XGBoost starter for the ROGII - Wellbore Geology     
+11:the residual baseline is the final known TVT_input value for each well.         
+13:The task is to predict tvt (True Vertical Thickness) for the hidden/evaluation  
+14:interval of each horizontal well. The visible TVT_input column gives the known  
+15:interpreted TVT before the prediction start; after that point it becomes missing
+21: • Builds per-well context features from the known TVT_input segment.           
+22: • Adds simple Typewell gamma-ray correlation features inspired by the          
+24: • Uses well-grouped K-fold validation so rows from the same well do not leak   
+26: • Trains an XGBoost residual model over the strong last-known-TVT_input        
+28: • Saves submission.csv.                                                        
+49: from sklearn.model_selection import GroupKFold                                 
+50: from xgboost import XGBRegressor                                               
+61: XGB_PARAMS = {                                                                 
+71:     "eval_metric": "rmse",                                                     
+81: print("XGB_PARAMS:", XGB_PARAMS)                                               
+95:         Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction"),  
+102: "sample_submission.csv").is_file():                                            
+104:     raise FileNotFoundError("Could not find train/ and sample_submission.csv") 
+109: SAMPLE_SUB_PATH = DATA_ROOT / "sample_submission.csv"                          
+136: display(sample_sub.groupby("well_id").size().rename("rows_to_predict").reset_i 
+142:                             3. Feature Engineering                             
+144:The model predicts the residual from the strongest last-known-TVT baseline we   
+147:baseline_tvt = last_known_tvt                                                   
+149:A zero residual therefore equals the last-known-TVT baseline, which scored about
+150:15.9 RMSE locally. XGBoost only needs to learn corrections away from that flat  
+153:The slope-continuation values are still kept as features:                       
+155: • baseline_tvt_all_slope                                                       
+156: • baseline_tvt_recent_slope                                                    
+157: • slope_tvt_md_all                                                             
+158: • slope_tvt_md_recent                                                          
+160:Training uses only rows where TVT_input is missing, because those match the rows
+165: def rmse(y_true, y_pred):                                                      
+198: def make_test_row_map(submission):                                             
+200:     for well_id, row_idx in zip(submission["well_id"], submission["row_index"] 
+210:     return pd.DataFrame({"TVT": [], "GR": []})                                 
+215: def build_features_for_well(horizontal_path, split="train", test_row_map=None) 
+224:         row_mask = h["TVT_input"].isna() & h["TVT"].notna()                    
+231: h.index[h["TVT_input"].isna()].to_numpy(dtype=np.int64)                        
+236:     known = h[h["TVT_input"].notna()].copy()                                   
+238:         # Very defensive fallback. This should not happen in the competition   
+241:         known["TVT_input"] = np.nan                                            
+243:     first_missing = h.index[h["TVT_input"].isna()]                             
+248:     slope_all = robust_slope(known["MD"], known["TVT_input"])                  
+250:     slope_recent = robust_slope(recent["MD"], recent["TVT_input"],             
+252:     slope_z_recent = robust_slope(recent["Z"], recent["TVT_input"])            
+255:     cur = h.loc[selected_idx, ["MD", "X", "Y", "Z", "GR", "row_index"]].copy() 
+264:     ps_gr = float(last_known.get("GR", np.nan))                                
+265:     last_known_tvt = float(last_known.get("TVT_input", np.nan))                
+269:     cur["last_known_tvt"] = last_known_tvt                                     
+270:     cur["known_tvt_min"] = known["TVT_input"].min()                            
+271:     cur["known_tvt_max"] = known["TVT_input"].max()                            
+272:     cur["known_tvt_range"] = known["TVT_input"].max() - known["TVT_input"].min 
+273:     cur["known_tvt_mean"] = known["TVT_input"].mean()                          
+274:     cur["known_tvt_std"] = known["TVT_input"].std()                            
+275:     cur["known_gr_mean"] = known["GR"].mean() if "GR" in known else np.nan     
+276:     cur["known_gr_std"] = known["GR"].std() if "GR" in known else np.nan       
+277:     cur["known_gr_min"] = known["GR"].min() if "GR" in known else np.nan       
+278:     cur["known_gr_max"] = known["GR"].max() if "GR" in known else np.nan       
+279:     cur["last_known_gr"] = ps_gr                                               
+280:     cur["slope_tvt_md_all"] = slope_all                                        
+281:     cur["slope_tvt_md_recent"] = slope_recent                                  
+282:     cur["slope_tvt_z_recent"] = slope_z_recent                                 
+296:     # Baselines. XGB2 uses the flat last-known-TVT baseline for residual       
+298:     # The slope continuation baselines are retained only as model features.    
+299:     cur["baseline_tvt_all_slope"] = last_known_tvt + slope_all *               
+301:     cur["baseline_tvt_recent_slope"] = last_known_tvt + slope_recent *         
+303:     cur["baseline_tvt"] = last_known_tvt                                       
+305:     # Horizontal GR features. Interpolate missing GR for rolling/context       
+306: features but keep a missing flag.                                              
+307:     cur["gr_missing"] = cur["GR"].isna().astype(np.int8)                       
+308:     gr_filled = h["GR"].astype(float).interpolate(limit_direction="both")      
+310:         roll = gr_filled.rolling(window=window, center=True, min_periods=max(2 
+312:         cur[f"gr_roll_mean_{window}"] =                                        
+314:         cur[f"gr_roll_std_{window}"] = roll.std().iloc[selected_idx].to_numpy( 
+315:     cur["gr_diff_1"] = gr_filled.diff(1).iloc[selected_idx].to_numpy()         
+316:     cur["gr_diff_10"] = gr_filled.diff(10).iloc[selected_idx].to_numpy()       
+317:     cur["gr_minus_last_known"] = cur["GR"] - ps_gr                             
+\n### kernel_read_karnakbaevarthur_physics-informed-baseline.txt
+9:https://www.kaggle.com/code/romantamrazov/rogii-better-solution-lb-9-956        
+13:┃                ROGII - Wellbore Geology Prediction (Improved)                ┃
+18: 1 apply_pp now blends two particle-filter signals (pf_ancc + pf_z)             
+23: 6 Proper per-fold PP RMSE (was wrongly set to overall score for all folds)     
+24: 7 Hill-climbing precision=0.0005 for finer search                              
+35: /kaggle/input/datasets/arpitsingh2744/hill-climbing-wheel/hill_climbing-0.1.8- 
+37: --find-links=/kaggle/input/datasets/arpitsingh2744/hill-climbing-wheel/        
+43: from sklearn.model_selection import GroupKFold                                 
+44: from sklearn.linear_model import Ridge                                         
+45: from catboost import CatBoostRegressor, Pool                                   
+49: from hill_climbing import Climber                                              
+53: import lightgbm as lgb                                                         
+72: Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction")           
+78:     cv       = GroupKFold(n_splits=n_splits)                                   
+93: FORMATIONS=["ANCC","ASTNU","ASTNL","EGFDU","EGFDL","BUDA"]                     
+106: PF_N=600; ANCC_N=600                                                           
+108: PF_GR_SIG_MIN=10.; PF_GR_SIG_MAX=60.; PF_GR_SIG_DEF=30.                        
+110: PF_ROUGH_P=0.2; PF_ROUGH_V=0.003; PF_GR_WIN=5; PF_GR_WT=0.3                    
+111: ANCC_ALPHA=0.998; ANCC_RN=0.002; ANCC_PN=0.005                                 
+112: ANCC_IR=0.01; ANCC_IS=0.3; ANCC_RP=0.1; ANCC_RR=0.001                          
+115: def _interp1(grid, v, vmin, step):                                             
+117:     if i < 0: return grid[0]                                                   
+118:     n = len(grid) - 1                                                          
+119:     if i >= n: return grid[n]                                                  
+121:     return grid[i]*(1.-t) + grid[i+1]*t                                        
+137: def _beam_jit(sgr, tw_gr, si, BS, mc, es):                                     
+139:     n=len(sgr); nt=len(tw_gr); MAX=BS*6                                        
+145:         gv=sgr[step]; nc=np.int64(0)                                           
+148:             for d in range(-2,3):            # ±2: TVT can go down             
+151:                 tot=cost+(gv-tw_gr[ni])**2/es+mc*(d if d>=0 else -d)           
+178: def _pf_ancc(md_v,z_v,gr_v,gg,vmin,step,gs,ls,ir,N,                            
+190:             tvt_j=pos[j]-z_v[i]                                                
+191:             tvt_j=max(tvt_j,vmin-50.); tvt_j=min(tvt_j,vmin+len(gg)*step+50.)  
+192:             pos[j]=tvt_j+z_v[i]                                                
+193:         if not np.isnan(gr_v[i]):                                              
+197:                 d=(gr_v[i]-eg)/gs                                              
+217: def _pf_z(md_v,z_v,gr_v,gr_sm_v,gg_p,gg_s,vmin,step,                           
+219:           MOM,VN,PN,GR_WT,RP,RV,RESAMP):                                       
+234:         if not np.isnan(gr_v[i]):                                              
+238:                 dp=(gr_v[i]-ep)/gs                                             
+240:                 if not np.isnan(gr_sm_v[i]):                                   
+242:                     ds=(gr_sm_v[i]-es)/(gs*1.5)                                
+244:                     lk=(1.-GR_WT)*lp+GR_WT*ls                                  
+272: # Dense grid for O(1) typewell lookup                                          
+273: def _grid(tw_tvt,tw_gr,step=0.2):                                              
+274:     tmin=float(tw_tvt.min()); tmax=float(tw_tvt.max())                         
+275:     tvt_g=np.arange(tmin,tmax+step,step)                                       
+277: np.interp(tvt_g,tw_tvt,tw_gr).astype(np.float64),float(tmin),float(step)       
+279: def _gr_sig(hw,tw_tvt,tw_gr):                                                  
+280:     kn=hw[hw['TVT_input'].notna()&hw['GR'].notna()]                            
+281:     if len(kn)<20: return float(PF_GR_SIG_DEF)                                 
+283: float(np.clip(np.std(kn['GR'].values-np.interp(kn['TVT_input'].values,tw_tvt,t 
+284: gr)),                                                                          
+285:                           PF_GR_SIG_MIN,PF_GR_SIG_MAX))                        
+299: def beam_search(gr_h,tw_tvt,tw_gr,start_tvt,bs,mc,es,r):                       
+300:     si=_nn(tw_tvt,start_tvt)                                                   
+301:     sgr=_smooth(gr_h,float(np.nanmean(tw_gr)),r).astype(np.float64)            
+302:     path=_beam_jit(sgr,tw_gr.astype(np.float64),si,bs,float(mc),float(es))     
+303:     return tw_tvt[path].astype(np.float32)                                     
+305: def run_pf_ancc(hw,tw_tvt,tw_gr,N=ANCC_N):                                     
+306:     gs=_gr_sig(hw,tw_tvt,tw_gr)                                                
+307:     kn=hw[hw['TVT_input'].notna()]; ev=hw[hw['TVT_input'].isna()]              
+309:     ls=float(kn['TVT_input'].iloc[-1]+kn['Z'].iloc[-1])                        
+310:     tail=kn.tail(30); dt=np.diff(tail['TVT_input'].values)                     
+313:     gg,gmin,gst=_grid(tw_tvt,tw_gr)                                            
+314:     pts,std=_pf_ancc(ev['MD'].values.astype(np.float64),ev['Z'].values.astype( 
+316:                       ev['GR'].values.astype(np.float64),gg,gmin,gst,          
+317:                       gs,ls,ir,N,ANCC_ALPHA,ANCC_RN,ANCC_PN,ANCC_IS,ANCC_RP,AN 
+321: def run_pf_z(hw,tw_tvt,tw_gr,N=PF_N):                                          
+322:     gs=_gr_sig(hw,tw_tvt,tw_gr)                                                
+323:     tw_s=pd.Series(tw_gr).rolling(PF_GR_WIN,center=True,min_periods=1).mean(). 
+325:     kna=hw[hw['TVT_input'].notna()]; ev=hw[hw['TVT_input'].isna()]             
+327:     dz_k=np.diff(kna['Z'].values); dvt=np.diff(kna['TVT_input'].values)        
+336:     t2=kna.tail(20); dvt2=np.diff(t2['TVT_input'].values);                     
+339:     gg,gmin,gst=_grid(tw_tvt,tw_gr)                                            
+340:     gs2,_,_=_grid(tw_tvt,tw_s)                                                 
+341:     gr_sm=hw['GR'].rolling(PF_GR_WIN,center=True,min_periods=1).mean()         
+344:                    ev['GR'].values.astype(np.float64),                         
+345:                    gr_sm.loc[ev.index].values.astype(np.float64),              
+346:                    gg,gs2,gmin,gst,gs,float(kna['TVT_input'].iloc[-1]),iv,     
+\n### kernel_read_mitchgansemer_drift-targeting-ncc-tree-based-rogii-wellbore.txt
+1:### mitchgansemer/drift-targeting-ncc-tree-based-rogii-wellbore
+2:Reading kernel: mitchgansemer/drift-targeting-ncc-tree-based-rogii-wellbore
+6:┃             ROGII Wellbore Geology Prediction — Solution Writeup             ┃
+9:Best LB: 8.905 ft RMSE                                                          
+12:inference pipeline at the end to reproduce the submission. Each method is shown 
+13:with runnable code immediately after the explanation. Feature generation, model 
+21:  Round      Key change                                    OOF RMSE   LB        
+23:  Baseline   Predict last_anchor_tvt unchanged             15.91 ft   —         
+24:  R2         Tree model, 52 features — but absolute TVT    19.50 ft   —         
+26:  R3         Drift target (TVT − last_anchor_tvt) + GR     14.99 ft   —         
+30:  R5         Ensemble (LGB + XGB + CatBoost)               13.90 ft   —         
+31:  R6         163 features: multi-scale NCC, Eagle Ford     10.01 ft   9.410 ft  
+33:             Optuna tuning; NNLS blend                                          
+34:  R7         CatBoost retuned (depth 5), NNLS blend XGB    10.05 ft   9.398 ft  
+36:  R10        +21 v4 features: estimator divergence,        9.91 ft    —         
+37:             short-window slopes, DWT GR; XGB+CB                                
+39:  R11        + HistGradientBoosting (max_iter=5000, no     9.85 ft    8.905 ft  
+40:             early stopping), NNLS XGB+CB+HGB blend                             
+48:Setup: the rogii-wellbore-models dataset must be attached (it contains the      
+49:pre-trained fold models, KNN structures, and pre-computed ground-truth arrays   
+64: from sklearn.model_selection import GroupKFold                                 
+65: from sklearn.ensemble import HistGradientBoostingRegressor                     
+68: import xgboost as xgb                                                          
+69: from catboost import CatBoostRegressor                                         
+74: # ── Locate MODEL_DIR (contains feature_cols.json, fold models, KNN artifacts) 
+78:         if 'feature_cols.json' in _files:                                      
+90:     rmse, set_style, save_fig,                                                 
+91:     impute_gr_with_typewell, build_typewell_interp,                            
+92:     gr_xcorr_batch, multi_scale_ncc, multi_scale_ncc_anchor,                   
+93:     FormationKNN, FormationPlaneKNN, RowKNN, DenseANCCImputer,                 
+94:     visible_gr_shift_fit, viterbi_tvt, particle_filter_tvt,                    
+95: particle_filter_ancc,                                                          
+105: Path('/kaggle/input/competitions/rogii-wellbore-geology-prediction')           
+109: # ── Inference constants (must match 02_features.ipynb exactly) ────────────── 
+115: NCC_RADIUS     = 150.0                                                         
+116: NCC_HALFWIDTHS = (8, 15, 25)                                                   
+117: NCC_TEMP       = 10.0                                                          
+145: anchor = hw[hw['TVT_input'].notna()].copy().reset_index(drop=True)             
+146: evzone = hw[hw['TVT_input'].isna()].copy().reset_index(drop=True)              
+149: print(f'  Anchor: {len(anchor):,} rows  TVT                                    
+150: {anchor["TVT"].min():.0f}–{anchor["TVT"].max():.0f} ft')                       
+151: print(f'  Eval:   {len(evzone):,} rows  TVT                                    
+152: {evzone["TVT"].min():.0f}–{evzone["TVT"].max():.0f} ft')                       
+162:because it drilled straight down, the relationship between depth and GR is      
+164:GR at each measured depth maps to an unknown stratigraphic position. The task is
+165:to reconstruct that position (TVT) in the evaluation zone where TVT_input is    
+168:The anchor zone (rows where TVT_input is not NaN) provides ground truth from a  
+175: axes[0].plot(anchor['MD'], anchor['TVT'], 'steelblue', lw=1.2, label='Anchor   
+176: (TVT known)')                                                                  
+177: axes[0].plot(evzone['MD'], evzone['TVT'], 'coral',     lw=1.2, label='Eval zon 
+179: axes[0].set_xlabel('MD (ft)'); axes[0].set_ylabel('TVT (ft)')                  
+180: axes[0].set_title('TVT along the wellbore — anchor vs eval split')             
+184: axes[1].plot(anchor['GR'], anchor['MD'],  'steelblue', lw=0.8, alpha=0.8,      
+185: label='Horizontal GR (anchor)')                                                
+186: axes[1].plot(evzone['GR'], evzone['MD'],  'coral',     lw=0.8, alpha=0.8,      
+187: label='Horizontal GR (eval)')                                                  
+188: axes[1].plot(tw['GR'],     tw['TVT'],     'k',         lw=0.8, alpha=0.4,      
+189: label='Typewell GR (reference)')                                               
+191: axes[1].set_xlabel('GR (API)'); axes[1].set_ylabel('Depth / TVT (ft)')         
+192: axes[1].set_title('GR barcode: horizontal well vs typewell reference')         
+201:                       2. Predict drift, not absolute TVT                       
+203:Raw TVT is 11,000–12,000 ft. Asking a tree model to predict it forces the model 
+205:as drift = TVT − last_anchor_tvt (range ±16 ft) lets the model focus entirely on
+206:the stratigraphic signal. This single change moved RMSE from 19.5 ft (worse than
+209:The histograms below show the scale difference. The null model (just predicting 
+210:last_anchor_tvt) achieves 15.91 ft RMSE in TVT space — a surprisingly strong    
+215: # Ground truth: TVT, drift, and MD_from_anchor for all 773 training wells      
+216: # Pre-computed in 02_features.ipynb; saved as a small parquet for Kaggle       
+218: y_tvt           = gt['TVT'].values.astype(np.float32)                          
+219: last_anchor_tvt = gt['last_anchor_tvt'].values.astype(np.float32)              
+220: drift           = y_tvt - last_anchor_tvt                                      
+223: axes[0].hist(y_tvt,  bins=60, color='steelblue', edgecolor='none')             
+224: axes[0].set_title(f'Raw TVT  (std={y_tvt.std():.0f} ft \u2014 all signal is    
+227: axes[1].set_title(f'Drift = TVT \u2212 last_anchor_tvt  (std={drift.std():.1f} 
+232: print(f'Null model RMSE (just use last_anchor_tvt): {rmse(y_tvt,               
+233: last_anchor_tvt):.2f} ft')                                                     
+241:               3. GR cross-correlation — reading the rock barcode               
+243:Gamma ray (GR) measures natural radioactivity: shales are hot (high GR),        
+244:carbonates are cold. The GR trace is a fingerprint of the stratigraphic column —
+246:the horizontal well is by sliding its GR window against the typewell GR trace   
+\n### kernel_read_mitchgansemer_gr-features-outlier-detection-rogii-wellbore.txt
+1:### mitchgansemer/gr-features-outlier-detection-rogii-wellbore
+2:Reading kernel: mitchgansemer/gr-features-outlier-detection-rogii-wellbore
+6:┃     ROGII Wellbore — GR Feature Engineering & Per-Well Outlier Analysis      ┃
+9:Best LB: 8.905 ft RMSE                                                          
+12:processing drives the feature set, and (2) where the model fails and why. The   
+13:same full inference pipeline runs at the end to reproduce the submission.       
+15:Feature generation and model training run offline (~3 hours on a laptop); those 
+21:  Round      Key change                                    OOF RMSE   LB        
+23:  Baseline   Predict last_anchor_tvt unchanged             15.91 ft   —         
+24:  R2         Tree model, 52 features — but absolute TVT    19.50 ft   —         
+26:  R3         Drift target + GR xcorr + formation KNN       14.99 ft   —         
+29:  R5         Ensemble (LGB + XGB + CatBoost)               13.90 ft   —         
+30:  R6         163 features: multi-scale NCC, formation      10.01 ft   9.410 ft  
+32:             NNLS blend                                                         
+33:  R7         CatBoost retuned (depth 5), NNLS blend XGB    10.05 ft   9.398 ft  
+35:  R10        +21 v4 features: estimator divergence,        9.91 ft    —         
+36:             short-window slopes, DWT GR                                        
+37:  R11        + HistGradientBoosting, NNLS XGB+CB+HGB       9.85 ft    8.905 ft  
+38:             blend                                                              
+42:incremental: better GR-derived signals, more orthogonal estimators, and ensemble
+43:diversity. Sections 2–4 below cover the three GR-centric ideas that drive most  
+47:Setup: the rogii-wellbore-models dataset must be attached (pre-trained fold     
+48:models, KNN structures, and pre-computed ground-truth arrays).                  
+62: from sklearn.model_selection import GroupKFold                                 
+63: from sklearn.ensemble import HistGradientBoostingRegressor                     
+66: import xgboost as xgb                                                          
+67: from catboost import CatBoostRegressor                                         
+72: # ── Locate MODEL_DIR (contains feature_cols.json, fold models, KNN artifacts) 
+76:         if 'feature_cols.json' in _files:                                      
+88:     rmse, set_style, save_fig,                                                 
+89:     impute_gr_with_typewell, build_typewell_interp,                            
+90:     gr_xcorr_batch, multi_scale_ncc, multi_scale_ncc_anchor,                   
+91:     FormationKNN, FormationPlaneKNN, RowKNN, DenseANCCImputer,                 
+92:     visible_gr_shift_fit, viterbi_tvt, particle_filter_tvt,                    
+93: particle_filter_ancc,                                                          
+103: Path('/kaggle/input/competitions/rogii-wellbore-geology-prediction')           
+107: # ── Inference constants (must match 02_features.ipynb exactly) ────────────── 
+113: NCC_RADIUS     = 150.0                                                         
+114: NCC_HALFWIDTHS = (8, 15, 25)                                                   
+115: NCC_TEMP       = 10.0                                                          
+143: anchor = hw[hw['TVT_input'].notna()].copy().reset_index(drop=True)             
+144: evzone = hw[hw['TVT_input'].isna()].copy().reset_index(drop=True)              
+147: print(f'  Anchor: {len(anchor):,} rows  TVT                                    
+148: {anchor["TVT"].min():.0f}–{anchor["TVT"].max():.0f} ft')                       
+149: print(f'  Eval:   {len(evzone):,} rows  TVT                                    
+150: {evzone["TVT"].min():.0f}–{evzone["TVT"].max():.0f} ft')                       
+157:                      1. Data structure and the role of GR                      
+161:unambiguous. Its gamma-ray (GR) log is the reference sequence: high GR means    
+162:shale, low GR means carbonate, and the pattern is stratigraphically unique.     
+164:The horizontal well drills laterally through the same rock. GR still measures   
+166:stratigraphic position (TVT). The task is to reconstruct TVT in the evaluation  
+167:zone where TVT_input is NaN.                                                    
+169:The anchor zone (rows where TVT_input is not NaN) records a geologist's manual  
+170:correlation — they slid the horizontal GR trace against the typewell and        
+179: axes[0].plot(anchor['MD'], anchor['TVT'], 'steelblue', lw=1.2, label='Anchor   
+180: (TVT known)')                                                                  
+181: axes[0].plot(evzone['MD'], evzone['TVT'], 'coral',     lw=1.2, label='Eval zon 
+183: axes[0].set_xlabel('MD (ft)'); axes[0].set_ylabel('TVT (ft)')                  
+184: axes[0].set_title('TVT along the wellbore — anchor vs eval split')             
+188: axes[1].plot(anchor['GR'], anchor['MD'],  'steelblue', lw=0.8, alpha=0.8,      
+189: label='Horizontal GR (anchor)')                                                
+190: axes[1].plot(evzone['GR'], evzone['MD'],  'coral',     lw=0.8, alpha=0.8,      
+191: label='Horizontal GR (eval)')                                                  
+192: axes[1].plot(tw['GR'],     tw['TVT'],     'k',         lw=0.8, alpha=0.4,      
+193: label='Typewell GR (reference)')                                               
+195: axes[1].set_xlabel('GR (API)'); axes[1].set_ylabel('Depth / TVT (ft)')         
+196: axes[1].set_title('GR barcode: horizontal well vs typewell reference')         
+205:                       2. Predict drift, not absolute TVT                       
+207:Raw TVT is 11,000–12,000 ft. Asking a tree model to predict it forces the model 
+209:as drift = TVT − last_anchor_tvt (range ±16 ft) lets the model focus entirely on
+210:the stratigraphic signal. This single change moved RMSE from 19.5 ft (worse than
+213:The null model (predicting last_anchor_tvt unchanged) achieves 15.91 ft RMSE — a
+221:small tail drives almost all the aggregate error.                               
+225: # Ground truth: TVT, drift, and MD_from_anchor for all 773 training wells      
+226: # Pre-computed in 02_features.ipynb; saved as a small parquet for Kaggle       
+228: y_tvt           = gt['TVT'].values.astype(np.float32)                          
+229: last_anchor_tvt = gt['last_anchor_tvt'].values.astype(np.float32)              
+230: drift           = y_tvt - last_anchor_tvt                                      
+233: axes[0].hist(y_tvt,  bins=60, color='steelblue', edgecolor='none')             
+234: axes[0].set_title(f'Raw TVT  (std={y_tvt.std():.0f} ft \u2014 all signal is    
+\n### kernel_read_nihilisticneuralnet_9-251-rogii-wellbore-geology-prediction-dwt-based.txt
+1:### nihilisticneuralnet/9-251-rogii-wellbore-geology-prediction-dwt-based
+3:nihilisticneuralnet/9-251-rogii-wellbore-geology-prediction-dwt-based
+13: from sklearn.model_selection import GroupKFold                                 
+14: from sklearn.linear_model import Ridge                                         
+15: from catboost import CatBoostRegressor, Pool                                   
+19: from hill_climbing import Climber                                              
+23: import lightgbm as lgb                                                         
+41: Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction")           
+43: Path("/kaggle/input/datasets/ravaghi/wellbore-geology-prediction-artifacts")   
+46:     cv = GroupKFold(n_splits=n_splits)                                         
+60: FORMATIONS = ["ANCC", "ASTNU", "ASTNL", "EGFDU", "EGFDL", "BUDA"]              
+73: PF_N = 600; ANCC_N = 600                                                       
+75: PF_GR_SIG_MIN = 10.; PF_GR_SIG_MAX = 60.; PF_GR_SIG_DEF = 30.                  
+77: PF_ROUGH_P = 0.2; PF_ROUGH_V = 0.003; PF_GR_WIN = 5; PF_GR_WT = 0.3            
+78: ANCC_ALPHA = 0.998; ANCC_RN = 0.002; ANCC_PN = 0.005                           
+79: ANCC_IR = 0.01; ANCC_IS = 0.3; ANCC_RP = 0.1; ANCC_RR = 0.001                  
+81: DTW_RADII = (20, 50, 100, 200)                                                 
+82: DTW_STOCH_K = 12                                                               
+83: DTW_STOCH_TEMP = 3.0                                                           
+87: def _interp1(grid, v, vmin, step):                                             
+89:     if i < 0: return grid[0]                                                   
+90:     n = len(grid) - 1                                                          
+91:     if i >= n: return grid[n]                                                  
+93:     return grid[i] * (1. - t) + grid[i + 1] * t                                
+111: def _beam_jit(sgr, tw_gr, si, BS, mc, es):                                     
+112:     n = len(sgr); nt = len(tw_gr); MAX = BS * 6                                
+119:         gv = sgr[step]; nc = np.int64(0)                                       
+125:                 tot = cost + (gv - tw_gr[ni]) ** 2 / es + mc * (d if d >= 0 el 
+154: def _dtw_sakoe_chiba(query, ref, radius):                                      
+156:     Constrained DTW with Sakoe-Chiba band.                                     
+210: def _dtw_path_to_tvt(pi, pj, tw_tvt, N):                                       
+212:     Convert DTW warping path to per-query-sample TVT estimate.                 
+214:     then look up tw_tvt[j].                                                    
+221:         result[i] = tw_tvt[j_for_i[i]]                                         
+226: def _dtw_path_slope(pi, pj, N, smooth_win=5):                                  
+228:     Compute local slope dj/di along the warping path — encodes TVT rate.       
+246: def _dtw_stochastic_realizations(query, ref, radius, K, temperature):          
+248:     Stochastic DTW: sample K realizations of the warping path by adding        
+312: def _pf_ancc(md_v, z_v, gr_v, gg, vmin, step, gs, ls, ir, N,                   
+324:             tvt_j = pos[j] - z_v[i]                                            
+325:             tvt_j = max(tvt_j, vmin - 50.); tvt_j = min(tvt_j, vmin + len(gg)  
+327:             pos[j] = tvt_j + z_v[i]                                            
+328:         if not np.isnan(gr_v[i]):                                              
+332:                 d = (gr_v[i] - eg) / gs                                        
+353: def _pf_z(md_v, z_v, gr_v, gr_sm_v, gg_p, gg_s, vmin, step,                    
+355:           MOM, VN, PN, GR_WT, RP, RV, RESAMP):                                 
+370:         if not np.isnan(gr_v[i]):                                              
+374:                 dp = (gr_v[i] - ep) / gs                                       
+377:                 if not np.isnan(gr_sm_v[i]):                                   
+379:                     ds = (gr_sm_v[i] - es) / (gs * 1.5)                        
+382:                     lk = (1. - GR_WT) * lp + GR_WT * ls                        
+412: def _grid(tw_tvt, tw_gr, step=0.2):                                            
+413:     tmin = float(tw_tvt.min()); tmax = float(tw_tvt.max())                     
+414:     tvt_g = np.arange(tmin, tmax + step, step)                                 
+415:     return np.interp(tvt_g, tw_tvt, tw_gr).astype(np.float64), float(tmin),    
+419: def _gr_sig(hw, tw_tvt, tw_gr):                                                
+420:     kn = hw[hw['TVT_input'].notna() & hw['GR'].notna()]                        
+421:     if len(kn) < 20: return float(PF_GR_SIG_DEF)                               
+422:     return float(np.clip(np.std(kn['GR'].values -                              
+423: np.interp(kn['TVT_input'].values, tw_tvt, tw_gr)),                             
+424:                          PF_GR_SIG_MIN, PF_GR_SIG_MAX))                        
+441: def beam_search(gr_h, tw_tvt, tw_gr, start_tvt, bs, mc, es, r):                
+442:     si = _nn(tw_tvt, start_tvt)                                                
+443:     sgr = _smooth(gr_h, float(np.nanmean(tw_gr)), r).astype(np.float64)        
+444:     path = _beam_jit(sgr, tw_gr.astype(np.float64), si, bs, float(mc),         
+446:     return tw_tvt[path].astype(np.float32)                                     
+449: def run_pf_ancc(hw, tw_tvt, tw_gr, N=ANCC_N):                                  
+450:     gs = _gr_sig(hw, tw_tvt, tw_gr)                                            
+451:     kn = hw[hw['TVT_input'].notna()]; ev = hw[hw['TVT_input'].isna()]          
+453:     ls = float(kn['TVT_input'].iloc[-1] + kn['Z'].iloc[-1])                    
+454:     tail = kn.tail(30); dt = np.diff(tail['TVT_input'].values)                 
+457:     gg, gmin, gst = _grid(tw_tvt, tw_gr)                                       
+458:     pts, std = _pf_ancc(ev['MD'].values.astype(np.float64),                    
+460:                         ev['GR'].values.astype(np.float64), gg, gmin, gst,     
+461:                         gs, ls, ir, N, ANCC_ALPHA, ANCC_RN, ANCC_PN, ANCC_IS,  
+462: ANCC_RP, ANCC_RR, PF_RESAMP)                                                   
+466: def run_pf_z(hw, tw_tvt, tw_gr, N=PF_N):                                       
+467:     gs = _gr_sig(hw, tw_tvt, tw_gr)                                            
+468:     tw_s = pd.Series(tw_gr).rolling(PF_GR_WIN, center=True,                    
+470:     kna = hw[hw['TVT_input'].notna()]; ev = hw[hw['TVT_input'].isna()]         
+\n### kernel_read_pilkwang_rogii-eda-target-free-alignment-for-tvt.txt
+1:### pilkwang/rogii-eda-target-free-alignment-for-tvt
+2:Reading kernel: pilkwang/rogii-eda-target-free-alignment-for-tvt
+6:┃   🛢️ Geosteering EDA + Target-Free Stratigraphic Alignment for TVT Recovery   ┃
+10:TVT structure without directly observing the hidden interval.                   
+13:   build TVT estimates.                                                         
+14: • Compare complementary alignment signals: local planes, dense analogs,        
+15:   beam-style paths, PF-style priors, and DTW-like sequence matches.            
+16: • Keep the final correction conservative: when two estimates disagree strongly,
+17:   the blend retreats toward the more stable base trajectory.                   
+20:Target-Free Stratigraphic Alignment for TVT.                                    
+28: Path("/kaggle/input/datasets/pilkwang/pilkwang-public-dataset-for-notebooks-fi 
+40: Path("/kaggle/input/datasets/pilkwang/pilkwang-public-dataset-for-notebooks-fi 
+41: res/ROGII_Graph_FigMain.png")                                                  
+56: Path("/kaggle/input/datasets/pilkwang/pilkwang-public-dataset-for-notebooks-fi 
+58:     fallback_dirs = [                                                          
+64:         image_path = next((d / filename for d in fallback_dirs if (d /         
+84:     "Figure 1 — EDA, Leakage, and Blend Strategy",                             
+85:     "One-page overview of the prediction problem, leakage boundary, residual   
+106:  Test wells                                   3   submission predictions are   
+108:                                                   TVT_input rows               
+109:  Submission rows                         14,151   final output must exactly    
+114:  v7 final matrix     Section 18 DTW super-stack   built directly from          
+115:                                           table   target-free physics, GR,     
+119:                            🧬 Feature / Signal Map                             
+124:  ⚓ Anchor &         last_known_TVT,               strict   residual           
+125:  prefix TVT          prefix slopes,                         reference and      
+130:  🌋 GR texture       trailing rolls,     strict / offline   local              
+131:                      centered rolls,                        stratigraphic      
+132:                      lead/lag GR                            events             
+133:  🧭 Typewell /       candidate              offline-heavy   plausible TVT      
+135:                      paths, DTW paths,                      observed GR and    
+141:  🌐 Row ANCC /       row-level ANCC,              offline   local surface      
+145:                      CatBoost +                             prediction with    
+146:                      Ridge/Hill-climb                       model diversity    
+155: Path("/kaggle/input/datasets/pilkwang/pilkwang-public-dataset-for-notebooks-fi 
+156: res/ROGII_Graph_Fig1.png")                                                     
+163:The observed prefix contains known TVT_input values. The prediction interval    
+164:begins after the last known TVT anchor $T_L$. The model predicts the hidden-tail
+165:stratigraphic coordinate by estimating drift away from this anchor.             
+171:This notebook exposes a small set of submission profiles. Each profile owns the 
+172:final submission.csv path, so different engines do not accidentally stack on top
+178:  ridge_artifact_exact      artifact Ridge reference   closest reproduction of  
+179:                            plus physical/PF           the ridge reference      
+181:  ridge_artifact_push       same ridge/heuristic       lightweight              
+182:                            engine with a different    public-score probe       
+183:                            ridge-vs-heuristic         around the ridge         
+185:  ridge_artifact_pf_boost   same ridge reference       pushes the observed      
+189:  ridge_artifact_model_b…   ridge_artifact_exact       score-push probe using   
+193:                            LGB/XGB/CatBoost           the public GBDT          
+195:  fast_pf_selector          target-free PF/beam        quick physical selector  
+197:  full_stack_postproc       local alignment stack      heavier local-stack      
+204:   https://www.kaggle.com/code/aiwody/physical-model-less-overfitting-noise     
+205: • Ridge artifact reference:                                                    
+206:   https://www.kaggle.com/code/overvalueawareness/wellbore-geology-prediction-ri
+208: • Ridge artifact reference:                                                    
+209:   https://www.kaggle.com/code/ravaghi/wellbore-geology-prediction-ridge        
+213:The PF selector predicts absolute TVT from the observed trajectory, GR shape,   
+214:prefix TVT, and formation/typewell hypotheses. It does not use hidden-tail TVT  
+217:PF_SELECTOR_USE_SAME_WELL_PHYSICAL controls one important shortcut:             
+220:  Setting   Behavior                           Score interpretation             
+222:  True      if a test well_id also exists in   strongest public-reproduction    
+224:            physical/contact path before       overlap                          
+225:            PF/beam fallback                                                    
+228:                                               overlap-heavy public samples     
+231:This is not a target leak by itself. It is a distribution bet. If the evaluation
+233:can be strong. If the private sample is mostly unseen wells, False is the more  
+243:  $T_i^{\mathrm{ridge}}$    artifact Ridge prediction                           
+244:  $T_i^{\mathrm{heur}}$     physical/PF heuristic prediction from the ridge     
+247:  $T_i^{\mathrm{stack}}$    local alignment-stack prediction                    
+250:The exact ridge reference profile writes:                                       
+252:$$ T_i^{\mathrm{ridge_ref}} = 0.30,T_i^{\mathrm{ridge}} +                       
+255:The ridge weight-probe profile writes:                                          
+257:$$ T_i^{\mathrm{final}} = w,T_i^{\mathrm{ridge}} + (1-w),T_i^{\mathrm{heur}}. $$
+259:The model-blend probe keeps the exact ridge reference as the anchor and mixes in
+262:$$ T_i^{\mathrm{final}} = (1-\lambda),T_i^{\mathrm{ridge_ref}} +                
+265:Candidate files are written for both configured ridge weights and configured    
+266:model-mix weights, so submission.csv can be compared against nearby             
+271:Start with ridge_artifact_exact when the goal is exact reference reproduction.  
+272:Use ridge_artifact_push for a cheap weight probe. Use ridge_artifact_pf_boost to
+274:ridge_artifact_model_blend when it is worth running both the ridge artifact path
+\n### kernel_read_pilkwang_rogii-target-free-tvt-geosteering.txt
+1:### pilkwang/rogii-target-free-tvt-geosteering
+2:Reading kernel: pilkwang/rogii-target-free-tvt-geosteering
+6:┃                     🧭 ROGII Target-Free TVT Geosteering                     ┃
+9:Core idea. The prediction is built as a TVT trajectory, not as independent      
+10:row-wise values. The main path first creates a physically plausible projected   
+11:ridge/PF trajectory, optionally smooths it in stratigraphic space, and then     
+12:blends it with the pretrained pretrained LGBM trajectory.                       
+15:blend or add one of the optional correction layers.                             
+21:Set SUBMISSION_PROFILE and the nearby weights in the first code cell. The       
+23:submission.csv.                                                                 
+27:First, the ridge artifact path combines a saved Ridge estimate with a           
+28:physical/PF heuristic:                                                          
+30:$$ T_i^{\mathrm{blend}} = w_r T_i^{\mathrm{ridge}} + (1-w_r)T_i^{\mathrm{heur}}.
+33:Here $T_i^{\mathrm{ridge}}$ is the artifact-backed model estimate and           
+40:$\sigma_0$ is the initial TVT spread around the last known anchor.              
+43:be the last known TVT+Z anchor for well $w$:                                    
+45:$$ U_i = T_i^{\mathrm{blend}} + Z_i - A_w. $$                                   
+47:A low-degree robust polynomial is fitted against normalized measured depth:     
+52:The projected ridge/PF trajectory is:                                           
+54:$$ T_i^{\mathrm{projected ridge/PF}} = (1-\beta)T_i^{\mathrm{blend}} + \beta(A_w
+58:trajectory. In the dual-trajectory blend, the final base prediction is:         
+60:$$ T_i^{\mathrm{base}} = \lambda T_i^{\mathrm{projected ridge/PF}} +            
+69:Exact-match recovery can blend a same-ID train/test match with train TVT, and   
+75: # Submission profile.                                                          
+77: # - projected_ridge_pf_pretrained_lgbm_modelpkg_gated: projected ridge/PF +    
+79: # - projected_ridge_pf_pretrained_lgbm_blend: projected ridge/PF projection +  
+80: pretrained LGBM late blend.                                                    
+81: # - ridge_pf_parameter_experiment: use the editable ridge/PF parameter values  
+83: # - ridge_pf_reference: force the older ridge/PF reference preset, w_r=0.30,   
+86: SUBMISSION_PROFILE = 'projected_ridge_pf_pretrained_lgbm_modelpkg_gated'       
+88: # Ridge artifact experiment parameters.                                        
+89: RIDGE_PF_EXPERIMENT_LABEL = 'ridge_pf_w030_p500_s128_proj_d4'                  
+90: RIDGE_PF_RIDGE_WEIGHT = 0.30                                                   
+91: RIDGE_PF_N_PARTICLES = 500                                                     
+92: RIDGE_PF_N_SEEDS = 128                                                         
+93: RIDGE_PF_INIT_SPREAD = 4.5                                                     
+95: # Optional per-well projection in U = TVT + Z - anchor space.                  
+96: RIDGE_PF_APPLY_PROJECTION = True                                               
+97: RIDGE_PF_PROJECTION_DEGREE = 4                                                 
+98: RIDGE_PF_PROJECTION_ROBUST_ITERS = 4                                           
+99: RIDGE_PF_PROJECTION_ROBUST_C = 2.0                                             
+100: RIDGE_PF_PROJECTION_BLEND_WEIGHT = 0.75                                        
+102: # Pretrained LGBM branch blend. The selected weight is the projected ridge/PF  
+104: PRETRAINED_LGBM_BLEND_PROJECTED_RIDGE_PF_WEIGHT = 0.55                         
+105: PRETRAINED_LGBM_BLEND_CANDIDATE_PROJECTED_RIDGE_PF_WEIGHTS = (0.50, 0.52, 0.55 
+117: PRETRAINED_LGBM_FEATURES_FILE = 'features.json'                                
+120: # Optional gated model-package correction on top of the projected ridge/PF +   
+133: # Optional exact-match recovery for projected ridge/PF + pretrained LGBM       
+135: # same-ID train/test wells whose known TVT prefix, full GR, and full Z match   
+139: EXACT_MATCH_TVT_RMSE_LIMIT = 0.02                                              
+140: EXACT_MATCH_GR_MAD_LIMIT = 0.50                                                
+144: # Alternative guarded overlap override for projected ridge/PF + pretrained LGB 
+150: GUARDED_OVERRIDE_PREFIX_RMSE_LIMIT = 1.0                                       
+153: # - projected-ridge/PF style: RIDGE_PF_INIT_SPREAD=4.5,                        
+154: RIDGE_PF_N_PARTICLES=500, RIDGE_PF_N_SEEDS=128                                 
+155: # - mild-spread: RIDGE_PF_INIT_SPREAD=4.25, RIDGE_PF_N_PARTICLES=500,          
+156: RIDGE_PF_N_SEEDS=128                                                           
+157: # - projection probe: keep ridge/PF fixed and vary RIDGE_PF_PROJECTION_DEGREE  
+167: physical shortcut.                                                             
+168: PF_SELECTOR_USE_SAME_WELL_PHYSICAL = True                                      
+170: # Artifact-backed ridge dataset roots.                                         
+171: RIDGE_PF_ROOTS = [                                                             
+172:     '/kaggle/input/datasets/ravaghi/wellbore-geology-prediction-artifacts',    
+173:     '/kaggle/input/wellbore-geology-prediction-artifacts',                     
+178:     '/kaggle/input/rogii-wellbore-geology-prediction',                         
+179:     '/kaggle/input/competitions/rogii-wellbore-geology-prediction',            
+182: # Optional TVT clipping. Keep None unless calibrated bounds are known.         
+183: TVT_CLIP_MIN = None                                                            
+184: TVT_CLIP_MAX = None                                                            
+192: _profile = str(SUBMISSION_PROFILE).strip().lower()                             
+194:     'projected_ridge_pf_pretrained_lgbm_modelpkg_gated',                       
+195:     'projected_ridge_pf_pretrained_lgbm_blend',                                
+196:     'ridge_pf_parameter_experiment',                                           
+197:     'ridge_pf_reference',                                                      
+201:     raise ValueError(f'SUBMISSION_PROFILE must be one of                       
+204: RUN_PROJECTED_RIDGE_PF_PRETRAINED_MODELPKG_GATED = _profile ==                 
+205: 'projected_ridge_pf_pretrained_lgbm_modelpkg_gated'                            
+206: RUN_PROJECTED_RIDGE_PF_PRETRAINED_BLEND = _profile in                          
+207: {'projected_ridge_pf_pretrained_lgbm_modelpkg_gated',                          
+208: 'projected_ridge_pf_pretrained_lgbm_blend'}                                    
+\n### kernel_read_pixiux_rogii-dual-pipeline-blend.txt
+1:### pixiux/rogii-dual-pipeline-blend
+2:Reading kernel: pixiux/rogii-dual-pipeline-blend
+6:┃ 🛢️ ROGII Wellbore Geology Prediction — Dual-Pipeline Blend + a Self-Verifying ┃
+7:┃                              Physical Override                               ┃
+10:TL;DR — This notebook blends two independently-built geosteering pipelines      
+11:(decorrelated errors → free accuracy), then finishes with a guarded physical    
+15:never worse than the plain blend, by construction.                              
+22:                 │ PIPELINE A · "ridge-sp45"             │                      
+25:                 │  + LightGBM/CatBoost + Ridge meta     │          ▼           
+28:                 │  + robust deg-4 projection (IRLS)     │     │  BLEND  │──►│  
+29: GUARDED OVERRIDE  │──► submission.csv                                          
+39:                 │  + GBM stack (GroupKFold by well)     │                      
+50:  seeds, 4 scales)          tracking of TVT against   signal that flat tabular  
+51:                            the typewell GR log       models miss               
+52:  Beam search               global GR-alignment       catches branches a        
+53:                            path candidates           greedy tracker loses      
+55:  (plane-KNN / dense        share the same geology"   weak/ambiguous GR         
+56:  ANCC)                                                                         
+57:  GBM stack + Ridge meta    fuses trackers, priors,   every estimator is wrong  
+58:                            geometry, GR stats        differently; the model    
+61:  Two-pipeline blend        averages two              decorrelated errors —     
+63:                            implementations           win on this LB            
+66:  tvt+Z vs MD)                                        (CV-validated −0.09 vs    
+75:                  What's new vs. the public blends — the guard                  
+77:Some test wells also exist in train/, and their TVT can be reconstructed        
+78:near-exactly from the train copy's formation-contact columns (tvt_from_contacts,
+79:≈0.01 ft). Public notebooks either dilute this exact signal (0.3·tabular +      
+81:submission-rerun time the hidden test copies are not guaranteed to be           
+84:version scored worse than the plain blend).                                     
+88: 1 Reconstruct TVT from the train copy's formation contacts.                    
+89: 2 Compare it against the test copy's known prefix (TVT_input), interpolated by 
+91: 3 Override only if the prefix RMSE < 1 ft (≥50 comparable rows), and only rows 
+94:Exact wells get the full benefit; mismatched wells silently keep the blend. The 
+100: 1 Add inputs (4): ① the competition data, ② koolbox-offline, ③                 
+101:   ravaghi/wellbore-geology-prediction-artifacts (pre-computed features +       
+103:   features.json).                                                              
+106:   mostly inference; without them, both pipelines gracefully fall back to full  
+112:This notebook stands on excellent public work — please upvote the originals too:
+114: • needless090 — ridge-sp / sp45 line of notebooks                              
+115: • ravaghi — wellbore-geology-prediction (artifacts + notebook)                 
+116: • sarpal465 — rogii-ridge-sp45 · qamarmath — ml-physics                        
+126:┃                      Part 1 · Pipeline A — "ridge-sp45"                      ┃
+130:generate TVT candidates, a LightGBM/CatBoost stack fuses them with spatial & GR 
+131:features, a Ridge meta-model ensembles the boosters, and drift-aware            
+132:post-processing (warm-up damping → physics/tabular blend → robust projection)   
+135:   1.1 · Offline setup — install koolbox from the mounted wheel (no internet    
+141: # koolbox setup: wheel install or sys.path fallback                            
+142: kb_dir = '/kaggle/input/koolbox-offline'                                       
+145:     cand = glob.glob('/kaggle/input/**/koolbox*', recursive=True)              
+146:     print('koolbox candidates:', cand[:5])                                     
+148: print('using koolbox dir:', kb_dir)                                            
+163: import koolbox                                                                 
+164: print('koolbox OK:', koolbox.__file__)                                         
+171:are mounted, pre-computed features and pre-trained boosters are loaded → the    
+172:notebook runs as fast inference; when absent, it gracefully retrains.           
+176: from lightgbm import LGBMRegressor, log_evaluation, early_stopping             
+178: from sklearn.model_selection import GroupKFold                                 
+179: from sklearn.linear_model import Ridge                                         
+180: from catboost import CatBoostRegressor                                         
+184: from koolbox import Trainer                                                    
+205: Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction")           
+207: Path("/kaggle/input/datasets/ravaghi/wellbore-geology-prediction-artifacts")   
+211:     cv = GroupKFold(n_splits=n_splits)                                         
+217:                             1.3 · Physics toolbox                              
+219: • tvt_from_contacts — exact TVT reconstruction from formation-contact columns  
+221: • run_particle_filter — sequential Monte-Carlo tracker: particles carry (TVT,  
+222:   TVT-rate) and are re-weighted by GR likelihood against the typewell          
+225: • beam_search / run_beam_ensemble — global GR-alignment path candidates        
+246: FORMATION_COLS = ['ANCC', 'ASTNU', 'ASTNL', 'EGFDU', 'EGFDL', 'BUDA']          
+266: def tvt_from_contacts(hw_tr, tw_tr, ref_col='EGFDU'):                          
+268:     ref_tvt = tw_g[tw_g['Geology'] == ref_col]['TVT'].min()                    
+269:     if np.isnan(ref_tvt):                                                      
+271:         ref_tvt = tw_g[tw_g['Geology'] == ref_col]['TVT'].min()                
+272:     offset = (hw_tr['TVT'] - (ref_tvt - (hw_tr['Z'] - hw_tr[ref_col]))).mean() 
+273:     return ref_tvt - (hw_tr['Z'] - hw_tr[ref_col]) + offset                    
+284:     tw_s   = tw.sort_values('TVT')                                             
+285:     tw_tvt = tw_s['TVT'].values.astype(float)                                  
+286:     tw_gr  = tw_s['GR'].fillna(tw_s['GR'].mean()).values.astype(float)         
+288:     kn = hw[hw['TVT_input'].notna()]                                           
+289:     ev = hw[hw['TVT_input'].isna()]                                            
+\n### kernel_read_ravaghi_wellbore-geology-prediction-hill-climbing.txt
+1:### ravaghi/wellbore-geology-prediction-hill-climbing
+2:Reading kernel: ravaghi/wellbore-geology-prediction-hill-climbing
+6:┃                     ROGII - Wellbore Geology Prediction                      ┃
+11: • [ROGII] BETTER SOLUTION | LB: 9.956                                          
+12: • [ROGII] SUPER SOLUTION |LB: TOP 3                                            
+14: • Triple-Signal Beam Search + Dual PF + LightGBM                               
+16: • ROGII-Wellbore-Geology-Prediction                                            
+17: • XGB Starter - [CV 15]                                                        
+27: from sklearn.model_selection import GroupKFold                                 
+31: from hill_climbing import Climber                                              
+50: Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction")           
+52: Path("/kaggle/input/datasets/ravaghi/wellbore-geology-prediction-artifacts")   
+56:     cv = GroupKFold(n_splits=n_splits)                                         
+71: FORMATIONS=["ANCC","ASTNU","ASTNL","EGFDU","EGFDL","BUDA"]                     
+84: PF_N=600; ANCC_N=600                                                           
+86: PF_GR_SIG_MIN=10.; PF_GR_SIG_MAX=60.; PF_GR_SIG_DEF=30.                        
+88: PF_ROUGH_P=0.2; PF_ROUGH_V=0.003; PF_GR_WIN=5; PF_GR_WT=0.3                    
+89: ANCC_ALPHA=0.998; ANCC_RN=0.002; ANCC_PN=0.005                                 
+90: ANCC_IR=0.01; ANCC_IS=0.3; ANCC_RP=0.1; ANCC_RR=0.001                          
+93: def _interp1(grid, v, vmin, step):                                             
+95:     if i < 0: return grid[0]                                                   
+96:     n = len(grid) - 1                                                          
+97:     if i >= n: return grid[n]                                                  
+99:     return grid[i]*(1.-t) + grid[i+1]*t                                        
+115: def _beam_jit(sgr, tw_gr, si, BS, mc, es):                                     
+117:     n=len(sgr); nt=len(tw_gr); MAX=BS*6                                        
+123:         gv=sgr[step]; nc=np.int64(0)                                           
+126:             for d in range(-2,3):            # ±2: TVT can go down             
+129:                 tot=cost+(gv-tw_gr[ni])**2/es+mc*(d if d>=0 else -d)           
+156: def _pf_ancc(md_v,z_v,gr_v,gg,vmin,step,gs,ls,ir,N,                            
+168:             tvt_j=pos[j]-z_v[i]                                                
+169:             tvt_j=max(tvt_j,vmin-50.); tvt_j=min(tvt_j,vmin+len(gg)*step+50.)  
+170:             pos[j]=tvt_j+z_v[i]                                                
+171:         if not np.isnan(gr_v[i]):                                              
+175:                 d=(gr_v[i]-eg)/gs                                              
+195: def _pf_z(md_v,z_v,gr_v,gr_sm_v,gg_p,gg_s,vmin,step,                           
+197:           MOM,VN,PN,GR_WT,RP,RV,RESAMP):                                       
+212:         if not np.isnan(gr_v[i]):                                              
+216:                 dp=(gr_v[i]-ep)/gs                                             
+218:                 if not np.isnan(gr_sm_v[i]):                                   
+220:                     ds=(gr_sm_v[i]-es)/(gs*1.5)                                
+222:                     lk=(1.-GR_WT)*lp+GR_WT*ls                                  
+250: # Dense grid for O(1) typewell lookup                                          
+251: def _grid(tw_tvt,tw_gr,step=0.2):                                              
+252:     tmin=float(tw_tvt.min()); tmax=float(tw_tvt.max())                         
+253:     tvt_g=np.arange(tmin,tmax+step,step)                                       
+255: np.interp(tvt_g,tw_tvt,tw_gr).astype(np.float64),float(tmin),float(step)       
+257: def _gr_sig(hw,tw_tvt,tw_gr):                                                  
+258:     kn=hw[hw['TVT_input'].notna()&hw['GR'].notna()]                            
+259:     if len(kn)<20: return float(PF_GR_SIG_DEF)                                 
+261: float(np.clip(np.std(kn['GR'].values-np.interp(kn['TVT_input'].values,tw_tvt,t 
+262: gr)),                                                                          
+263:                           PF_GR_SIG_MIN,PF_GR_SIG_MAX))                        
+277: def beam_search(gr_h,tw_tvt,tw_gr,start_tvt,bs,mc,es,r):                       
+278:     si=_nn(tw_tvt,start_tvt)                                                   
+279:     sgr=_smooth(gr_h,float(np.nanmean(tw_gr)),r).astype(np.float64)            
+280:     path=_beam_jit(sgr,tw_gr.astype(np.float64),si,bs,float(mc),float(es))     
+281:     return tw_tvt[path].astype(np.float32)                                     
+283: def run_pf_ancc(hw,tw_tvt,tw_gr,N=ANCC_N):                                     
+284:     gs=_gr_sig(hw,tw_tvt,tw_gr)                                                
+285:     kn=hw[hw['TVT_input'].notna()]; ev=hw[hw['TVT_input'].isna()]              
+287:     ls=float(kn['TVT_input'].iloc[-1]+kn['Z'].iloc[-1])                        
+288:     tail=kn.tail(30); dt=np.diff(tail['TVT_input'].values)                     
+291:     gg,gmin,gst=_grid(tw_tvt,tw_gr)                                            
+292:     pts,std=_pf_ancc(ev['MD'].values.astype(np.float64),ev['Z'].values.astype( 
+294:                       ev['GR'].values.astype(np.float64),gg,gmin,gst,          
+295:                       gs,ls,ir,N,ANCC_ALPHA,ANCC_RN,ANCC_PN,ANCC_IS,ANCC_RP,AN 
+299: def run_pf_z(hw,tw_tvt,tw_gr,N=PF_N):                                          
+300:     gs=_gr_sig(hw,tw_tvt,tw_gr)                                                
+301:     tw_s=pd.Series(tw_gr).rolling(PF_GR_WIN,center=True,min_periods=1).mean(). 
+303:     kna=hw[hw['TVT_input'].notna()]; ev=hw[hw['TVT_input'].isna()]             
+305:     dz_k=np.diff(kna['Z'].values); dvt=np.diff(kna['TVT_input'].values)        
+314:     t2=kna.tail(20); dvt2=np.diff(t2['TVT_input'].values);                     
+317:     gg,gmin,gst=_grid(tw_tvt,tw_gr)                                            
+318:     gs2,_,_=_grid(tw_tvt,tw_s)                                                 
+319:     gr_sm=hw['GR'].rolling(PF_GR_WIN,center=True,min_periods=1).mean()         
+322:                    ev['GR'].values.astype(np.float64),                         
+323:                    gr_sm.loc[ev.index].values.astype(np.float64),              
+324:                    gg,gs2,gmin,gst,gs,float(kna['TVT_input'].iloc[-1]),iv,     
+326:                    PF_MOM,PF_VN,PF_PN,PF_GR_WT,PF_ROUGH_P,PF_ROUGH_V,PF_RESAMP 
+\n### kernel_read_ravaghi_wellbore-geology-prediction-ridge.txt
+1:### ravaghi/wellbore-geology-prediction-ridge
+2:Reading kernel: ravaghi/wellbore-geology-prediction-ridge
+6:┃                     ROGII - Wellbore Geology Prediction                      ┃
+12: • [ROGII] BETTER SOLUTION | LB: 9.956                                          
+13: • [ROGII] SUPER SOLUTION |LB: TOP 3                                            
+15: • Triple-Signal Beam Search + Dual PF + LightGBM                               
+17: • ROGII-Wellbore-Geology-Prediction                                            
+18: • XGB Starter - [CV 15]                                                        
+27: from lightgbm import LGBMRegressor, log_evaluation, early_stopping             
+29: from sklearn.model_selection import GroupKFold                                 
+30: from sklearn.linear_model import Ridge                                         
+31: from catboost import CatBoostRegressor                                         
+35: from koolbox import Trainer                                                    
+56: Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction")           
+58: Path("/kaggle/input/datasets/ravaghi/wellbore-geology-prediction-artifacts")   
+62:     cv = GroupKFold(n_splits=n_splits)                                         
+89: FORMATION_COLS = ['ANCC', 'ASTNU', 'ASTNL', 'EGFDU', 'EGFDL', 'BUDA']          
+109: def tvt_from_contacts(hw_tr, tw_tr, ref_col='EGFDU'):                          
+111:     ref_tvt = tw_g[tw_g['Geology'] == ref_col]['TVT'].min()                    
+112:     if np.isnan(ref_tvt):                                                      
+114:         ref_tvt = tw_g[tw_g['Geology'] == ref_col]['TVT'].min()                
+115:     offset = (hw_tr['TVT'] - (ref_tvt - (hw_tr['Z'] - hw_tr[ref_col]))).mean() 
+116:     return ref_tvt - (hw_tr['Z'] - hw_tr[ref_col]) + offset                    
+127:     tw_s   = tw.sort_values('TVT')                                             
+128:     tw_tvt = tw_s['TVT'].values.astype(float)                                  
+129:     tw_gr  = tw_s['GR'].fillna(tw_s['GR'].mean()).values.astype(float)         
+131:     kn = hw[hw['TVT_input'].notna()]                                           
+132:     ev = hw[hw['TVT_input'].isna()]                                            
+134:         return hw['TVT_input'].values.astype(float).copy(), 0.0                
+137:     last_tvt = float(last['TVT_input'])                                        
+141:     tw_at_k = np.interp(kn['TVT_input'].values, tw_tvt, tw_gr)                 
+142:     gs = float(np.clip(np.nanstd(kn['GR'].fillna(0).values - tw_at_k), 10.,    
+146:     dt = np.diff(tail['TVT_input'].values)                                     
+154:     ls   = last_tvt + last_Z                                                   
+163:     # Interpolate GR gaps before tracking                                      
+164:     gr_interp =                                                                
+165: hw['GR'].interpolate(limit_direction='both').fillna(tw_gr.mean())              
+166:     gr_v = gr_interp.values.astype(float)[ev.index]                            
+168:     out_vals = hw['TVT_input'].values.astype(float).copy()                     
+177:         tvt_p = pos - z_v[i]                                                   
+178:         tvt_p = np.clip(tvt_p, tw_tvt[0] - 100, tw_tvt[-1] + 100)              
+179:         pos   = tvt_p + z_v[i]                                                 
+181:         eg = np.interp(tvt_p, tw_tvt, tw_gr)                                   
+182:         d  = (gr_v[i] - eg) / gs                                               
+243: def beam_search(hgr, tw_tvt, tw_gr, last_tvt, bs=10, mc=20.0, es=144.0, r=2):  
+244:     n  = len(hgr)                                                              
+245:     nt = len(tw_tvt)                                                           
+247:         return np.array([last_tvt])                                            
+251:         sgr = savgol_filter(hgr, win, min(2, win - 1))                         
+253:         sgr = hgr.copy()                                                       
+255:     si = int(np.argmin(np.abs(tw_tvt - last_tvt)))                             
+268:         gv = sgr[step]                                                         
+273:         gr_e = (gv - tw_gr[ci])**2 / es                                        
+274:         tot  = bcost[:bn, None] + gr_e + MC[None, :]                           
+302:         result[step] = tw_tvt[bidx[0]]                                         
+308:     kn = hw[hw['TVT_input'].notna()]                                           
+309:     ev = hw[hw['TVT_input'].isna()]                                            
+311:         return hw['TVT_input'].values.astype(float).copy()                     
+313:     last_tvt = float(kn.iloc[-1]['TVT_input'])                                 
+314:     tw_s  = tw.sort_values('TVT')                                              
+315:     tw_tvt = tw_s['TVT'].values.astype(float)                                  
+316:     tw_gr  = tw_s['GR'].fillna(tw_s['GR'].mean()).values.astype(float)         
+318:     gr_all =                                                                   
+319: hw['GR'].interpolate(limit_direction='both').fillna(tw_gr.mean()).values.astyp 
+321:     hgr    = gr_all[ev.index]                                                  
+323:     beam_results = [beam_search(hgr, tw_tvt, tw_gr, last_tvt, bs, mc, es, r)   
+328:     out = hw['TVT_input'].values.astype(float).copy()                          
+334:     eval_mask = hw['TVT_input'].isna().to_numpy()                              
+359: def apply_selector_variant(name, pf_by_scale, tvt_beam, last_known_tvt):       
+365:     pred = (1.0 - beam_weight) * base + beam_weight * tvt_beam                 
+366:     pred = (1.0 - hold_weight) * pred + hold_weight * last_known_tvt           
+375: FORMATIONS=["ANCC","ASTNU","ASTNL","EGFDU","EGFDL","BUDA"]                     
+388: PF_N=600; ANCC_N=600                                                           
+390: PF_GR_SIG_MIN=10.; PF_GR_SIG_MAX=60.; PF_GR_SIG_DEF=30.                        
+392: PF_ROUGH_P=0.2; PF_ROUGH_V=0.003; PF_GR_WIN=5; PF_GR_WT=0.3                    
+393: ANCC_ALPHA=0.998; ANCC_RN=0.002; ANCC_PN=0.005                                 
+394: ANCC_IR=0.01; ANCC_IS=0.3; ANCC_RP=0.1; ANCC_RR=0.001                          
+397: def _interp1(grid, v, vmin, step):                                             
+399:     if i < 0: return grid[0]                                                   
+400:     n = len(grid) - 1                                                          
+\n### kernel_read_romantamrazov_rogii-super-solution-lb-top-3.txt
+1:### romantamrazov/rogii-super-solution-lb-top-3
+2:Reading kernel: romantamrazov/rogii-super-solution-lb-top-3
+16: • Multi-scale NCC self-corr (hw=8,15,25) → 3 TVT signals                       
+18: • Formation consensus std/range → uncertainty features                         
+19: • Per-formation known-zone RMSE → which surface to trust                       
+20: • Inter-signal std → master uncertainty feature                                
+21: • GR envelope + energy (rolling max / RMS)                                     
+22: • Richer tw_diff: 4th family anchored at PF-ANCC                               
+23: • Monotonic GR trend (linear detrended residual)                               
+24: • Smart ridge stack: 4 models, positive=True                                   
+46: from sklearn.model_selection import GroupKFold                                 
+47: from sklearn.linear_model import Ridge                                         
+49: from catboost import CatBoostRegressor, Pool                                   
+52: import lightgbm as lgb                                                         
+61:     for p in [Path("/kaggle/input/rogii-wellbore-geology-prediction"),         
+62:                Path("/kaggle/input/competitions/rogii-wellbore-geology-predict 
+65:     for p in Path("/kaggle/input").glob("*/sample_submission.csv"): return     
+70: SAMPLE=DATA/"sample_submission.csv"; OUT=Path("/kaggle/working/submission.csv" 
+72: FORMATIONS=["ANCC","ASTNU","ASTNL","EGFDU","EGFDL","BUDA"]                     
+87: PF_N=500; ANCC_N=500                                                           
+89: PF_GR_SIG_MIN=10.; PF_GR_SIG_MAX=60.; PF_GR_SIG_DEF=30.                        
+91: PF_ROUGH_P=0.2; PF_ROUGH_V=0.003; PF_GR_WIN=5; PF_GR_WT=0.3                    
+92: ANCC_ALPHA=0.998; ANCC_RN=0.002; ANCC_PN=0.005                                 
+93: ANCC_IR=0.01; ANCC_IS=0.3; ANCC_RP=0.1; ANCC_RR=0.001                          
+95: # ── Model hyperparams (tuned, no XGBoost) ───────────────────────             
+106:     objective="regression",                                                    
+125:     loss_function="RMSE",                                                      
+145: def _beam_jit(sgr,tw_gr,si,BS,mc,es):                                          
+146:     n=len(sgr); nt=len(tw_gr); MAX=BS*5                                        
+152:         gv=sgr[step]; nc=np.int64(0)                                           
+158:                 tot=cost+(gv-tw_gr[ni])**2/es+mc*(d if d>=0 else -d)           
+195: def beam_search(gr_h,tw_tvt,tw_gr,start_tvt,bs=10,mc=20.,es=144.,r=2):         
+196:     si=_nn(tw_tvt,start_tvt)                                                   
+197:     sgr=_smooth(gr_h,float(np.nanmean(tw_gr)),r).astype(np.float64)            
+199: tw_tvt[_beam_jit(sgr,tw_gr.astype(np.float64),si,bs,float(mc),float(es))].asty 
+209: # ── Feature Engineering Helpers ───────────────────────────────────           
+217: def affine_cal(kgr,tw_at_k,min_pts=20):                                        
+218:     v=np.isfinite(kgr)&np.isfinite(tw_at_k)                                    
+220:         return 1.,float(np.nanmean(kgr)-np.nanmean(tw_at_k)) if v.any() else 0 
+221:     a,b=np.polyfit(tw_at_k[v],kgr[v],1)                                        
+224: def wls_b_well(ktvt,kz,form_col,decay=0.02):                                   
+226:     n=len(ktvt)                                                                
+227:     if n<3: return float(np.median(ktvt+kz-form_col))                          
+229:     return float(np.dot(w,ktvt+kz-form_col))                                   
+231: def multi_scale_sc(kgr,ktvt,hgr,hws=(8,15,25),stride=3):                       
+232:     """Multi-scale NCC: 3 window sizes → 3 independent TVT signals."""         
+235:         win=2*hw+1; nk=len(kgr); nh=len(hgr)                                   
+237:             out.append((np.full(nh,ktvt[-1],np.float32),np.zeros(nh,np.float32 
+239:         kg=pd.Series(kgr).rolling(5,center=True,min_periods=1).mean().values.a 
+241:         hg=pd.Series(hgr).rolling(5,center=True,min_periods=1).mean().values.a 
+245:             out.append((np.full(nh,ktvt[-1],np.float32),np.zeros(nh,np.float32 
+253:         ncc=Hn@Cn.T/win                                                        
+254:         best=ncc.argmax(1); score=ncc.max(1).astype(np.float32)                
+256:         out.append((ktvt[ctrs].astype(np.float32),score))                      
+259: def gr_detrend_resid(gr_arr,md_arr):                                           
+260:     """Linear detrend GR → residual captures local anomalies."""               
+261:     m=np.isfinite(gr_arr)&np.isfinite(md_arr)                                  
+262:     if m.sum()<5: return gr_arr.copy()                                         
+263:     slope=robust_slope(md_arr[m],gr_arr[m])                                    
+264:     return (gr_arr-slope*md_arr).astype(np.float32)                            
+273: def _gr_sigma(hw,tw_tvt,tw_gr):                                                
+274:     kn=hw[hw['TVT_input'].notna()&hw['GR'].notna()]                            
+275:     if len(kn)<20: return PF_GR_SIG_DEF                                        
+277: float(np.clip(np.std(kn['GR'].values-np.interp(kn['TVT_input'].values,tw_tvt,t 
+278: gr)),                                                                          
+279:                           PF_GR_SIG_MIN,PF_GR_SIG_MAX))                        
+281: def run_pf_ancc(hw,tw_tvt,tw_gr,N=ANCC_N):                                     
+282:     tmin,tmax=float(tw_tvt.min()),float(tw_tvt.max())                          
+283:     gs=_gr_sigma(hw,tw_tvt,tw_gr)                                              
+284:     kn=hw[hw['TVT_input'].notna()]; ev=hw[hw['TVT_input'].isna()]              
+286:     tail=kn.tail(30); dt=np.diff(tail['TVT_input'].values)                     
+289:     pos=(float(kn['TVT_input'].iloc[-1]+kn['Z'].iloc[-1])                      
+290:          +np.random.normal(0.,ANCC_IS,N))                                      
+291:     rate=ir+np.random.normal(0.,ANCC_IR,N); w=np.ones(N)/N                     
+292:     md_v=ev['MD'].values; z_v=ev['Z'].values; gr_v=ev['GR'].values             
+297:         rate=ANCC_ALPHA*rate+np.random.normal(0.,ANCC_RN,N)                    
+298:         pos +=rate*dm2+np.random.normal(0.,ANCC_PN,N)                          
+299:         tvt_e=np.clip(pos-z_v[i],tmin-50.,tmax+50.); pos=tvt_e+z_v[i]          
+300:         if not np.isnan(gr_v[i]):                                              
+301:             eg=np.interp(tvt_e,tw_tvt,tw_gr)                                   
+\n### kernel_read_sunnywu27_rogii-wellbore-tvt-physical-model.txt
+1:### sunnywu27/rogii-wellbore-tvt-physical-model
+2:Reading kernel: sunnywu27/rogii-wellbore-tvt-physical-model
+7: ROGII Wellbore Geology Prediction — v12                                        
+11:   - Visible training wells: physical model (RMSE ~0.007 ft)                    
+14:     GR interpolated before PF (fills NaN gaps so PF always has observations)   
+15:     Local avg: 4.71 ft (vs 5.95 ft without GR interpolation)                   
+16:     Key insight: 000d7d20 has 47% NaN GR in prediction — interpolation critica 
+28:     for c in ['/kaggle/input/rogii-wellbore-geology-prediction',               
+29:               '/kaggle/input/competitions/rogii-wellbore-geology-prediction']: 
+33:     hits = glob.glob('/kaggle/input/**/sample_submission.csv', recursive=True) 
+57: def tvt_from_contacts(hw_tr, tw_tr, ref_col='EGFDU'):                          
+59:     ref_tvt = tw_g[tw_g['Geology'] == ref_col]['TVT'].min()                    
+60:     if np.isnan(ref_tvt):                                                      
+62:         ref_tvt = tw_g[tw_g['Geology'] == ref_col]['TVT'].min()                
+63:     offset = (hw_tr['TVT'] - (ref_tvt - (hw_tr['Z'] - hw_tr[ref_col]))).mean() 
+64:     return ref_tvt - (hw_tr['Z'] - hw_tr[ref_col]) + offset                    
+69:     tw_s   = tw.sort_values('TVT')                                             
+70:     tw_tvt = tw_s['TVT'].values.astype(float)                                  
+71:     tw_gr  = tw_s['GR'].fillna(tw_s['GR'].mean()).values.astype(float)         
+73:     kn = hw[hw['TVT_input'].notna()]                                           
+74:     ev = hw[hw['TVT_input'].isna()]                                            
+76:         return hw['TVT_input'].values.astype(float).copy(), 0.0                
+79:     last_tvt = float(last['TVT_input'])                                        
+83:     tw_at_k = np.interp(kn['TVT_input'].values, tw_tvt, tw_gr)                 
+84:     gs = float(np.clip(np.nanstd(kn['GR'].fillna(0).values - tw_at_k), 10.,    
+88:     dt = np.diff(tail['TVT_input'].values)                                     
+96:     ls   = last_tvt + last_Z                                                   
+98: with abrupt TVT shift at PS                                                    
+106:     # Interpolate GR gaps before tracking — critical for wells with high NaN   
+108:     gr_interp =                                                                
+109: hw['GR'].interpolate(limit_direction='both').fillna(tw_gr.mean())              
+110:     gr_v = gr_interp.values.astype(float)[ev.index]                            
+112:     out_vals = hw['TVT_input'].values.astype(float).copy()                     
+121:         tvt_p = pos - z_v[i]                                                   
+122:         tvt_p = np.clip(tvt_p, tw_tvt[0] - 100, tw_tvt[-1] + 100)              
+123:         pos   = tvt_p + z_v[i]                                                 
+125:         eg = np.interp(tvt_p, tw_tvt, tw_gr)                                   
+126:         d  = (gr_v[i] - eg) / gs                                               
+154:     More seeds → better coverage of the TVT exploration space.                 
+192: def beam_search(hgr, tw_tvt, tw_gr, last_tvt, bs=10, mc=20.0, es=144.0, r=2):  
+193:     """Vectorized beam search for TVT tracking via GR matching."""             
+194:     n  = len(hgr)                                                              
+195:     nt = len(tw_tvt)                                                           
+197:         return np.array([last_tvt])                                            
+201:         sgr = savgol_filter(hgr, win, min(2, win - 1))                         
+203:         sgr = hgr.copy()                                                       
+205:     si = int(np.argmin(np.abs(tw_tvt - last_tvt)))                             
+218:         gv = sgr[step]                                                         
+223:         gr_e = (gv - tw_gr[ci])**2 / es                                        
+224:         tot  = bcost[:bn, None] + gr_e + MC[None, :]                           
+252:         result[step] = tw_tvt[bidx[0]]                                         
+259:     kn = hw[hw['TVT_input'].notna()]                                           
+260:     ev = hw[hw['TVT_input'].isna()]                                            
+262:         return hw['TVT_input'].values.astype(float).copy()                     
+264:     last_tvt = float(kn.iloc[-1]['TVT_input'])                                 
+265:     tw_s  = tw.sort_values('TVT')                                              
+266:     tw_tvt = tw_s['TVT'].values.astype(float)                                  
+267:     tw_gr  = tw_s['GR'].fillna(tw_s['GR'].mean()).values.astype(float)         
+269:     gr_all =                                                                   
+270: hw['GR'].interpolate(limit_direction='both').fillna(tw_gr.mean()).values.astyp 
+272:     hgr    = gr_all[ev.index]                                                  
+274:     beam_results = [beam_search(hgr, tw_tvt, tw_gr, last_tvt, bs, mc, es, r)   
+279:     out = hw['TVT_input'].values.astype(float).copy()                          
+284: sample = pd.read_csv(os.path.join(INPUT_DIR, 'sample_submission.csv'))         
+299:     tvt_phys = None                                                            
+303:     # Physical model for visible wells                                         
+307:             hw_te['TVT_input'] = hw_tr['TVT_input'].values                     
+308:             tvt_phys = tvt_from_contacts(hw_tr, tw_tr)                         
+309:             print(f'  Physical model OK')                                      
+311:             print(f'  Physical model failed: {e}')                             
+312:             tvt_phys = None                                                    
+317:         tvt_pf = run_pf_lik_ensemble(hw_te, tw_ref, n_particles=500,           
+322:         last_known = hw_te['TVT_input'].dropna()                               
+324:         tvt_pf = hw_te['TVT_input'].fillna(last_val).values.astype(float)      
+329:         tvt_beam = run_beam_ensemble(hw_te, tw_ref)                            
+333:         tvt_beam = tvt_pf.copy()                                               
+338:         if tvt_phys is not None:                                               
+339:             # Visible well: physical model is primary (RMSE ~0.007 ft)         
+340:             tvt_val = float(tvt_phys.iloc[ridx])                               
+343:             tvt_val = float(tvt_pf[ridx])                                      
+\n### kernel_read_yuriygreben_rogii-wellbore-geology-ridge-sp-pipeline.txt
+1:### yuriygreben/rogii-wellbore-geology-ridge-sp-pipeline
+2:Reading kernel: yuriygreben/rogii-wellbore-geology-ridge-sp-pipeline
+14: • [ROGII] BETTER SOLUTION | LB: 9.956                                          
+15: • [ROGII] SUPER SOLUTION |LB: TOP 3                                            
+17: • Triple-Signal Beam Search + Dual PF + LightGBM                               
+19: • ROGII-Wellbore-Geology-Prediction                                            
+20: • XGB Starter - [CV 15]                                                        
+21: • rogii-ridge-sp45-proj                                                        
+33: # koolbox setup: wheel install or sys.path fallback                            
+35: kb_dir = '/kaggle/input/koolbox-offline'                                       
+38:     cand = glob.glob('/kaggle/input/**/koolbox*', recursive=True)              
+39:     print('koolbox candidates:', cand[:5])                                     
+42: print('using koolbox dir:', kb_dir)                                            
+57: import koolbox                                                                 
+58: print('koolbox OK:', koolbox.__file__)                                         
+74: from lightgbm import LGBMRegressor, log_evaluation, early_stopping             
+75: from catboost import CatBoostRegressor                                         
+76: from sklearn.linear_model import Ridge                                         
+78: from sklearn.model_selection import GroupKFold                                 
+84: from koolbox import Trainer                                                    
+104: Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction")           
+106: Path("/kaggle/input/datasets/ravaghi/wellbore-geology-prediction-artifacts")   
+110:     cv = GroupKFold(n_splits=n_splits)                                         
+140: FORMATION_COLS = ['ANCC', 'ASTNU', 'ASTNL', 'EGFDU', 'EGFDL', 'BUDA']          
+161: # GEOPHYSICAL PIPELINE FUNCTIONS                                               
+164: def compute_tvt_from_contacts(hw_tr, tw_tr, ref_col='EGFDU'):                  
+166:     Derives physical TVT offsets directly from documented contact points.      
+169:     ref_tvt = tw_g[tw_g['Geology'] == ref_col]['TVT'].min()                    
+170:     if np.isnan(ref_tvt):                                                      
+172:         ref_tvt = tw_g[tw_g['Geology'] == ref_col]['TVT'].min()                
+173:     offset = (hw_tr['TVT'] - (ref_tvt - (hw_tr['Z'] - hw_tr[ref_col]))).mean() 
+174:     return ref_tvt - (hw_tr['Z'] - hw_tr[ref_col]) + offset                    
+189:     Runs a localized Sequential Monte Carlo (Particle Filter) to map GR signal 
+191:     tw_s   = tw.sort_values('TVT')                                             
+192:     tw_tvt = tw_s['TVT'].values.astype(float)                                  
+193:     tw_gr  = tw_s['GR'].fillna(tw_s['GR'].mean()).values.astype(float)         
+195:     kn = hw[hw['TVT_input'].notna()]                                           
+196:     ev = hw[hw['TVT_input'].isna()]                                            
+198:         return hw['TVT_input'].values.astype(float).copy(), 0.0                
+201:     last_tvt = float(last['TVT_input'])                                        
+205:     tw_at_k = np.interp(kn['TVT_input'].values, tw_tvt, tw_gr)                 
+206:     gs = float(np.clip(np.nanstd(kn['GR'].fillna(0).values - tw_at_k), 10.,    
+210:     dt = np.diff(tail['TVT_input'].values)                                     
+218:     ls   = last_tvt + last_Z                                                   
+227:     # Interpolate GR gaps before tracking                                      
+228:     gr_interp =                                                                
+229: hw['GR'].interpolate(limit_direction='both').fillna(tw_gr.mean())              
+230:     gr_v = gr_interp.values.astype(float)[ev.index]                            
+232:     out_vals = hw['TVT_input'].values.astype(float).copy()                     
+241:         tvt_p = pos - z_v[i]                                                   
+242:         tvt_p = np.clip(tvt_p, tw_tvt[0] - 100, tw_tvt[-1] + 100)              
+243:         pos   = tvt_p + z_v[i]                                                 
+245:         eg = np.interp(tvt_p, tw_tvt, tw_gr)                                   
+246:         d  = (gr_v[i] - eg) / gs                                               
+310: def perform_beam_search(hgr, tw_tvt, tw_gr, last_tvt, bs=10, mc=20.0, es=144.0 
+313:     Decodes optimal sequence alignments matching the target TVT traces.        
+315:     n  = len(hgr)                                                              
+316:     nt = len(tw_tvt)                                                           
+318:         return np.array([last_tvt])                                            
+322:         sgr = savgol_filter(hgr, win, min(2, win - 1))                         
+324:         sgr = hgr.copy()                                                       
+326:     si = int(np.argmin(np.abs(tw_tvt - last_tvt)))                             
+339:         gv = sgr[step]                                                         
+344:         gr_e = (gv - tw_gr[ci])**2 / es                                        
+345:         tot  = bcost[:bn, None] + gr_e + MC[None, :]                           
+373:         result[step] = tw_tvt[bidx[0]]                                         
+379:     kn = hw[hw['TVT_input'].notna()]                                           
+380:     ev = hw[hw['TVT_input'].isna()]                                            
+382:         return hw['TVT_input'].values.astype(float).copy()                     
+384:     last_tvt = float(kn.iloc[-1]['TVT_input'])                                 
+385:     tw_s  = tw.sort_values('TVT')                                              
+386:     tw_tvt = tw_s['TVT'].values.astype(float)                                  
+387:     tw_gr  = tw_s['GR'].fillna(tw_s['GR'].mean()).values.astype(float)         
+389:     gr_all =                                                                   
+390: hw['GR'].interpolate(limit_direction='both').fillna(tw_gr.mean()).values.astyp 
+392:     hgr    = gr_all[ev.index]                                                  
+394:     beam_results = [perform_beam_search(hgr, tw_tvt, tw_gr, last_tvt, bs, mc,  
+400:     out = hw['TVT_input'].values.astype(float).copy()                          
+406:     eval_mask = hw['TVT_input'].isna().to_numpy()                              
+431: def blend_selector_variant(name, pf_by_scale, tvt_beam, last_known_tvt):       

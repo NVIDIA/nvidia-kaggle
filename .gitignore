@@ -22,7 +22,12 @@ data/
 # Local CLI skill-discovery symlink (environment-specific, not portable)
 .claude/
 
-# Agentic demo run dirs: ignore all by default; the verified exhibits are
-# force-added explicitly in the layer-4 commit. Keeps run churn out of the repo.
-demo/competition-intel-briefing/runs/
+# Agentic demo run dirs: ignore everything under runs/ EXCEPT the committed
+# verified exhibits (negated below). Keeps scratch run churn out of the repo
+# while the demo's evidence dirs stay tracked.
+demo/competition-intel-briefing/runs/*
+!demo/competition-intel-briefing/runs/codex_FAIL_caught_hallucination/
+!demo/competition-intel-briefing/runs/codex_spaceship-titanic_002/
+!demo/competition-intel-briefing/runs/claude_spaceship-titanic_003/
+!demo/competition-intel-briefing/runs/codex_rogii-wellbore-geology-prediction_002/
 

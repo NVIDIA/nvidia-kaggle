@@ -144,20 +144,58 @@ _NON_REF_PREFIXES = (
 )
 
 
+# File extensions that mark a backtick-quoted `a/b` token as a LOCAL FILE PATH
+# (e.g. `plots/kernel_votes.png`, `raw/kernels_top.json`), not a kernel ref.
+# The agent writes these when it saves plot scripts/data/figures; they must NOT
+# be mistaken for hallucinated kernel citations.
+_LOCAL_PATH_EXTS = (
+    ".png", ".jpg", ".jpeg", ".svg", ".gif", ".pdf",
+    ".py", ".ipynb", ".json", ".csv", ".tsv", ".txt", ".md",
+    ".yml", ".yaml", ".sh", ".log", ".html", ".parquet",
+)
+# Local working-directory prefixes the agent creates in the run dir. An `a/b`
+# token whose owner is one of these is a local path, not a kernel owner.
+_LOCAL_DIR_PREFIXES = ("plots", "raw", "data", "tmp", "out", "output", "scripts", "input")
+
+
+def _is_local_path_token(ref: str) -> bool:
+    """True if a backtick `a/b` token is a local file path, not a kernel ref."""
+    if ref.lower().endswith(_LOCAL_PATH_EXTS):
+        return True
+    owner = ref.split("/", 1)[0]
+    return owner in _LOCAL_DIR_PREFIXES
+
+
 def _extract_kernel_refs(text: str) -> set[str]:
     """Closed-class kernel refs from UNAMBIGUOUS contexts only.
 
     Only backtick-quoted refs and refs inside a kaggle.com/code/ URL are
     considered — bare owner/slug tokens in prose are deliberately ignored to
     keep the check high-precision (no false positives on phrases like
-    "guesser/answerer"). Kaggle URL path prefixes are excluded as a safety net.
+    "guesser/answerer"). Kaggle URL path prefixes are excluded as a safety net,
+    and backtick tokens that are LOCAL FILE PATHS (a plot script/data/figure the
+    agent saved, e.g. `plots/x.png`, `raw/y.json`) are excluded — those are
+    artifacts the brief embeds, not kernel citations.
     """
     refs = set()
-    for rx in (KERNEL_REF_BACKTICK_RE, KERNEL_REF_URL_RE):
-        for m in rx.finditer(text):
-            ref = m.group(1)
-            if ref.count("/") == 1 and ref.split("/", 1)[0] not in _NON_REF_PREFIXES:
-                refs.add(ref)
+    # A ref inside a kaggle.com/code/ URL is UNAMBIGUOUSLY a kernel — it can
+    # never be a local artifact path, so the local-path exclusion does NOT apply
+    # to URL-context refs. This closes a theoretical disguise hole (a fabricated
+    # ref ending in an excluded ext like `fake/evil.py` would escape only in
+    # backtick context; in a /code/ URL it's still caught). The local-path
+    # exclusion is needed only for backtick tokens, where the agent's saved
+    # artifact paths (`plots/x.png`, `raw/y.json`) live.
+    for m in KERNEL_REF_URL_RE.finditer(text):
+        ref = m.group(1)
+        if ref.count("/") == 1 and ref.split("/", 1)[0] not in _NON_REF_PREFIXES:
+            refs.add(ref)
+    for m in KERNEL_REF_BACKTICK_RE.finditer(text):
+        ref = m.group(1)
+        if ref.count("/") != 1 or ref.split("/", 1)[0] in _NON_REF_PREFIXES:
+            continue
+        if _is_local_path_token(ref):
+            continue
+        refs.add(ref)
     return refs
 
 

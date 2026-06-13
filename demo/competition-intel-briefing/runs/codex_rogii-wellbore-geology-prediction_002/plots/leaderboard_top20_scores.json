@@ -1,0 +1,86 @@
+{
+  "title": "Public leaderboard top-20 RMSE snapshot (20 rows available)",
+  "source": "leaderboard",
+  "series": [
+    {
+      "label": "SaintLouis",
+      "value": 5.928
+    },
+    {
+      "label": "Tucker Arrants",
+      "value": 5.955
+    },
+    {
+      "label": "Ruby",
+      "value": 6.487
+    },
+    {
+      "label": "Rishikesh Jani",
+      "value": 6.516
+    },
+    {
+      "label": "PirateInPants",
+      "value": 6.573
+    },
+    {
+      "label": "Silogram",
+      "value": 6.675
+    },
+    {
+      "label": "NocturneBflat",
+      "value": 6.703
+    },
+    {
+      "label": "Ertu\u011frul Demir",
+      "value": 6.72
+    },
+    {
+      "label": "Can",
+      "value": 6.764
+    },
+    {
+      "label": "MMH\ud83c\uddf2\ud83c\uddf2",
+      "value": 6.83
+    },
+    {
+      "label": "Vibe well",
+      "value": 6.886
+    },
+    {
+      "label": "Sh1n1230",
+      "value": 6.988
+    },
+    {
+      "label": "maekeso",
+      "value": 6.992
+    },
+    {
+      "label": "ImperfectKitto",
+      "value": 7.02
+    },
+    {
+      "label": "Jacoby Jaeger",
+      "value": 7.025
+    },
+    {
+      "label": "WhereAmI",
+      "value": 7.045
+    },
+    {
+      "label": "TheLightIs",
+      "value": 7.058
+    },
+    {
+      "label": "ponpon_ponponzu",
+      "value": 7.077
+    },
+    {
+      "label": "Sadam Torres",
+      "value": 7.116
+    },
+    {
+      "label": "Vicens Gaitan",
+      "value": 7.163
+    }
+  ]
+}

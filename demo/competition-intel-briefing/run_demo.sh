@@ -64,6 +64,8 @@ mkdir -p "$RUN_DIR"
 ln -sfn "$RUN_DIR" "$RUNS_ROOT/${RUNTIME}_${SLUG}_latest"
 TRACE="$RUN_DIR/trace.jsonl"
 BRIEF="$RUN_DIR/brief.md"
+PLOTS_DIR="$RUN_DIR/plots"
+mkdir -p "$PLOTS_DIR"
 
 # The research GOAL — a natural, thorough investigation. Names no scripts and
 # adds NO artificial "you may not use file X" clause: we want the agent's REAL
@@ -72,18 +74,48 @@ BRIEF="$RUN_DIR/brief.md"
 # granular workflows; if an agent also calls the convenience generator, that's
 # the demotion working, reported as a note — not engineered away.
 #
-# The source-citation ask is a genuine quality request (a good brief cites its
-# sources) AND it gives the grounding gate something checkable: the specific
-# kernels/discussions the agent names can be verified against what it gathered.
+# Two quality asks added this iteration, both designed to stay AUDITABLE:
+#  - Hyperlinks: cite KERNELS as kaggle.com/code/<owner>/<slug> markdown links
+#    so the cited owner/slug stays extractable by the grounding verifier
+#    (discussions/competitions as links are fine but don't feed the kernel gate).
+#  - Plots: the agent writes+runs its OWN plotting code. To make each plot's
+#    numbers AUDITABLE (and impossible for the PNG to disagree with a parallel
+#    claim), the flow is coupled: gather data -> write a (label,value) sidecar
+#    JSON -> the plot script READS that JSON and renders the PNG from it. So the
+#    PNG is provably a rendering of the JSON, and a verifier checking each
+#    (label,value) against the trace governs the image. Plots whose values can't
+#    be traced to gathered data are illustrative-only. Agent decides WHAT to plot.
 read -r -d '' TASK <<EOF || true
 I'm starting the ${SLUG} Kaggle competition. Use the nvidia-kaggle skill to
 research it and brief me on the strategies that win. Investigate the
 competition overview, the dataset, what the community discusses, and what the
 top public notebooks do — then write me a strategy brief grounded in what you
-find. Cite the specific kernels (as owner/slug) and discussions you drew from,
-so I can follow up on the sources. Give me a focused brief — prioritize the
-highest-signal sources rather than reading everything exhaustively, and make
-sure you finish and save the brief to ${BRIEF}.
+find.
+
+Cite your sources as clickable markdown links. For public notebooks/kernels,
+link them as [title](https://www.kaggle.com/code/<owner>/<slug>) using the real
+owner/slug you gathered — do not invent refs. Link discussions and the
+competition page too where relevant.
+
+Include 2-4 plots that give real insight (e.g. distribution of kernel votes,
+discussion engagement, public-score spread, leaderboard trends). For EACH plot,
+follow this exact coupled flow so the figure is auditable:
+  1. Write the data you will plot to ${PLOTS_DIR}/<name>.json in this schema:
+     {"title": "...",
+      "source": "<which skill workflow produced it: kernel_query | fetch_top_kernel_scores | discussion_query | leaderboard>",
+      "series": [{"label": "<owner/slug for kernels, or discussion id>", "value": <number>}, ...]}
+     Each value MUST be a number you actually gathered from the skill — no
+     invented or interpolated values. If a quantity is incomplete (e.g. some
+     public scores 429'd), include only what you have and note it in the title.
+  2. Write ${PLOTS_DIR}/<name>.py that READS ${PLOTS_DIR}/<name>.json and renders
+     ${PLOTS_DIR}/<name>.png from it (matplotlib). The PNG must be a rendering of
+     that JSON — do not plot from any other in-memory data.
+  3. Run the script to produce the PNG, then embed it in the brief with the
+     relative path plots/<name>.png.
+
+Give me a focused brief — prioritize the highest-signal sources rather than
+reading everything exhaustively, and make sure you finish and save the brief to
+${BRIEF}.
 EOF
 
 echo "=============================================================="
