@@ -72,8 +72,11 @@ fabrication.
 
 ## Verified exhibits
 
-Two frozen, independently re-derived runs are committed under `runs/` as the
-demo's evidence:
+Three frozen, independently re-derived runs are committed under `runs/` as the
+demo's evidence — all on the same competition (`rogii-wellbore-geology-prediction`)
+and, crucially, spanning **both** agent frameworks so the "one skill, two
+frameworks, gate-verified" claim has evidence on each side: two Codex runs (one
+clean, one caught-fabrication) and one clean Claude run.
 
 - **`runs/codex_rogii-wellbore-geology-prediction_022/`** — the accuracy
   guarantee. In its score-ladder plot the agent invented two notebooks that
@@ -101,10 +104,25 @@ demo's evidence:
   The point of the exhibit is reproducibility: the gate FAILs on fabrication
   from the shipped trace alone, on any clone, with no access to the live Kaggle
   API or the downloaded data.
-- **`runs/codex_rogii-wellbore-geology-prediction_019/`** — the clean
+- **`runs/codex_rogii-wellbore-geology-prediction_019/`** — the clean Codex
   readability exemplar: human-legible plot labels (no bare ids), claim-vs-verified
   visual honesty (verified public-LB bars solid, author title-claims hatched),
   every plotted value traces. **`GROUNDING: PASS` + `SCHEMA: PASS`.**
+- **`runs/claude_rogii-wellbore-geology-prediction_001/`** — the second
+  framework: the *same* skill driven end-to-end by **Claude Code** instead of
+  Codex. Claude read `SKILL.md` and chained 10 distinct workflows on its own,
+  then wrote a brief citing 14 gathered refs. **`GROUNDING: PASS` + `SCHEMA:
+  PASS`**, re-derived from a clean `git archive` export (no `~/.claude`, no local
+  data) — clone-reproducible, self-contained (1.4 MB, no `data/`). Its
+  `leaderboard_frontier` plot is the readability convention done right: a *score
+  distribution*, not a name-wall — `#1 SaintLouis` (`5.785`) and the best public
+  notebook (`pilkwang` geosteering, `7.501`) as solid verified bars, with
+  top-3/10/20 cutoffs (`6.333`/`6.83`/`7.116`) as derived band markers, so a
+  competitor sees the frontier and the gap to beat. Both verified entities are
+  discussed in the brief's prose (not orphans). This run happened to execute
+  main-thread; had Claude delegated, the harness would have captured the
+  sub-agent traces into the run dir so the gate verifies them too — but here the
+  parent trace is complete.
 
 **What this demo honestly establishes:** the gate *guarantees* the plots don't
 lie (it mechanically caught every fabrication/schema lapse across many runs);

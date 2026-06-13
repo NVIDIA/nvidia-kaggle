@@ -1,0 +1,19 @@
+{
+  "title": "Public notebook score ladder — verified public RMSE (lower is better)",
+  "source": "fetch_kernel_score",
+  "series": [
+    {"label": "Target-Free TVT Geosteering (PF/ridge blend)", "id": "pilkwang/rogii-target-free-tvt-geosteering", "value": 7.501, "provenance": "verified"},
+    {"label": "rogii_dual_pipeline_blend", "id": "pixiux/rogii-dual-pipeline-blend", "value": 7.519, "provenance": "verified"},
+    {"label": "Ridge-SP (titled LB 7.776)", "id": "lightningv08/lb-7-776-rogii-ridge-sp", "value": 7.776, "provenance": "verified"},
+    {"label": "Wellbore Geology | Ridge", "id": "ravaghi/wellbore-geology-prediction-ridge", "value": 7.946, "provenance": "verified"},
+    {"label": "SEL15 256-seeds (titled LB 8.860)", "id": "needless090/lb-8-860-rogii-sel15-256seeds", "value": 8.86, "provenance": "verified"},
+    {"label": "DWT-based (titled 9.251)", "id": "nihilisticneuralnet/9-251-rogii-wellbore-geology-prediction-dwt-based", "value": 9.251, "provenance": "verified"},
+    {"label": "Wellbore Geology | Hill Climbing", "id": "ravaghi/wellbore-geology-prediction-hill-climbing", "value": 9.43, "provenance": "verified"},
+    {"label": "Wellbore Geology | LightGBM", "id": "ravaghi/wellbore-geology-prediction-lightgbm", "value": 9.796, "provenance": "verified"},
+    {"label": "BETTER SOLUTION (titled 9.956)", "id": "romantamrazov/rogii-better-solution-lb-9-956", "value": 9.934, "provenance": "verified"},
+    {"label": "SUPER SOLUTION (titled TOP 3)", "id": "romantamrazov/rogii-super-solution-lb-top-3", "value": 10.142, "provenance": "verified"},
+    {"label": "Physics-Informed Baseline", "id": "karnakbaevarthur/physics-informed-baseline", "value": 10.159, "provenance": "verified"},
+    {"label": "XGB Starter (titled CV 15)", "id": "cdeotte/xgb-starter-cv-15", "value": 14.336, "provenance": "verified"},
+    {"label": "NN Starter (titled CV 15.5)", "id": "cdeotte/nn-starter-cv-15-5", "value": 15.745, "provenance": "verified"}
+  ]
+}

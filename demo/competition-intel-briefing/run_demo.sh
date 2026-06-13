@@ -109,6 +109,38 @@ case "$RUNTIME" in
             echo
         } > "$RUN_DIR/cmd.txt"
         "${CLAUDE_CMD[@]}" > "$TRACE" 2>&1 || true
+
+        # Claude may delegate skill work to subagents, whose workflow calls +
+        # outputs land in machine-local files under ~/.claude/projects/, NOT the
+        # parent stream. Copy those subagent traces INTO the run dir so the run
+        # is self-contained and the gate verifies from committed artifacts (never
+        # machine-local state) — same portability rule the rest of the demo holds.
+        # Keyed on the session_id the parent stream emits. Copy only the
+        # agent-*.jsonl traces (skip .meta.json and any non-trace files); these
+        # are small, but report the size so the run dir stays lean.
+        SID="$(python3 -c "import json,sys
+for line in open('$TRACE'):
+    line=line.strip()
+    if not line: continue
+    try: o=json.loads(line)
+    except Exception: continue
+    if isinstance(o, dict) and o.get('session_id'):
+        print(o['session_id']); break" 2>/dev/null || true)"
+        SUBAGENT_SRC="$HOME/.claude/projects/-nvidia-kaggle/${SID}/subagents"
+        if [ -n "$SID" ] && [ -d "$SUBAGENT_SRC" ]; then
+            mkdir -p "$RUN_DIR/subagents"
+            cp "$SUBAGENT_SRC"/agent-*.jsonl "$RUN_DIR/subagents/" 2>/dev/null || true
+            _ntrace="$(ls "$RUN_DIR/subagents"/*.jsonl 2>/dev/null | wc -l | tr -d ' ')"
+            {
+                echo "# Claude subagent traces captured into this run dir for portable verification."
+                echo "session_id=$SID"
+                echo "source=$SUBAGENT_SRC"
+                echo "files=$_ntrace agent-*.jsonl (skipped .meta.json / non-trace files)"
+            } > "$RUN_DIR/subagents/CAPTURE.txt"
+            echo "   subagents:   captured $_ntrace trace(s) ($(du -sh "$RUN_DIR/subagents" 2>/dev/null | cut -f1)) from session $SID"
+        else
+            echo "   subagents:   none captured (session_id=${SID:-unknown}; ran main-thread or dir absent)"
+        fi
         ;;
 esac
 

@@ -1,0 +1,11 @@
+{
+  "title": "Public LB frontier vs best public notebook (RMSE, lower is better; top-20 page)",
+  "source": "leaderboard",
+  "series": [
+    {"label": "#1 SaintLouis (top of LB)", "id": "SaintLouis", "value": 5.785, "provenance": "verified"},
+    {"label": "Top-3 cutoff", "id": "lb-top3-cutoff", "value": 6.333, "provenance": "derived"},
+    {"label": "Top-10 cutoff", "id": "lb-top10-cutoff", "value": 6.83, "provenance": "derived"},
+    {"label": "Top-20 cutoff (page edge)", "id": "lb-top20-cutoff", "value": 7.116, "provenance": "derived"},
+    {"label": "Best public notebook (Pilkwang geosteering)", "id": "pilkwang/rogii-target-free-tvt-geosteering", "value": 7.501, "provenance": "verified"}
+  ]
+}
