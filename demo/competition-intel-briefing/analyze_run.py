@@ -415,7 +415,8 @@ def check_plot_provenance(run_dir: Path, gathered_text: str) -> list:
             continue
         source = str(d.get("source", "")).lower() if isinstance(d, dict) else ""
         is_dataset = any(k in source for k in ("dataset", "download", "competition_dataset", "csv"))
-        untraced = []
+        untraced = []          # untraced values, soft on dataset/derived plots
+        verified_bad = []      # provenance:"verified" but untraced -> ALWAYS hard
         for e in series:
             if not isinstance(e, dict):
                 continue
@@ -423,18 +424,29 @@ def check_plot_provenance(run_dir: Path, gathered_text: str) -> list:
             if val is None:
                 continue
             if not _plot_value_in_gathered(val, gathered_text):
-                untraced.append((e.get("label"), val))
-        if not untraced:
-            continue
-        if is_dataset:
-            # Derived/dataset-computed: values are computed over downloaded CSVs
-            # (recompute-and-match is the proper rebuttal; token-match can't
-            # verify a computed aggregate). Report as unverified, not fabrication.
-            findings.append((f.name, "derived-unverified", untraced))
-        else:
-            # Gathered-entity plot (votes/comments/leaderboard) with values that
-            # appear in NO gathered artifact = fabricated rows. The _004/_008 mode.
-            findings.append((f.name, "fabrication", untraced))
+                # TAG-AWARE `verified` (R3): a value the entry itself tags
+                # provenance:"verified" is a falsifiable claim — if it doesn't
+                # trace, it's a hard fabrication REGARDLESS of plot `source`, so
+                # a mis-tag can't hide behind a dataset/derived source. (Unlike
+                # `kind`, which the gate can't falsify, `verified` is checkable:
+                # the value either traces or it doesn't.)
+                if str(e.get("provenance", "")).lower() == "verified":
+                    verified_bad.append((e.get("label"), val))
+                else:
+                    untraced.append((e.get("label"), val))
+        # A mis-tagged `verified` is always a hard fabrication (any source).
+        if verified_bad:
+            findings.append((f.name, "fabrication", verified_bad))
+        if untraced:
+            if is_dataset:
+                # Derived/dataset-computed: values are computed over downloaded
+                # CSVs (recompute-and-match is the proper rebuttal; token-match
+                # can't verify a computed aggregate). Soft note, not a fail.
+                findings.append((f.name, "derived-unverified", untraced))
+            else:
+                # Gathered-entity plot (votes/comments/leaderboard) with values
+                # in NO gathered artifact = fabricated rows. The _004/_008 mode.
+                findings.append((f.name, "fabrication", untraced))
     return findings
 
 
