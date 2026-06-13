@@ -417,9 +417,23 @@ def check_plot_provenance(run_dir: Path, gathered_text: str) -> list:
         is_dataset = any(k in source for k in ("dataset", "download", "competition_dataset", "csv"))
         untraced = []          # untraced values, soft on dataset/derived plots
         verified_bad = []      # provenance:"verified" but untraced -> ALWAYS hard
+        schema_bad = []        # entries missing/invalid `provenance` (R3 convention)
         for e in series:
             if not isinstance(e, dict):
                 continue
+            # SCHEMA presence (R3, forward-only): every entry MUST carry
+            # `provenance` ∈ {verified,title-claim,derived}. This is an OBJECTIVE,
+            # falsifiable fact read off the JSON (not an agent self-report like
+            # the rejected `kind`-orphan-key), so it's gate-ownable. Reported as a
+            # SEPARATE verdict (SCHEMA CONFORMANCE), NOT merged into the accuracy
+            # GROUNDING RESULT — the schema convention postdates _018/_010, which
+            # stay accuracy-clean; conflating them would make a pre-convention
+            # run print GROUNDING: FAIL and re-create panic-on-FAIL. `id` is NOT
+            # required (entity-less bars legitimately have none — that was the
+            # orphan-gate false-FAIL).
+            prov = str(e.get("provenance", "")).strip().lower()
+            if prov not in ("verified", "title-claim", "derived"):
+                schema_bad.append((e.get("label"), e.get("provenance")))
             val = e.get("value")
             if val is None:
                 continue
@@ -434,6 +448,10 @@ def check_plot_provenance(run_dir: Path, gathered_text: str) -> list:
                     verified_bad.append((e.get("label"), val))
                 else:
                     untraced.append((e.get("label"), val))
+        # Schema-presence violations (reported as a SEPARATE verdict, not merged
+        # into the accuracy GROUNDING RESULT).
+        if schema_bad:
+            findings.append((f.name, "schema", schema_bad))
         # A mis-tagged `verified` is always a hard fabrication (any source).
         if verified_bad:
             findings.append((f.name, "fabrication", verified_bad))
@@ -574,6 +592,7 @@ def main() -> None:
     plot_findings = check_plot_provenance(run_dir, gathered_text)
     plot_fabrications = [pf for pf in plot_findings if pf[1] == "fabrication"]
     plot_derived = [pf for pf in plot_findings if pf[1] == "derived-unverified"]
+    plot_schema = [pf for pf in plot_findings if pf[1] == "schema"]
     for name, _kind, untraced in plot_fabrications:
         ex = ", ".join(f"{lab}={val}" for lab, val in untraced[:3])
         grounding_fails.append(
@@ -592,23 +611,52 @@ def main() -> None:
     if result.unverified:
         print(f"  UNVERIFIED (no allow-list data): {', '.join(result.unverified)}")
 
+    # SCHEMA CONFORMANCE — a SEPARATE verdict from GROUNDING RESULT, on purpose.
+    # The provenance-presence convention postdates _018/_010 (pre-convention
+    # exemplars that are accuracy-clean). Merging schema-FAIL into GROUNDING
+    # RESULT would make a re-derived pre-convention run print "GROUNDING: FAIL"
+    # and re-create panic-on-FAIL. So accuracy (all-runs) and schema (forward-
+    # only convention) are reported as two independent lines; the distinction is
+    # legible from the tool's output, not just agreed in chat.
+    for name, _kind, bad in plot_schema:
+        ex = ", ".join(f"{lab} (provenance={p!r})" for lab, p in bad[:3])
+        print(f"  SCHEMA: plot '{name}' has {len(bad)} entry(ies) missing/invalid "
+              f"`provenance` (must be verified|title-claim|derived): {ex}")
+
     # Honesty: the anti-hallucination gate only MEANS something if the brief
     # actually cites refs in a checkable form (backtick `owner/slug` or a kaggle
     # code URL). If it cites zero, "no hallucinated refs" is VACUOUSLY true — the
     # gate never fired. Report that explicitly instead of a green PASS.
     n_checkable = len(_extract_kernel_refs(synth))
 
+    # --- accuracy GROUNDING RESULT (applies to ALL runs, old and new) ---
     if grounding_fails:
         print(f"  GROUNDING RESULT: FAIL ({len(grounding_fails)} grounding/chrome violation(s))")
-        raise SystemExit(1)
-    if n_checkable == 0:
-        # No checkable refs → anti-hallucination gate UNEXERCISED. Not a pass.
+        grounding_code = 1
+    elif n_checkable == 0:
         print("  GROUNDING RESULT: NOT EXERCISED — brief cites no checkable "
               "owner/slug refs; anti-hallucination gate did not fire. "
               "Degraded to chrome-clean + eyeball.")
-        # Distinct exit code so callers don't read this as a green PASS.
-        raise SystemExit(2)
-    print(f"  GROUNDING RESULT: PASS — {n_checkable} cited ref(s) all in gathered set, no chrome")
+        grounding_code = 2
+    else:
+        print(f"  GROUNDING RESULT: PASS — {n_checkable} cited ref(s) all in gathered set, no chrome")
+        grounding_code = 0
+
+    # --- SCHEMA CONFORMANCE (forward-only convention; NOT applied to the
+    #     pre-convention _018/_010 oracle) ---
+    if plot_schema:
+        print(f"  SCHEMA CONFORMANCE: FAIL ({len(plot_schema)} plot(s) with missing/invalid "
+              "`provenance`) — required on every plot for runs under the R3 schema convention")
+    else:
+        print("  SCHEMA CONFORMANCE: PASS — every plotted entry carries a valid `provenance`")
+
+    # Exit: accuracy failure dominates (1/2). If accuracy is clean but schema
+    # fails, exit 4 — a distinct code so a schema-only failure is never read as
+    # an accuracy/fabrication failure.
+    if grounding_code:
+        raise SystemExit(grounding_code)
+    if plot_schema:
+        raise SystemExit(4)
     raise SystemExit(0)
 
 
