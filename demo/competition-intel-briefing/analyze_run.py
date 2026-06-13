@@ -233,8 +233,12 @@ _GATHERED_ARTIFACT_DIRS = ("research", "raw")
 _GATHERED_ARTIFACT_EXTS = (".json", ".txt", ".tsv", ".csv", ".md")
 # Run-dir-root files that are gathering output (redirected skill-workflow JSON).
 _GATHERED_ROOT_RE = re.compile(
-    r"^(kernel_query|kernel_ingest|kernel_read|discussion_query|discussion_ingest"
-    r"|discussion_read|fetch_|top_kernel|kernels_top|discussions_top|leaderboard"
+    # kernel(s)_query/ingest/read, discussion(s)_query/ingest/read — the `s?`
+    # tolerates both singular (`kernel_query_*`) and plural (`kernels_query`)
+    # filenames the agent uses interchangeably run-to-run (was a brittle
+    # singular-only match that false-flagged _017's `kernels_query.json`).
+    r"^(kernels?_(query|ingest|read)|discussions?_(query|ingest|read)"
+    r"|fetch_|top_kernels?|kernels?_top|discussions?_top|leaderboard"
     r"|writeups?)[\w.-]*\.(json|txt|tsv|csv|md)$",
     re.IGNORECASE,
 )
