@@ -1,0 +1,152 @@
+[
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "pilkwang/rogii-eda-target-free-alignment-for-tvt",
+    "title": "\ud83d\udee2\ufe0f ROGII EDA + Target-Free Alignment for TVT",
+    "author": "Pilkwang Kim",
+    "total_votes": 150,
+    "last_run_time": "2026-06-05T12:30:39.217000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:08.541931Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "pilkwang/rogii-target-free-tvt-geosteering",
+    "title": "\ud83e\udded ROGII Target-Free TVT Geosteering",
+    "author": "Pilkwang Kim",
+    "total_votes": 118,
+    "last_run_time": "2026-06-13T06:02:13.983000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:02.782280Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "sunnywu27/rogii-wellbore-tvt-physical-model",
+    "title": "ROGII Wellbore TVT \u2014 Physical Model",
+    "author": "Sunnywu27",
+    "total_votes": 108,
+    "last_run_time": "2026-05-31T18:55:44.247000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:04.742061Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "avikdas567/rogii-wellbore-tvt-prediction-lightgbm-ensemble",
+    "title": "ROGII Wellbore TVT Prediction | LightGBM Ensemble",
+    "author": "Avik Das",
+    "total_votes": 12,
+    "last_run_time": "2026-05-16T04:57:29.727000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:08.283510Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "jek1wantaufik/rogii-tvt-prediction-with-lightgbm",
+    "title": "ROGII TVT Prediction with LightGBM",
+    "author": "Jeki Wan Taufik",
+    "total_votes": 11,
+    "last_run_time": "2026-05-23T04:38:47.290000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:05.257498Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "hanhan761/rogii-v1131-sunny-tvt-physical-model",
+    "title": "rogii-v1131-sunny-tvt-physical-model",
+    "author": "hanhan761",
+    "total_votes": 10,
+    "last_run_time": "2026-06-01T07:46:49.817000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:02.220261Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "shinyanagai123/eda-tvt-is-not-a-depth",
+    "title": "[EDA] TVT is Not a Depth",
+    "author": "shinya",
+    "total_votes": 10,
+    "last_run_time": "2026-05-06T18:58:46.577000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:09.337085Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "jirkaborovec/rogii-drill-eda-baseline-w-tvtnet",
+    "title": "ROGII\ud83d\udc77drill: EDA + Baseline w/ TVTNet",
+    "author": "Jirka",
+    "total_votes": 10,
+    "last_run_time": "2026-05-09T14:46:50.187000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:07.738256Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "torrreeesss/tvt-pred-gbdt-stacking",
+    "title": "TVT pred. (GBDT stacking)",
+    "author": "torrreeesss",
+    "total_votes": 7,
+    "last_run_time": "2026-05-14T11:51:18.480000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:09.066892Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "aman5153684/dtw-kalman-geology-aware-tvt-smoothing",
+    "title": "DTW + Kalman: Geology\u2011Aware TVT Smoothing ",
+    "author": "Aman Sharma",
+    "total_votes": 5,
+    "last_run_time": "2026-06-02T20:42:48.173000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:02.508792Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "aidensong123/particle-filter-for-wellbore-tvt-parameter-study",
+    "title": "Particle Filter for Wellbore TVT - Parameter Study",
+    "author": "AidenSong123",
+    "total_votes": 5,
+    "last_run_time": "2026-06-01T23:48:54.527000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:02.508781Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "pilkwang/rogii-physics-informed-residual-tvt-stack",
+    "title": " ROGII Physics-Informed Residual TVT Stack",
+    "author": "Pilkwang Kim",
+    "total_votes": 4,
+    "last_run_time": "2026-05-16T23:03:40.097000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:07.479758Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "torrreeesss/tvt-pred-gbdt-stacking-2-score9-637",
+    "title": "TVT pred. (GBDT stacking)2_score9.637",
+    "author": "torrreeesss",
+    "total_votes": 4,
+    "last_run_time": "2026-05-24T09:31:21.357000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:08.541969Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "ferencjuhsz/welldrill-geotvt-predictor",
+    "title": "WellDrill: GeoTVT Predictor",
+    "author": "Catcatcher",
+    "total_votes": 3,
+    "last_run_time": "2026-05-21T12:05:25.610000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:05.908191Z"
+  },
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "ref": "nkforwork/rogii-wellbore-noobnote-tvt-and-gr-alignment",
+    "title": "ROGII Wellbore Noobnote: TVT and GR Alignment",
+    "author": "nk for work",
+    "total_votes": 2,
+    "last_run_time": "2026-06-09T13:40:27.887000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-13T07:16:02.782291Z"
+  }
+]

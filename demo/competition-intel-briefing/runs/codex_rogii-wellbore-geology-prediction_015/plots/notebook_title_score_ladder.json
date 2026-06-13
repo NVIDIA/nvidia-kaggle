@@ -1,0 +1,22 @@
+{
+  "title": "Score ladder from gathered notebook titles (RMSE, lower is better)",
+  "source": "kernel_query",
+  "series": [
+    {
+      "label": "lightningv08/lb-7-776-rogii-ridge-sp",
+      "value": 7.776
+    },
+    {
+      "label": "needless090/lb-8-860-rogii-sel15-256seeds",
+      "value": 8.86
+    },
+    {
+      "label": "nihilisticneuralnet/9-251-rogii-wellbore-geology-prediction-dwt-based",
+      "value": 9.251
+    },
+    {
+      "label": "romantamrazov/rogii-better-solution-lb-9-956",
+      "value": 9.956
+    }
+  ]
+}

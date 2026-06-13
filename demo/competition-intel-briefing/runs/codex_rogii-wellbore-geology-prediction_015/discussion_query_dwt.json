@@ -1,0 +1,19 @@
+[
+  {
+    "competition_id": "rogii-wellbore-geology-prediction",
+    "discussion_id": 697431,
+    "title": "besides regression, also dwt (time warping)! ",
+    "author": "hengck23",
+    "author_username": "hengck23",
+    "author_tier": "GRANDMASTER",
+    "votes": 34,
+    "comment_count": 36,
+    "body_markdown": "related to geosteering. Here, given a strip of MD-GR of the horizontal well, \"stretch and fold\" it so that it matches the TVT-GR reference of the typewell\n\n\n![](https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F113660%2Fb40517687f05f7ecea819763d3b150dc%2FSelection_3412.png?generation=1778261192499811&alt=media)\n\n![](https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F113660%2F6f36c16fad39781039af137e753996dd%2FSelection_3304.png?generation=1778038684983121&alt=media)\n\n\n---\n\nbut, since the test and train locations are pretty close, pure regression might just also work\n",
+    "url": "https://www.kaggle.com/competitions/rogii-wellbore-geology-prediction/discussion/697431",
+    "tags": [],
+    "created_at": "2026-05-06T03:38:07.141461Z",
+    "updated_at": "2026-05-26T15:42:49.200Z",
+    "last_fetched_at": "2026-06-13T07:16:12.653025+00:00",
+    "ingested_at": "2026-06-13T07:16:11.837051Z"
+  }
+]

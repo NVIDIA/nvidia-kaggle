@@ -1,0 +1,54 @@
+{
+  "title": "Most commented discussions \u2014 top 12 gathered",
+  "source": "discussion_query",
+  "series": [
+    {
+      "label": "699853",
+      "value": 92
+    },
+    {
+      "label": "700424",
+      "value": 60
+    },
+    {
+      "label": "697431",
+      "value": 36
+    },
+    {
+      "label": "697329",
+      "value": 30
+    },
+    {
+      "label": "702474",
+      "value": 21
+    },
+    {
+      "label": "694973",
+      "value": 18
+    },
+    {
+      "label": "701691",
+      "value": 16
+    },
+    {
+      "label": "697416",
+      "value": 14
+    },
+    {
+      "label": "698282",
+      "value": 13
+    },
+    {
+      "label": "701995",
+      "value": 13
+    },
+    {
+      "label": "705210",
+      "value": 12
+    },
+    {
+      "label": "703038",
+      "value": 11
+    }
+  ]
+}

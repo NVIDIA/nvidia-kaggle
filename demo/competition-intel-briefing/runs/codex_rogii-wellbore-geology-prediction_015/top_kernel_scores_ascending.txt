@@ -1,0 +1,1 @@
+Error: 429 Client Error: Too Many Requests for url: https://api.kaggle.com/v1/search.SearchApiService/ListEntities
