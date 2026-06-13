@@ -40,13 +40,20 @@ allows. A strong brief contains all of:
   demonstrates it — so a reader can verify and follow it. A named technique with
   no source link is weaker than one with a `[kernel](...)` citation; make the
   citation the rule, not the exception.
-- **A quantified score ladder.** Assemble the concrete numbers you gathered into
-  an explicit target ladder — e.g. "carry-forward baseline ≈ X, strong public
-  solutions ≈ Y, top public ≈ Z" — each rung tied to its source link. Kernel
-  titles and discussions often embed scores (`[LB 7.776]`, a "9.251"-named
-  notebook); harvest those into the ladder rather than leaving performance vague.
-  This turns "do alignment" into "alignment-based solutions sit around Y–Z LB
-  (kernels A/B)."
+- **A quantified score ladder, assembled into ONE explicit block.** Don't leave
+  scores scattered across prose — collect the concrete numbers you gathered into a
+  single target ladder (e.g. a short list or table): "carry-forward baseline ≈ X,
+  strong public solutions ≈ Y, top public ≈ Z", **each rung tied to its source
+  link.** Kernel titles and discussions often embed scores (`[LB 7.776]`, a
+  "9.251"-named notebook); harvest those into the ladder rather than leaving
+  performance vague. This turns "do alignment" into "alignment-based solutions sit
+  around Y–Z LB (kernels A/B)."
+  - **Label a title-embedded number as a title string, not a verified score,
+    unless a fetched LB/CV value confirms it.** A notebook named "9.251 …" or
+    "lb-7-776-…" asserts that score in its *title* — that is the author's claim,
+    not a leaderboard reading you measured. Present it as "title claims LB 7.776
+    ([kernel](...))" unless you actually fetched that kernel's public score; never
+    silently promote a title-embedded number into the ladder as if it were verified.
 - **An actionable implementation path** — a concrete sequence a competitor can
   start on (baseline → features → modeling → validation → blending), citing the
   notebook(s) to study at each step.
@@ -68,11 +75,20 @@ Two honesty rules that protect accuracy:
 
 ## Plots (make them auditable by construction)
 
-Include a few (2–4) plots that give real insight. **One of them should be a
-public-leaderboard / top-N score plot** when leaderboard or public-score data is
-available — the score spread across the top entries is among the most useful
-things a competitor wants to see (it shows the target ladder visually). The
-others can be vote distributions, discussion engagement, dataset stats, etc.
+Include a few (2–4) plots that give real insight. **Spend the plot budget on
+performance, not popularity.** Concretely:
+
+- **A score / leaderboard plot is REQUIRED and comes FIRST** whenever leaderboard
+  or public-score data is available (top-N LB scores, or a score ladder of the
+  gathered solution scores). The score spread is the single most decision-relevant
+  thing a competitor wants — it shows the target ladder visually. Lead with it.
+- **Vote / comment-count plots are at most ONE**, and its title must label it as
+  *engagement / popularity, not performance* (e.g. "Top notebooks by votes
+  — popularity, not leaderboard rank"). Do NOT fill the plot budget with two or
+  three popularity charts while omitting the score plot — that visualizes
+  attention and hides the thing that actually predicts placement, contradicting
+  the votes≠performance rule above.
+- Remaining plots can be dataset stats, discussion engagement, etc.
 
 Worked example — a leaderboard top-N plot (note: plot EXACTLY the rows you
 gathered; if you fetched the top 17, the series has 17 entries and the title
