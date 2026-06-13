@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+#
+# Layer-4 demo harness: ONE skill, TWO agent frameworks, AGENTIC orchestration.
+#
+# The agent is handed a RESEARCH GOAL (not a script to run). It reads the
+# skill's SKILL.md, decides which of the skill's INDIVIDUAL research workflows
+# to use, chains them in an order IT chooses, and synthesizes a strategy brief
+# from what it gathered. Claude and Codex make different choices — that
+# divergence is the showcase.
+#
+# The task prompt is a NATURAL research goal — it names no scripts and adds NO
+# "you may not use X" clause. We want the agent's REAL orchestration choices,
+# observed not engineered: it may chain granular workflows, and it may also call
+# the convenience generator — whatever it judges best. We report what it
+# actually did. The structured trace is the first-class deliverable: it proves
+# what the agent orchestrated and is the source of truth for the grounding
+# allow-list.
+#
+# Usage:
+#   ./run_demo.sh --runtime claude|codex <competition-slug>
+#
+# Outputs (under runs/<runtime>_<slug>/):
+#   trace.jsonl   the structured agent trace (codex --json / claude stream-json)
+#   brief.md      the agent's final strategy brief
+# Then analyze_run.py reports agentic-behavior evidence + grounding-eval.
+
+set -euo pipefail
+
+RUNTIME=""
+SLUG=""
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --runtime) RUNTIME="${2:-}"; shift 2 ;;
+        -h|--help) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -*) echo "Unknown option: $1" >&2; exit 2 ;;
+        *) SLUG="$1"; shift ;;
+    esac
+done
+
+if [ "$RUNTIME" != "claude" ] && [ "$RUNTIME" != "codex" ]; then
+    echo "ERROR: --runtime must be 'claude' or 'codex'." >&2; exit 2
+fi
+if [ -z "$SLUG" ]; then
+    echo "ERROR: competition slug required. Usage: $0 --runtime claude|codex <slug>" >&2; exit 2
+fi
+
+DEMO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$DEMO_DIR/../.." && pwd)"
+ANALYZE="$DEMO_DIR/analyze_run.py"
+
+# Load Kaggle token so the agent's skill workflows can reach the auth tiers.
+if [ -f "$REPO_ROOT/.env" ]; then set -a; . "$REPO_ROOT/.env"; set +a; fi
+
+# Each run writes to a UNIQUE, immutable dir so artifacts never overwrite each
+# other — every re-run is frozen and independently re-derivable, which stops the
+# "everyone analyzed a since-overwritten file" churn. Sequential id (no Date in
+# this env). A `latest` symlink points at the newest run for convenience.
+RUNS_ROOT="$DEMO_DIR/runs"
+mkdir -p "$RUNS_ROOT"
+_n=1
+while [ -e "$RUNS_ROOT/${RUNTIME}_${SLUG}_$(printf '%03d' "$_n")" ]; do _n=$((_n+1)); done
+RUN_DIR="$RUNS_ROOT/${RUNTIME}_${SLUG}_$(printf '%03d' "$_n")"
+mkdir -p "$RUN_DIR"
+ln -sfn "$RUN_DIR" "$RUNS_ROOT/${RUNTIME}_${SLUG}_latest"
+TRACE="$RUN_DIR/trace.jsonl"
+BRIEF="$RUN_DIR/brief.md"
+
+# The research GOAL — a natural, thorough investigation. Names no scripts and
+# adds NO artificial "you may not use file X" clause: we want the agent's REAL
+# orchestration choices, not choices distorted to manufacture a clean trace.
+# The framing (overview, data, community, top notebooks) naturally favors the
+# granular workflows; if an agent also calls the convenience generator, that's
+# the demotion working, reported as a note — not engineered away.
+#
+# The source-citation ask is a genuine quality request (a good brief cites its
+# sources) AND it gives the grounding gate something checkable: the specific
+# kernels/discussions the agent names can be verified against what it gathered.
+read -r -d '' TASK <<EOF || true
+I'm starting the ${SLUG} Kaggle competition. Use the nvidia-kaggle skill to
+research it and brief me on the strategies that win. Investigate the
+competition overview, the dataset, what the community discusses, and what the
+top public notebooks do — then write me a strategy brief grounded in what you
+find. Cite the specific kernels (as owner/slug) and discussions you drew from,
+so I can follow up on the sources. Give me a focused brief — prioritize the
+highest-signal sources rather than reading everything exhaustively, and make
+sure you finish and save the brief to ${BRIEF}.
+EOF
+
+echo "=============================================================="
+echo " Agentic Competition Intel demo — agent orchestrates the skill"
+echo "   runtime:     $RUNTIME"
+echo "   competition: $SLUG"
+echo "   trace:       $TRACE"
+echo "=============================================================="
+
+case "$RUNTIME" in
+    codex)
+        # Codex (NVIDIA gpt-5.5), headless, STRUCTURED trace via --json.
+        # Sandbox bypass is REQUIRED here: Codex's default bubblewrap sandbox
+        # cannot create user namespaces inside this container ("bwrap: No
+        # permissions to create a new namespace"), so every model-run shell
+        # command fails. We are already containerized, so bypassing is safe.
+        echo "" | codex exec --json \
+            --skip-git-repo-check \
+            -C "$REPO_ROOT" \
+            --dangerously-bypass-approvals-and-sandbox \
+            "$TASK" > "$TRACE" 2>&1 || true
+        ;;
+    claude)
+        # Claude Code, headless, STRUCTURED trace via stream-json. Claude may
+        # orchestrate by dispatching sub-agents; analyze_run.py reads tool
+        # outputs from the stream to reconstruct what was gathered.
+        claude -p "$TASK" \
+            --add-dir "$REPO_ROOT" \
+            --allowedTools "Bash Read Write Skill" \
+            --output-format stream-json --verbose > "$TRACE" 2>&1 || true
+        ;;
+esac
+
+echo
+if [ ! -s "$TRACE" ]; then
+    echo "ERROR: no trace captured at $TRACE — cannot verify the run." >&2
+    exit 1
+fi
+
+# Trace-based verification: agentic-behavior evidence + grounding-eval against
+# the entity set reconstructed from the agent's OWN tool outputs in the trace.
+SYN_ARG=()
+[ -f "$BRIEF" ] && SYN_ARG=(--synthesis "$BRIEF")
+python "$ANALYZE" "$TRACE" --runtime "$RUNTIME" "${SYN_ARG[@]}"

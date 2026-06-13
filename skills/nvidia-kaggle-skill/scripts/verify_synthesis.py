@@ -130,10 +130,14 @@ def _looks_like_handle(span: str) -> bool:
 # (they're site paths). Excluded so they aren't mislabeled as hallucinated refs
 # — a wrong competition path is caught separately by the slug check.
 _NON_REF_PREFIXES = (
+    "competition",
     "competitions",
     "code",
     "datasets",
+    "dataset",
     "models",
+    "model",
+    "discussion",   # singular: "discussion/309693" is a discussion, not owner/slug
     "discussions",
     "www.kaggle.com",
     "kaggle.com",

@@ -1,0 +1,202 @@
+[
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "gusthema/spaceship-titanic-with-tfdf",
+    "title": "Spaceship Titanic with TFDF",
+    "author": "Gusthema",
+    "total_votes": 7691,
+    "last_run_time": "2023-04-17T09:36:29.597000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719125Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "samuelcortinhas/spaceship-titanic-a-complete-guide",
+    "title": "\ud83d\ude80 Spaceship Titanic: A complete guide \ud83c\udfc6",
+    "author": "Samuel Cortinhas",
+    "total_votes": 2023,
+    "last_run_time": "2022-04-09T08:27:14.873000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719165Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "odins0n/spaceship-titanic-eda-27-different-models",
+    "title": "\ud83d\ude80Spaceship Titanic -\ud83d\udccaEDA + 27 different models\ud83d\udcc8",
+    "author": "Sanskar Hasija",
+    "total_votes": 1070,
+    "last_run_time": "2023-01-24T00:37:28.550000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719173Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "arunklenin/space-titanic-eda-advanced-feature-engineering",
+    "title": "\ud83d\udef8 Space Titanic| EDA|Advanced Feature Engineering",
+    "author": "Minato Namikaze",
+    "total_votes": 692,
+    "last_run_time": "2024-03-30T13:14:38.883000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719178Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "chanchal24/titanic-dataset",
+    "title": "Titanic Dataset",
+    "author": "Chanchal Alam",
+    "total_votes": 452,
+    "last_run_time": "2024-09-06T18:35:27.807000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719184Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "viktortaran/space-titanic",
+    "title": "Space Titanic \ud83d\ude80 \u6a5f\u68b0\u5b66\u7fd2",
+    "author": "Viktor Taran",
+    "total_votes": 405,
+    "last_run_time": "2023-02-23T03:39:47.170000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719189Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "lazer999/spaceship-titanic-top-6-for-beginners",
+    "title": "\ud83c\udf0c\ud83d\ude80Spaceship Titanic-Top 6%|For Beginners \ud83e\udd13\ud83d\udea2",
+    "author": "Musa Khan",
+    "total_votes": 397,
+    "last_run_time": "2022-09-30T02:17:51.607000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719195Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "kdsharma/spaceship-titanic-competition-end-to-end-project",
+    "title": "Spaceship Titanic Competition End To End Project",
+    "author": "Kumod Sharma",
+    "total_votes": 364,
+    "last_run_time": "2023-02-20T18:18:28.330000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719205Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "computervisi/best-models-spaceship-titanic",
+    "title": "Best models Spaceship_Titanic",
+    "author": "MLCV",
+    "total_votes": 338,
+    "last_run_time": "2023-08-13T05:54:16.977000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719211Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "dmitrykonovalov/fastai-lesson-6a-random-forests",
+    "title": "fastai-lesson-6a-random-forests",
+    "author": "dmitrykonovalov",
+    "total_votes": 311,
+    "last_run_time": "2025-07-17T05:10:25.327000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719216Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "azminetoushikwasi/xgboost-wrangling-with-hyperparameters-guide",
+    "title": "XGBoost | Wrangling with Hyperparameters | Guide",
+    "author": "Azmine Toushik Wasi",
+    "total_votes": 278,
+    "last_run_time": "2023-01-09T11:30:53.950000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719221Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "arootda/pycaret-visualization-optimization-0-81",
+    "title": "\ud83d\ude80[Pycaret] Visualization + Optimization (0.81)",
+    "author": "Geunho Yu",
+    "total_votes": 234,
+    "last_run_time": "2022-03-06T16:36:00.700000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719230Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "hardikgarg03/spaceship-titanic-using-random-forest-and-xgboost",
+    "title": "Spaceship Titanic Using Random Forest and Xgboost",
+    "author": "InSaNe03",
+    "total_votes": 212,
+    "last_run_time": "2024-01-20T05:27:39.623000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719235Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "kagleo123/titanic-eda-machine-deep-learning",
+    "title": "\ud83d\udea2titanic EDA\ud83d\udcc8 & Machine , Deep learning\ud83d\udca1",
+    "author": "wngus_",
+    "total_votes": 206,
+    "last_run_time": "2023-07-02T08:18:52.897000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719240Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "eisgandar/spaceship-titanic-eda-xgboost-80",
+    "title": "\ud83c\udf0c Spaceship Titanic - EDA & XGBoost- 80%+",
+    "author": "Mustanger",
+    "total_votes": 182,
+    "last_run_time": "2022-12-01T15:52:39.440000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719249Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "usharengaraju/tensorflow-spaceship-neuraldecisionforests",
+    "title": "\ud83d\ude80\ud83d\ude80[TensorFlow]SpaceShip - NeuralDecisionForests",
+    "author": "Tensor Girl",
+    "total_votes": 180,
+    "last_run_time": "2022-02-25T01:30:11.367000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719257Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "ruchi798/spaceship-titanic-eda-pytorch-baseline-w-b",
+    "title": "\ud83d\ude80 Spaceship Titanic: EDA + PyTorch Baseline + W&B",
+    "author": "Ruchi Bhatia",
+    "total_votes": 180,
+    "last_run_time": "2022-03-24T05:04:08.487000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719265Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "bhatnagardaksh/gradient-descent-from-scratch",
+    "title": "Gradient Descent from scratch",
+    "author": "Daksh Bhatnagar",
+    "total_votes": 174,
+    "last_run_time": "2024-11-09T03:54:38.250000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.719271Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "cv13j0/spaceship-titanic-nn-model-feature-eng",
+    "title": "\ud83c\udf20 Spaceship Titanic NN Model + Feature Eng.",
+    "author": "C4rl05/V",
+    "total_votes": 167,
+    "last_run_time": "2023-11-12T21:21:03.430000Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.720283Z"
+  },
+  {
+    "competition_id": "spaceship-titanic",
+    "ref": "fernaandodantas/lgbm-0-8066-score-top-7-solution",
+    "title": "LGBM 0.8066% Score Top 7% Solution",
+    "author": "Fernando Dantas",
+    "total_votes": 164,
+    "last_run_time": "2024-02-28T00:02:06Z",
+    "is_private": false,
+    "ingested_at": "2026-06-12T23:11:42.720298Z"
+  }
+]

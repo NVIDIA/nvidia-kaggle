@@ -18,3 +18,11 @@ data/
 # Generated briefing artifacts (but keep the checked-in demo sample)
 *_briefing.md
 !demo/competition-intel-briefing/llm-20-questions_briefing.md
+
+# Local CLI skill-discovery symlink (environment-specific, not portable)
+.claude/
+
+# Agentic demo run dirs: ignore all by default; the verified exhibits are
+# force-added explicitly in the layer-4 commit. Keeps run churn out of the repo.
+demo/competition-intel-briefing/runs/
+
