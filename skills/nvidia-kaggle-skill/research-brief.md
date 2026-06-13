@@ -135,13 +135,30 @@ real, not invented:
    ```json
    {"title": "...",
     "source": "<which workflow produced it: kernel_query | fetch_top_kernel_scores | discussion_query | leaderboard>",
-    "series": [{"label": "<human-readable: notebook title/short slug, or discussion title — NOT a bare id>", "value": <number>}, ...]}
+    "series": [{"label": "<human-readable: notebook title/short slug, or discussion title — NOT a bare id>",
+                "id": "<owner/slug for kernels, discussion id, or team name — the stable key for cross-referencing>",
+                "value": <number>,
+                "provenance": "<verified | title-claim | derived>"}, ...]}
    ```
    Every `value` must be a number you actually gathered from the skill — no
    invented or interpolated values. If a quantity is incomplete (e.g. some public
    scores were rate-limited), include only what you have and say so in the title.
-   If a plot is a *computed aggregate* (e.g. a histogram of vote ranges), that is
-   fine, but make the title say so — it's a derived metric, not a raw gathered value.
+
+   **Each entry carries `id` and `provenance`:**
+   - **`id`** — the stable key (kernel `owner/slug`, discussion id, leaderboard
+     team) even when `label` is a human-readable title. The reader sees `label`;
+     `id` keeps the entity cross-referenceable to the brief's prose and lets the
+     verifier check it mechanically.
+   - **`provenance`** — must be one of exactly three, and it is NOT a free
+     self-assertion:
+     - **`verified`** — the value is present in this run's gathered tool output
+       (the committed verifier can confirm it traces). Only tag `verified` when
+       the value genuinely came from gathered data; the gate will check.
+     - **`title-claim`** — the value was parsed from a notebook/discussion *title*
+       (e.g. `9.251` from a "9.251 …"-named kernel). Legitimately unverified — it
+       is the author's claim, not a score you measured.
+     - **`derived`** — a computed aggregate (e.g. a histogram bucket, a sum); make
+       the title say so too. Not a raw gathered value.
 
    **NEVER pad a "top-N" plot.** A plot's `series` must contain ONLY rows whose
    `(label, value)` you gathered in **this run**. If you intended a "top 20" but
@@ -163,6 +180,17 @@ real, not invented:
 2. Write `<name>.py` that **reads `<name>.json`** and renders `<name>.png` from it
    (matplotlib). The PNG must be a rendering of that JSON — do not plot from any
    other in-memory data, so the image can never disagree with the saved data.
+
+   **The chart must carry the same claim-vs-verified honesty as the prose.** When
+   a plot mixes `provenance` kinds (the score ladder especially — measured scores
+   next to title-claims), the renderer MUST branch on `provenance` and render the
+   kinds visually distinctly — e.g. hatched or differently-colored bars for
+   `title-claim`, solid for `verified` — plus a legend stating it (e.g. "hatched =
+   author title-claim, unverified"). A reader glancing at the chart must not
+   mistake a claimed score for a measured one; a flat chart that draws `7.776`
+   (title-claim) and a measured RMSE as identical bars quietly overstates
+   confidence — the visual equivalent of fabrication. Style by the `provenance`
+   field so the distinction is coupled to the data, not hand-drawn.
 3. Run the script to produce the PNG, then embed it in the brief with a relative
    path.
 
