@@ -78,24 +78,20 @@ Two honesty rules that protect accuracy:
 Include a few (2–4) plots that give real insight. **Spend the plot budget on
 performance, not popularity.** Concretely:
 
-- **A score / leaderboard plot is REQUIRED and comes FIRST whenever you gathered
-  leaderboard or public-score data — you MUST include it; do NOT omit it.** If the
-  leaderboard/score data was fetched this run, a score plot is mandatory (top-N LB
-  scores, or a score ladder of the gathered solution scores). The score spread is
-  the single most decision-relevant thing a competitor wants — it shows the target
-  ladder visually. Lead with it. Discussing the band in prose is NOT a substitute
-  for the plot.
-  - **Show the score DISTRIBUTION / bands, not a wall of names the brief never
-    discusses.** What a competitor wants from a leaderboard plot is *where scores
-    cluster, how tight the top is, and the gap to beat* — not 20 opaque team
-    names. A top-20 chart whose teams are mostly never mentioned in the prose is a
-    wall of orphans: the reader can look up almost none of the bars. So plot the
-    score **distribution/bands** (e.g. top score, top-10 band, median, the cluster
-    of strong solutions), OR plot only the few teams/solutions you actually
-    discuss in the brief — never 20 named-but-unreferenced rows. The plot's job is
-    the score landscape, not a roster. **The permitted variation is bands-vs-
-    discussed-teams — NEVER present-vs-absent: when you gathered the data, the plot
-    must exist.**
+- **When you gather leaderboard/score data, convey the score landscape** — where
+  scores cluster, how tight the top is, the gap to beat. The score spread is the
+  single most decision-relevant thing a competitor wants. Convey it **either** as
+  a distribution/bands plot when that genuinely adds insight, **or** as a prose
+  band stating the concrete numbers (e.g. "top ~5.8, strong public cluster sub-10,
+  starter baselines ~15"). Use your judgment on which serves the reader better.
+  - **Never a wall of undiscussed names.** What a competitor wants is the score
+    landscape, not a roster. A top-20 chart whose teams are mostly never mentioned
+    in the prose is a wall of orphans — the reader can look up almost none of the
+    bars. So a leaderboard *plot*, if you make one, shows the
+    **distribution/bands** (top score, top-10 band, median, strong-solution
+    cluster) or only the few teams/solutions you actually discuss — never 20
+    named-but-unreferenced rows. Declining a low-value plot in favor of a concrete
+    prose band is good editorial judgment, not a gap; a name-wall is the defect.
 - **Vote / comment-count plots are at most ONE**, and its title must label it as
   *engagement / popularity, not performance* (e.g. "Top notebooks by votes
   — popularity, not leaderboard rank"). Do NOT fill the plot budget with two or
@@ -182,8 +178,13 @@ real, not invented:
      appear in the prose?) is a human-read judgment, because a gate can't reliably
      tell a real orphan from a legitimate bucket/derived bar, and opaque ids
      (e.g. a numeric leaderboard team id) aren't what a reader cross-references by.
-   - **`provenance`** — must be one of exactly three, and it is NOT a free
-     self-assertion:
+   - **`provenance`** — must be EXACTLY ONE of the closed set
+     `{verified, title-claim, derived}` — these three strings, nothing else. Do
+     NOT invent variants (e.g. `kernel-local-cv`, `discussion-stated`, free-text
+     descriptions): a value outside the closed set is a SCHEMA FAIL, same as
+     omitting the field. If a value is a measured CV/LB number you gathered, it is
+     `verified`; an author's title number is `title-claim`; a computed aggregate
+     is `derived`. It is NOT a free self-assertion:
      - **`verified`** — the value is present in this run's gathered tool output
        (the committed verifier can confirm it traces). Only tag `verified` when
        the value genuinely came from gathered data. **The gate now checks this on
