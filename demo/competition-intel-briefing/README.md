@@ -75,11 +75,18 @@ fabrication.
 Two frozen, independently re-derived runs are committed under `runs/` as the
 demo's evidence:
 
-- **`runs/codex_FAIL_caught_hallucination/`** — the accuracy guarantee. The
-  agent cited `vdebout/315987` as a kernel, but that is a *discussion* id it
-  conflated into a fake `owner/slug`. The committed gate catches it:
-  **`GROUNDING RESULT: FAIL`** — this exhibit is *expected* to fail; that is its
-  whole purpose. (Re-derive it and confirm it still FAILs on `vdebout/315987`.)
+- **`runs/codex_rogii-wellbore-geology-prediction_022/`** — the accuracy
+  guarantee. In its score-ladder plot the agent invented two notebooks that
+  appear in no gathered artifact — `ROGII: Geostat, Softmax NCC Hybrid` (LB
+  `9.946`) and `ROGII 10.239 Weblore Predicition` (LB `10.239`). The committed
+  gate catches both: **`GROUNDING RESULT: FAIL`** on exactly those two
+  fabricated rows, while **`SCHEMA CONFORMANCE: PASS`** — so the run is
+  presentation-clean yet accuracy-caught, which is precisely what the
+  two-verdict design is for. This exhibit is *expected* to fail grounding; that
+  is its whole purpose. (Re-derive it and confirm it still FAILs on the `9.946`
+  and `10.239` ungathered kernels. The same plot's legitimately-derived metric
+  — median per-well eval fraction computed off the downloaded competition CSVs
+  — is correctly *not* flagged.)
 - **`runs/codex_rogii-wellbore-geology-prediction_019/`** — the clean
   readability exemplar: human-legible plot labels (no bare ids), claim-vs-verified
   visual honesty (verified public-LB bars solid, author title-claims hatched),

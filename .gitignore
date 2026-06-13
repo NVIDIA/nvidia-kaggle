@@ -29,7 +29,7 @@ demo/competition-intel-briefing/runs/*
 # Minimum PR: exactly TWO committed exemplars — the caught-fabrication exhibit
 # (proves the accuracy gate) + the clean readability exemplar. All other runs
 # are scratch / preserved off-repo.
-!demo/competition-intel-briefing/runs/codex_FAIL_caught_hallucination/
+!demo/competition-intel-briefing/runs/codex_rogii-wellbore-geology-prediction_022/
 !demo/competition-intel-briefing/runs/codex_rogii-wellbore-geology-prediction_019/
 # ...but never the multi-GB downloaded competition dataset an agent may fetch
 # into a run dir; the brief/trace/plots are the exhibit, not the raw data.

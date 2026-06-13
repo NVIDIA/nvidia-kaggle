@@ -1,0 +1,126 @@
+{
+  "title": "Top 20 gathered public notebooks by votes (popularity, not performance)",
+  "source": "/tmp/rogii_kernels_query_now.json gathered from Kaggle kernel query in this run",
+  "series": [
+    {
+      "label": "9.251 ROGII-Wellbore Geology Prediction: DWT-based",
+      "value": 589,
+      "provenance": "verified",
+      "ref": "nihilisticneuralnet/9-251-rogii-wellbore-geology-prediction-dwt-based"
+    },
+    {
+      "label": "Wellbore Geology Prediction | Ridge",
+      "value": 228,
+      "provenance": "verified",
+      "ref": "ravaghi/wellbore-geology-prediction-ridge"
+    },
+    {
+      "label": "rogii_dual_pipeline_blend",
+      "value": 196,
+      "provenance": "verified",
+      "ref": "pixiux/rogii-dual-pipeline-blend"
+    },
+    {
+      "label": "Wellbore Geology Prediction | Hill Climbing",
+      "value": 195,
+      "provenance": "verified",
+      "ref": "ravaghi/wellbore-geology-prediction-hill-climbing"
+    },
+    {
+      "label": "[ROGII] SUPER SOLUTION |LB: TOP 3 ",
+      "value": 169,
+      "provenance": "verified",
+      "ref": "romantamrazov/rogii-super-solution-lb-top-3"
+    },
+    {
+      "label": "ROGII |\ud83d\udc3c h-blend v1",
+      "value": 164,
+      "provenance": "verified",
+      "ref": "nina2025/rogii-h-blend-v1"
+    },
+    {
+      "label": "XGB Starter - [CV 15]",
+      "value": 159,
+      "provenance": "verified",
+      "ref": "cdeotte/xgb-starter-cv-15"
+    },
+    {
+      "label": "\ud83d\udee2\ufe0f ROGII EDA + Target-Free Alignment for TVT",
+      "value": 150,
+      "provenance": "verified",
+      "ref": "pilkwang/rogii-eda-target-free-alignment-for-tvt"
+    },
+    {
+      "label": "rogii-sp45-fleongg-blend-v2",
+      "value": 148,
+      "provenance": "verified",
+      "ref": "jaemin3404/rogii-sp45-fleongg-blend-v2"
+    },
+    {
+      "label": "Wellbore Geology Prediction | LightGBM",
+      "value": 147,
+      "provenance": "verified",
+      "ref": "ravaghi/wellbore-geology-prediction-lightgbm"
+    },
+    {
+      "label": "GR Features / Outlier Detection \u2014 ROGII Wellbore",
+      "value": 144,
+      "provenance": "verified",
+      "ref": "mitchgansemer/gr-features-outlier-detection-rogii-wellbore"
+    },
+    {
+      "label": "\ud83e\udded ROGII Target-Free TVT Geosteering",
+      "value": 138,
+      "provenance": "verified",
+      "ref": "pilkwang/rogii-target-free-tvt-geosteering"
+    },
+    {
+      "label": "rogii-sel15-rerun",
+      "value": 130,
+      "provenance": "verified",
+      "ref": "aidensong123/rogii-sel15-rerun"
+    },
+    {
+      "label": "EDA Starter",
+      "value": 116,
+      "provenance": "verified",
+      "ref": "cdeotte/eda-starter"
+    },
+    {
+      "label": "Drift Targeting + NCC: Tree-based ROGII Wellbore",
+      "value": 109,
+      "provenance": "verified",
+      "ref": "mitchgansemer/drift-targeting-ncc-tree-based-rogii-wellbore"
+    },
+    {
+      "label": "ROGII Wellbore TVT \u2014 Physical Model",
+      "value": 108,
+      "provenance": "verified",
+      "ref": "sunnywu27/rogii-wellbore-tvt-physical-model"
+    },
+    {
+      "label": "NN Starter - [CV 15.5]",
+      "value": 107,
+      "provenance": "verified",
+      "ref": "cdeotte/nn-starter-cv-15-5"
+    },
+    {
+      "label": "ROGII Wellbore Geology | Ridge SP Pipeline",
+      "value": 104,
+      "provenance": "verified",
+      "ref": "yuriygreben/rogii-wellbore-geology-ridge-sp-pipeline"
+    },
+    {
+      "label": "Physics-Informed Baseline",
+      "value": 100,
+      "provenance": "verified",
+      "ref": "karnakbaevarthur/physics-informed-baseline"
+    },
+    {
+      "label": "AeroRidge Engine v2",
+      "value": 94,
+      "provenance": "verified",
+      "ref": "svanikkolli/aeroridge-engine-v2"
+    }
+  ]
+}
