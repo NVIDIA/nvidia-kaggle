@@ -1,0 +1,66 @@
+{
+  "title": "Top 15 discussions by comment count among fetched rows (discussion_query)",
+  "source": "discussion_query",
+  "series": [
+    {
+      "label": "699853: multi-trajectory prediction (MTP) with deep CNN ",
+      "value": 92
+    },
+    {
+      "label": "700424: Share an UI visualizer ",
+      "value": 60
+    },
+    {
+      "label": "697431: besides regression, also dwt (time warping)! ",
+      "value": 36
+    },
+    {
+      "label": "697329: Submission Scoring Error \u2014 Is the scorer live ye",
+      "value": 30
+    },
+    {
+      "label": "702474: ML to learn generator for forward simulation",
+      "value": 21
+    },
+    {
+      "label": "694973: How to get started + Competition's Official Disc",
+      "value": 18
+    },
+    {
+      "label": "701691: cv and lb correlations .....",
+      "value": 16
+    },
+    {
+      "label": "697416: Welcome to ROGII - Wellbore Geology Prediction!",
+      "value": 14
+    },
+    {
+      "label": "698282: Defintion of tvt",
+      "value": 13
+    },
+    {
+      "label": "701995: Is the public LB test set (26%) fixed? ",
+      "value": 13
+    },
+    {
+      "label": "705210: PNG files don't match the data",
+      "value": 12
+    },
+    {
+      "label": "699207: Can a single model achieve LB/CV below 10.0?",
+      "value": 10
+    },
+    {
+      "label": "697418: Diagram of the problem",
+      "value": 9
+    },
+    {
+      "label": "704273: How much should we trust the LB score?",
+      "value": 6
+    },
+    {
+      "label": "704663: Like anyone please tell why my score keeps on va",
+      "value": 6
+    }
+  ]
+}

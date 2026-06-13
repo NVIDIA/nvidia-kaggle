@@ -1,0 +1,5 @@
+Fetching kernels for competition: rogii-wellbore-geology-prediction
+  sort-by=voteCount, max-pages=3
+Fetched 60 kernels from Kaggle API
+Competition metric: Mean Squared Error
+Done: 0 new, 60 updated in /nvidia-kaggle/data/kernels.db

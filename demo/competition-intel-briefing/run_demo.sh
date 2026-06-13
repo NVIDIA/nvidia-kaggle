@@ -96,6 +96,19 @@ mkdir -p "$PLOTS_DIR"
 PROMPT_VARIANT="${PROMPT_VARIANT:-moderate}"
 
 case "$PROMPT_VARIANT" in
+  natural)
+    # A real-user-style request: no schema, no step-by-step. The citation +
+    # plot-auditability conventions live in the skill (research-brief.md), so
+    # the agent should pick them up automatically. The open question this
+    # variant tests: does the agent honor skill-embedded conventions as
+    # reliably as prompt-spelled-out ones (schema + coupling intact)?
+read -r -d '' TASK <<EOF || true
+Research the ${SLUG} Kaggle competition with the nvidia-kaggle skill and write me
+a strategy brief on what it takes to do well. Include the key public notebooks
+and discussions as links, and a few plots for insight. Save the brief to ${BRIEF}
+and put any plot files under ${PLOTS_DIR}.
+EOF
+    ;;
   full)
 read -r -d '' TASK <<EOF || true
 I'm starting the ${SLUG} Kaggle competition. Use the nvidia-kaggle skill to
@@ -170,8 +183,19 @@ echo "=============================================================="
 echo " Agentic Competition Intel demo — agent orchestrates the skill"
 echo "   runtime:     $RUNTIME"
 echo "   competition: $SLUG"
+echo "   prompt:      $PROMPT_VARIANT"
 echo "   trace:       $TRACE"
 echo "=============================================================="
+
+# Record the prompt variant + the exact TASK for BOTH runtimes, so every run is
+# independently auditable (which variant + the literal user prompt used). codex
+# --json does not echo the prompt into its trace, so without this the prompt is
+# unrecoverable from artifacts.
+{
+    echo "# runtime=$RUNTIME  competition=$SLUG  prompt_variant=$PROMPT_VARIANT"
+    echo "# --- TASK (verbatim user prompt) ---"
+    printf '%s\n' "$TASK"
+} > "$RUN_DIR/prompt.txt"
 
 case "$RUNTIME" in
     codex)

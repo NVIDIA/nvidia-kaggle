@@ -93,6 +93,17 @@ python ./scripts/fetch_dataset_info.py <competition-slug-or-url>
 
 The scripts accept a bare competition slug or `https://www.kaggle.com/competitions/<slug>` URL and extract the slug automatically. Convert output to markdown when the user asks for saved documentation, using `{slug}_competition_overview.md` and `{slug}_dataset_description.md` in the current working directory.
 
+### Research Brief (agentic)
+
+Use this when the user asks you to **research a competition and write a strategy
+brief** in natural terms (e.g. "research this competition and brief me, with
+links and a few charts"). You chain the skill's individual research workflows
+yourself and write the brief. Read `./research-brief.md` for the conventions that
+keep the brief accurate and auditable — how to cite sources as `kaggle.com/code/<owner>/<slug>`
+links, and how to make plots provenance-traceable (write a `{title,source,series}`
+sidecar JSON, render the PNG from that JSON). These conventions live in the skill
+so the user does not have to spell them out.
+
 ### Competition Intel Briefing
 
 Use this when the user wants a single polished markdown briefing for a competition. It chains the other workflows and degrades gracefully: the no-token tier (overview + dataset + top solution writeups) always runs via public scraping, and the auth tier (top public kernels, top discussions) fills in when `KAGGLE_API_TOKEN` is set, otherwise renders clear "requires token" placeholders.

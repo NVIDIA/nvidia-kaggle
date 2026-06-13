@@ -1,0 +1,23 @@
+Warning: Looks like you're using an outdated `kaggle` version (installed: 2.0.0), please consider upgrading to the latest version (2.0.2)
+Next Page Token = CfDJ8Ih_VxHsLwdJhHStLnSaLO_UTgeGGK-dtyWiVrr2TI8BU1dHW0rB1noAjTwltszGqL6MWpTJePk-M2wXpHdlqgqdbm6rphIMVGeolaDcFzJdIorbsJuSFdYnH23X6ftUYjqOad0o_31PQv92Hgw
+name,size,creationDate
+AI_wellbore_geology_prediction_task_en.pptx,28789544,2026-05-01 18:40:09.973000
+sample_submission.csv,254725,2026-05-01 18:40:09.454000
+test/000d7d20__horizontal_well.csv,278656,2026-05-01 18:40:09.449000
+test/000d7d20__typewell.csv,23141,2026-05-01 18:40:09.503000
+test/00bbac68__horizontal_well.csv,440311,2026-05-01 18:40:09.519000
+test/00bbac68__typewell.csv,35317,2026-05-01 18:40:09.470000
+test/00e12e8b__horizontal_well.csv,378010,2026-05-01 18:40:09.500000
+test/00e12e8b__typewell.csv,45861,2026-05-01 18:40:09.511000
+train/000d7d20.png,828522,2026-05-01 18:40:29.207000
+train/000d7d20__horizontal_well.csv,611678,2026-05-01 18:40:20.438000
+train/000d7d20__typewell.csv,28826,2026-05-01 18:40:23.654000
+train/00bbac68.png,830428,2026-05-01 18:40:27.718000
+train/00bbac68__horizontal_well.csv,937510,2026-05-01 18:40:28.727000
+train/00bbac68__typewell.csv,42011,2026-05-01 18:40:20.919000
+train/00e12e8b.png,797443,2026-05-01 18:40:11.527000
+train/00e12e8b__horizontal_well.csv,780436,2026-05-01 18:40:23.686000
+train/00e12e8b__typewell.csv,52806,2026-05-01 18:40:25.609000
+train/015fe0d2.png,890382,2026-05-01 18:40:17.296000
+train/015fe0d2__horizontal_well.csv,726837,2026-05-01 18:40:19.205000
+train/015fe0d2__typewell.csv,28755,2026-05-01 18:40:16.715000
