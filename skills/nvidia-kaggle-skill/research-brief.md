@@ -90,6 +90,33 @@ performance, not popularity.** Concretely:
   the votes≠performance rule above.
 - Remaining plots can be dataset stats, discussion engagement, etc.
 
+**Make every plot legible and useful to a human reader.** A plot that is
+provenance-clean but unreadable is a failure. Three rules, all required:
+
+- **Human-readable labels — NEVER bare numeric ids.** Label each bar/point with
+  the discussion *title* (trimmed to a readable length, e.g. "Submission scoring
+  error — is the scorer live?") or the notebook's short slug/title — never a raw
+  id like `699853` or `697431`, which means nothing to a reader and can't be
+  looked up. If the title is long, truncate with an ellipsis but keep it
+  identifiable. **Keep the id available for traceability** — put it in the
+  sidecar JSON (e.g. an `"id"` field alongside `label`/`value`) or as a short
+  parenthetical in the label (`"… is the scorer live? (#697329)"`). The human
+  reads the title; the id stays present so the entity remains cross-referenceable
+  to the prose and the value still traces cleanly to gathered data. (The gate
+  traces the `value`, not the label text, so a readable label never regresses the
+  accuracy floor — but keeping the id makes the cross-reference check trivial.)
+- **Every plotted entity must also appear in the brief's prose/tables.** Anything
+  you plot — a notebook, a discussion, a leaderboard team — must be cross-
+  referenced in the brief's text or a table (ideally with its link), so a reader
+  who sees a bar can find that entity and follow up. No orphan entities: if it's
+  worth plotting, it's worth a row/mention; if it's not worth mentioning, don't
+  plot it.
+- **Every plot earns its place with a one-line takeaway.** Next to each embedded
+  plot, write a single sentence stating what the reader should conclude from it
+  (e.g. "the top public score sits ~2 RMSE below the strong-solution cluster, so
+  the gap to beat is concrete"). If you can't state a decision-relevant takeaway,
+  the plot is filler — drop it and use the budget on one that informs.
+
 Worked example — a leaderboard top-N plot (note: plot EXACTLY the rows you
 gathered; if you fetched the top 17, the series has 17 entries and the title
 says "top 17", never padded to 20):
@@ -108,7 +135,7 @@ real, not invented:
    ```json
    {"title": "...",
     "source": "<which workflow produced it: kernel_query | fetch_top_kernel_scores | discussion_query | leaderboard>",
-    "series": [{"label": "<owner/slug for kernels, or discussion id>", "value": <number>}, ...]}
+    "series": [{"label": "<human-readable: notebook title/short slug, or discussion title — NOT a bare id>", "value": <number>}, ...]}
    ```
    Every `value` must be a number you actually gathered from the skill — no
    invented or interpolated values. If a quantity is incomplete (e.g. some public
