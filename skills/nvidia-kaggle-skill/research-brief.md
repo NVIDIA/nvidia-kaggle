@@ -29,25 +29,63 @@ Cite sources as clickable markdown links so the reader can follow up:
 ## Making the brief accurate AND informative
 
 The brief must be accurate first, then as informative as the gathered evidence
-allows. Two specific habits:
+allows. A strong brief contains all of:
+
+- **Accurate competition mechanics** — the metric, submission constraints
+  (e.g. notebook-only, runtime/internet limits), data shape, and what is being
+  predicted. Get these right; they shape every strategy decision.
+- **Concrete winning techniques, each tied to its evidence.** Don't list generic
+  ML advice. For each technique you surface (e.g. typewell GR alignment, residual
+  modeling, beam search), link the specific notebook or discussion that
+  demonstrates it — so a reader can verify and follow it. A named technique with
+  no source link is weaker than one with a `[kernel](...)` citation; make the
+  citation the rule, not the exception.
+- **A quantified score ladder.** Assemble the concrete numbers you gathered into
+  an explicit target ladder — e.g. "carry-forward baseline ≈ X, strong public
+  solutions ≈ Y, top public ≈ Z" — each rung tied to its source link. Kernel
+  titles and discussions often embed scores (`[LB 7.776]`, a "9.251"-named
+  notebook); harvest those into the ladder rather than leaving performance vague.
+  This turns "do alignment" into "alignment-based solutions sit around Y–Z LB
+  (kernels A/B)."
+- **An actionable implementation path** — a concrete sequence a competitor can
+  start on (baseline → features → modeling → validation → blending), citing the
+  notebook(s) to study at each step.
+
+Two honesty rules that protect accuracy:
 
 - **Don't let popularity stand in for performance.** Kernel *votes* measure
-  attention, not leaderboard rank — they are NOT a proxy for "what wins." If
+  attention, not leaderboard rank — they are NOT a proxy for "what wins." When
+  ranking notebooks, prefer their **embedded/gathered score** where available; if
   public-score data is unavailable (e.g. the score lookup was rate-limited /
   429'd), say so explicitly ("public scores were not retrievable this run") and
-  rank techniques by what you *can* support, rather than implying high-vote =
-  high-quality. Be honest about the popularity-vs-performance gap.
-- **Quantify with sources.** When a notebook or discussion states a concrete
-  number — a CV/LB score, an ablation delta ("cabin-side split +0.9%"), a
-  feature's measured gain — cite that number *with its source link*, so "do
-  alignment" becomes "alignment is worth ~X (kernel Y)." Only cite numbers you
+  state that the ordering is by votes, not rank. Never imply high-vote = high-quality.
+- **Ground every strategic claim to a gathered source, and quantify with sources.**
+  Every technique/recommendation should trace to a notebook or discussion you
+  actually gathered — "informative" must never become "plausible but ungrounded."
+  When a source states a concrete number (CV/LB score, ablation delta like
+  "cabin-side split +0.9%"), cite it *with its link*. Only cite numbers you
   actually gathered; never estimate or invent a delta to sound precise.
 
 ## Plots (make them auditable by construction)
 
-Include a few (2–4) plots that give real insight (vote distributions, discussion
-engagement, public-score / leaderboard spread, etc.). For EACH plot, follow this
-coupled flow so the figure's numbers are provably real, not invented:
+Include a few (2–4) plots that give real insight. **One of them should be a
+public-leaderboard / top-N score plot** when leaderboard or public-score data is
+available — the score spread across the top entries is among the most useful
+things a competitor wants to see (it shows the target ladder visually). The
+others can be vote distributions, discussion engagement, dataset stats, etc.
+
+Worked example — a leaderboard top-N plot (note: plot EXACTLY the rows you
+gathered; if you fetched the top 17, the series has 17 entries and the title
+says "top 17", never padded to 20):
+```json
+{"title": "Public leaderboard — top 17 of N (RMSE, lower is better)",
+ "source": "leaderboard",
+ "series": [{"label": "SaintLouis", "value": 5.928},
+            {"label": "Tucker Arrants", "value": 5.955}]}
+```
+
+For EACH plot, follow this coupled flow so the figure's numbers are provably
+real, not invented:
 
 1. Write the data you will plot to `<name>.json` (next to where the PNG will go),
    in this schema:
@@ -62,14 +100,23 @@ coupled flow so the figure's numbers are provably real, not invented:
    If a plot is a *computed aggregate* (e.g. a histogram of vote ranges), that is
    fine, but make the title say so — it's a derived metric, not a raw gathered value.
 
-   **NEVER pad a "top-N" plot.** A plot's `series` must contain ONLY rows you
-   actually gathered. If you intended a "top 20" but only fetched 17 rows, plot
-   exactly those 17 and title it "top 17 of N available" — do NOT invent the
-   missing 3 tail entries (a plausible-looking team + score, a discussion id +
-   count) to round the count up to 20. Inventing rows to complete a count is a
-   fabrication: it puts numbers on the chart that the agent never gathered, and
-   it WILL be caught when the verifier checks each `(label, value)` against the
-   trace. The number of bars is whatever you truly gathered, never a round target.
+   **NEVER pad a "top-N" plot.** A plot's `series` must contain ONLY rows whose
+   `(label, value)` you gathered in **this run**. If you intended a "top 20" but
+   only fetched 17 rows, plot exactly those 17 and title it "top 17 of N
+   available" — do NOT round the count up to 20. There are two padding modes, and
+   BOTH are fabrication:
+   - **Invented-from-nothing:** minting a plausible-looking tail entry (a made-up
+     team + score, a discussion id + comment count) that you never saw at all.
+   - **Memory / other-run backfill:** filling a missing row with a *real* entity
+     whose **value you did not gather in this run** — e.g. a discussion id you
+     recognize from training knowledge or a previous run, paired with a comment
+     count this run never fetched. The entity being real does NOT rescue it: the
+     plotted *value* still has no provenance in this run's trace.
+   Build every plot ONLY from what this run actually fetched — never from memory,
+   recognition, or another run's data. Both modes put numbers on the chart the
+   agent never gathered here, and BOTH are caught when the verifier checks each
+   `(label, value)` against THIS run's trace. The number of bars is whatever you
+   truly gathered this run, never a round target.
 2. Write `<name>.py` that **reads `<name>.json`** and renders `<name>.png` from it
    (matplotlib). The PNG must be a rendering of that JSON — do not plot from any
    other in-memory data, so the image can never disagree with the saved data.
