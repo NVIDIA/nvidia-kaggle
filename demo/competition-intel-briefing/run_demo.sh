@@ -85,6 +85,18 @@ mkdir -p "$PLOTS_DIR"
 #    PNG is provably a rendering of the JSON, and a verifier checking each
 #    (label,value) against the trace governs the image. Plots whose values can't
 #    be traced to gathered data are illustrative-only. Agent decides WHAT to plot.
+# Prompt variant. Default is `moderate` (13 lines, down from `full`'s 30) — it
+# was verified to RELIABLY hold the full bar (agentic + grounded hyperlinks +
+# coupled provenance-traceable plots) under independent re-derive, so it's the
+# shipped prompt. `full` is retained as a more verbose fallback; `aggressive`
+# (8 lines) is retained for reference but was REJECTED — cutting the explicit
+# plot-data schema made the agent emit bare [{label,value}] arrays (no
+# source/title) with truncated labels, breaking plot-provenance auditability.
+# Override with PROMPT_VARIANT=full|aggressive.
+PROMPT_VARIANT="${PROMPT_VARIANT:-moderate}"
+
+case "$PROMPT_VARIANT" in
+  full)
 read -r -d '' TASK <<EOF || true
 I'm starting the ${SLUG} Kaggle competition. Use the nvidia-kaggle skill to
 research it and brief me on the strategies that win. Investigate the
@@ -117,6 +129,42 @@ Give me a focused brief — prioritize the highest-signal sources rather than
 reading everything exhaustively, and make sure you finish and save the brief to
 ${BRIEF}.
 EOF
+    ;;
+  moderate)
+    # Compress research+hyperlink preamble to ~3 lines; keep the plot coupling
+    # block essentially intact (it's the fragile, must-be-explicit part).
+read -r -d '' TASK <<EOF || true
+Research the ${SLUG} Kaggle competition with the nvidia-kaggle skill (overview,
+data, discussions, top notebooks) and write me a strategy brief grounded in what
+you gather. Cite kernels as clickable links [title](https://www.kaggle.com/code/<owner>/<slug>)
+using the real owner/slug you gathered — never invent refs.
+
+Add 2-4 insight plots. For EACH, the figure must be auditable via this coupled flow:
+  1. Write its data to ${PLOTS_DIR}/<name>.json as
+     {"title","source","series":[{"label":"<owner/slug or discussion id>","value":<number>}]}
+     — only numbers you actually gathered, no invented/interpolated values.
+  2. Write ${PLOTS_DIR}/<name>.py that READS that JSON and renders
+     ${PLOTS_DIR}/<name>.png from it (matplotlib) — do not plot from any other data.
+  3. Run it; embed plots/<name>.png in the brief.
+Save the brief to ${BRIEF}.
+EOF
+    ;;
+  aggressive)
+    # Shrink the plot block too — test whether the agent infers coupling from a
+    # terse instruction (Reviewer wants repeat runs here; coupling is at risk).
+read -r -d '' TASK <<EOF || true
+Use the nvidia-kaggle skill to research ${SLUG} (overview, data, discussions, top
+notebooks) and write a strategy brief to ${BRIEF}, grounded in what you gather.
+Cite kernels as [title](https://www.kaggle.com/code/<owner>/<slug>) links with the
+real owner/slug — no invented refs.
+Include 2-4 insight plots; for each, save its plotted data to
+${PLOTS_DIR}/<name>.json (a {label,value} series of numbers you actually gathered),
+a ${PLOTS_DIR}/<name>.py that reads that JSON and renders ${PLOTS_DIR}/<name>.png,
+then embed plots/<name>.png.
+EOF
+    ;;
+  *) echo "ERROR: unknown PROMPT_VARIANT '$PROMPT_VARIANT'" >&2; exit 2 ;;
+esac
 
 echo "=============================================================="
 echo " Agentic Competition Intel demo — agent orchestrates the skill"
