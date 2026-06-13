@@ -1,0 +1,52 @@
+{
+  "title": "Train wells by hidden/evaluation-zone length decile",
+  "source": "local competition data",
+  "series": [
+    {
+      "label": "407-3,263 rows",
+      "value": 78
+    },
+    {
+      "label": "3,264-3,830 rows",
+      "value": 77
+    },
+    {
+      "label": "3,831-4,239 rows",
+      "value": 77
+    },
+    {
+      "label": "4,240-4,549 rows",
+      "value": 77
+    },
+    {
+      "label": "4,550-4,840 rows",
+      "value": 78
+    },
+    {
+      "label": "4,841-5,145 rows",
+      "value": 77
+    },
+    {
+      "label": "5,146-5,529 rows",
+      "value": 77
+    },
+    {
+      "label": "5,530-5,929 rows",
+      "value": 77
+    },
+    {
+      "label": "5,930-6,348 rows",
+      "value": 77
+    },
+    {
+      "label": "6,349-10,052 rows",
+      "value": 78
+    }
+  ],
+  "summary": {
+    "train_wells": 773,
+    "mean_eval_rows": 4895.199223803364,
+    "max_eval_rows": 10052,
+    "sample_submission_rows": 14151
+  }
+}
