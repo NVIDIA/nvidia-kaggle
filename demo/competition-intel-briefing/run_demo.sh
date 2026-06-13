@@ -116,10 +116,8 @@ case "$RUNTIME" in
         # gathered set unrecoverable from the parent trace (analyze_run.py then
         # reports DEGRADED, honestly). That is an ENVIRONMENT CONFIG effect, not
         # a property of this runner. We deliberately do NOT neutralize it here:
-        # editing a global file from the casual demo command is a footgun. The
-        # one-off config-suppression experiment was run SEPARATELY and is
-        # quarantined in run_claude_config_suppressed.sh (trap-restored); see
-        # DESIGN.md for the n=1 finding.
+        # editing a global file from the casual demo command is a footgun. See
+        # DESIGN.md for the orchestration-depth finding.
         CLAUDE_CMD=(claude -p "$TASK"
             --add-dir "$REPO_ROOT"
             --allowedTools "Bash Read Write Skill"

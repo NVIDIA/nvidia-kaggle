@@ -1,63 +1,67 @@
-# Competition Intel Briefing — Demo
+# Competition Intel Briefing — Agentic Demo
 
-A one-command demo that turns a Kaggle competition slug into a single polished
-markdown **intelligence briefing**: what the competition is, the dataset, the
-top public solution writeups, the top public kernels (with votes), and the most
-voted discussion threads — all in one document.
+One skill, two agent frameworks, real autonomous orchestration.
 
-It's built on the `nvidia-kaggle-skill` and shows off the whole skill in one
-artifact, while degrading gracefully when no Kaggle token is available.
+Given only a research **goal** (no script named), an LLM agent — running under
+either **OpenAI Codex** or **Claude Code** — loads the `nvidia-kaggle-skill`,
+decides on its own which of the skill's individual workflows to run, chains them
+(competition info, dataset, discussions, kernels, writeups), and writes a
+strategy brief. We then verify the brief against what the agent *actually
+gathered*, reconstructed from its own execution trace.
 
 ## Run it
 
 ```bash
-./run.sh llm-20-questions
+cd demo/competition-intel-briefing
+./run_demo.sh --runtime codex  <competition-slug>
+./run_demo.sh --runtime claude <competition-slug>
 ```
 
-That writes `llm-20-questions_briefing.md` in this folder. A fast variant that
-skips the (slower) writeup scraping:
+The `<competition-slug>` is the last path segment of a Kaggle competition URL —
+e.g. `kaggle.com/competitions/spaceship-titanic` → `spaceship-titanic`.
 
 ```bash
-./run.sh titanic --skip-writeups
+./run_demo.sh --runtime codex spaceship-titanic
+./run_demo.sh --runtime claude titanic
 ```
 
-You can pass through any `generate_briefing.py` flag, e.g.
-`--top-writeups N`, `--top-kernels N`, `--top-discussions N`, `--print`.
+Each run writes to its own immutable dir `runs/<runtime>_<slug>/`:
 
-## What the output looks like
+- `brief.md` — the agent's strategy brief
+- `trace.jsonl` — the structured agent trace (what the agent actually did)
+- `cmd.txt` — the exact invocation
 
-Five sections, in order:
+The harness then runs `analyze_run.py` automatically, which reports:
 
-1. **Overview** — competition summary, key dates, evaluation.
-2. **Dataset** — dataset description, files, size, license.
-3. **Top Solution Writeups** — a ranked table of leaderboard writeups plus the
-   top-k full writeup bodies embedded inline.
-4. **Top Public Kernels** — ranked notebooks with vote counts (and public
-   scores where available).
-5. **Top Discussions** — most-voted threads with authors.
+1. **Agentic-behavior evidence** — from the trace: did the agent read SKILL.md
+   and chain multiple distinct individual workflows on its own?
+2. **Grounding** — every `owner/slug` ref the brief cites must be in the
+   **gathered set** (refs that appeared in the agent's actual tool output or
+   command args, reconstructed from the independent trace). PASS / FAIL /
+   DEGRADED (gathered set unrecoverable).
 
-See [`llm-20-questions_briefing.md`](./llm-20-questions_briefing.md) in this
-folder for a real generated sample (~36 KB, all tiers populated).
+## Requirements
 
-## Token note (graceful degradation)
+- `KAGGLE_API_TOKEN` (loaded automatically from the project `.env`) — the agent
+  hits the live Kaggle API for kernels and discussions.
+- Auth for the runtime you invoke (Codex / Claude Code), already configured in
+  this environment. Codex here runs on NVIDIA's `gpt-5.5` inference API.
 
-- **No token:** Overview + Dataset + Top Solution Writeups run via public web
-  scraping. The two auth sections render clear `_Requires KAGGLE_API_TOKEN_`
-  placeholders. The briefing is still useful and never errors out.
-- **With token:** set `KAGGLE_API_TOKEN` (loaded automatically from the project
-  `.env`) and the Kernels + Discussions sections fill in with live data.
+A run takes a few minutes (the agent is doing live research). Pick a competition
+with public kernels and discussions — the brief is only as rich as what's
+publicly available.
+
+## Verified exhibits
+
+Three frozen, independently re-derived runs are committed under `runs/` as the
+demo's evidence. See [`EXHIBITS.md`](./EXHIBITS.md) for the index, md5s, and the
+exact grounding claim, and [`DESIGN.md`](./DESIGN.md) for the design and the
+honest cross-runtime findings.
 
 ## Where the logic lives
 
-This folder is a **thin presentation wrapper**. The actual workflow is part of
-the skill and is the source of truth:
-
-- `skills/nvidia-kaggle-skill/scripts/generate_briefing.py` — the briefing
-  orchestrator (a registered `SKILL.md` workflow).
-- Supporting scripts (`browser.py`, `fetch_competition_info.py`,
-  `fetch_dataset_info.py`, `fetch_leaderboard_writeups.py`,
-  `fetch_top_kernel_scores.py`, `discussion_ingest.py`, `support/page_text.py`)
-  carry the scraping + robustness logic.
-
-`run.sh` simply invokes the skill script with demo-friendly defaults — it does
-not copy or fork any of that logic.
+The agent drives the skill itself — this folder is just the harness. The skill
+is the source of truth at `skills/nvidia-kaggle-skill/` (`SKILL.md` plus the
+individual workflow scripts the agent chooses to invoke). `run_demo.sh` hands
+the agent a goal and captures its trace; `analyze_run.py` verifies the result.
+It does not orchestrate the skill — the agent does.
