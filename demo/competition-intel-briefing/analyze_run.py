@@ -62,6 +62,15 @@ _NON_REF_PREFIXES = {"competition", "competitions", "code", "datasets", "dataset
                      "www.kaggle.com", "kaggle.com", "api", "scripts", "bin"}
 
 
+# Raw notebook-path segments from the trace: `/notebooks/<comp>/<seg>/` where
+# <seg> is the cached-notebook dir name (owner_slug underscore form). We keep
+# these as opaque strings and NEVER split them into owner/slug (that split is
+# ambiguous). Instead, to VERIFY a cited ref we form its OWN unambiguous
+# path-form (owner + "_" + slug, from the known-good cited owner/slug) and check
+# membership here. A fabricated ref's path-form is absent → still flagged.
+_NOTEBOOK_PATH_SEG_RE = re.compile(r"/notebooks/[^/]+/([^/\"\\]+)")
+
+
 @dataclass
 class RunAnalysis:
     runtime: str
@@ -69,6 +78,7 @@ class RunAnalysis:
     workflows_invoked: dict = field(default_factory=dict)   # script -> count
     distinct_workflows: int = 0
     gathered_refs: set = field(default_factory=set)
+    notebook_path_segs: set = field(default_factory=set)  # cached-notebook dir names (owner_slug)
     tool_output_chars: int = 0
     reconstructable: bool = False  # could we rebuild the gathered set?
     subagent_dispatches: int = 0   # Task/Agent tool_use calls (Claude delegation)
@@ -216,17 +226,23 @@ def analyze_trace(trace_path: Path, runtime: str) -> RunAnalysis:
         # Refs the agent passed to a workflow command are demonstrably gathered.
         cmd_refs |= _extract_cmd_refs(cmd)
         path_candidates |= _extract_path_candidates(cmd)
+        a.notebook_path_segs |= set(_NOTEBOOK_PATH_SEG_RE.findall(cmd))
         if out:
             a.tool_output_chars += len(out)
             a.gathered_refs |= _extract_refs(out)
             path_candidates |= _extract_path_candidates(out)
+            a.notebook_path_segs |= set(_NOTEBOOK_PATH_SEG_RE.findall(out))
     # Command-arg refs are sound provenance → always admitted.
     a.gathered_refs |= cmd_refs
-    # Cached-path candidates are AMBIGUOUS (owner_slug split) → admit ONLY if
-    # corroborated by a command-arg invocation of the same ref. Never mint a
-    # path-only ref: an over-wide allow-list silently weakens hallucination
-    # detection, and the underscore split is a genuine guess.
-    a.gathered_refs |= (path_candidates & cmd_refs)
+    # NOTE: cached-notebook provenance is NOT applied here by blindly splitting
+    # `owner_slug` path segments (that reverse-split is ambiguous — owners and
+    # slugs both contain underscores). Instead, cached fetches are matched at
+    # VERIFY time against each *cited* ref's own forward-normalized path-form
+    # (owner/slug → owner_slug) vs `notebook_path_segs` — see main(). That keys
+    # off the cached `.ipynb`'s existence as proof-of-fetch (the agreed rule),
+    # admits cached-only refs that have NO command-arg, and can't over-widen
+    # because a fabricated ref's path-form is absent from the trace.
+    # (`path_candidates` is retained only for diagnostics; not unioned in here.)
     a.distinct_workflows = len(a.workflows_invoked)
     # We can reconstruct a grounding set if we actually captured tool output.
     a.reconstructable = a.tool_output_chars > 0
@@ -325,7 +341,33 @@ def main() -> None:
         raise SystemExit(1 if chrome else 3)
 
     briefing = build_allow_list_from_trace(analysis, fallback)
-    print(f"  allow-list reconstructed from trace: {len(briefing['entities']['kernel_refs'])} kernel refs")
+
+    # Cached-notebook provenance, done SOUNDLY: a cited ref is grounded if its
+    # OWN unambiguous path-form (owner + "_" + slug, formed FROM the cited
+    # owner/slug — never by splitting a path) matches a notebook dir the agent
+    # actually fetched. This recovers refs gathered only via `kernel pull` /
+    # cached notebooks (not in stdout), WITHOUT the over-widening risk: a
+    # fabricated ref's path-form is absent from the trace, so it still fails.
+    allow = {r.lower() for r in briefing["entities"]["kernel_refs"]}
+    segs = analysis.notebook_path_segs
+    cited = _extract_kernel_refs(synth)
+    recovered = []
+    for ref in cited:
+        if ref.lower() in allow or "/" not in ref:
+            continue
+        owner, slug = ref.split("/", 1)
+        pathform = f"{owner}_{slug}"
+        # EXACT path-form match only. A bare startswith() would over-recover:
+        # a fabricated ref whose path-form is merely a PREFIX of a real fetched
+        # dir (e.g. cite `foo/bar` when only `foo_bar-something-else` was
+        # fetched) would falsely clear. We allow exact, or exact + a dotted
+        # file-suffix (`<pathform>.ipynb`), but never a bare prefix.
+        if any(seg == pathform or seg.startswith(pathform + ".") for seg in segs):
+            briefing["entities"]["kernel_refs"].append(ref)
+            recovered.append(ref)
+    print(f"  allow-list reconstructed from trace: "
+          f"{len(briefing['entities']['kernel_refs'])} kernel refs"
+          + (f" ({len(recovered)} via cached-notebook provenance)" if recovered else ""))
 
     result = verify_synthesis(synth, briefing)
 

@@ -23,6 +23,24 @@ Verify with: `python analyze_run.py runs/<dir>/trace.jsonl --runtime <rt> --synt
 - **Cross-runtime divergence:** Codex and Claude chose different workflow mixes
   and produced md5-distinct briefs from the identical goal-only prompt.
 
+## Supporting note — NOT a headline exhibit
+
+`runs/claude_spaceship-titanic_004/` (trace + `cmd.txt`, no brief) is a controlled
+run with this env's `~/.claude/CLAUDE.md:8` skill-in-subagent line neutralized for
+the run and restored after. It showed **0 subagent dispatches, 7 workflows
+parent-level**, but **timed out before writing a brief** (slow API, not
+delegation). Kept only as the verifiable artifact behind the framing below; it is
+**n=1, incomplete, not a grounded-PASS exemplar.**
+
+**Claude orchestration framing (honest, do not overstate):** under the config ON,
+Claude's orchestration depth is **non-deterministic** — `claude_003` stayed
+parent-level + grounded-PASS, while other config-ON runs delegated into
+unrecoverable subagents (DEGRADED). The config-OFF run (`_004`) also stayed
+parent-level (n=1, timed out). So the config **plausibly increases delegation
+propensity but is not proven the sole cause** — `claude_003` (config-ON,
+parent-level) shows config-ON does not force delegation. No claim that "a prompt
+nudge fixed it" or that this is a controlled two-runtime comparison.
+
 ## Grounding claim — exact wording (defensible)
 
 "Cited `owner/slug` refs ⊆ the **gathered set**, where *gathered* = refs that

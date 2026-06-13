@@ -176,18 +176,29 @@ runtimes, md5-distinct briefs, different workflow mixes (Codex used
 `discussion_read`-heavy; Claude chained 9 workflows including the `*_ingest`
 steps). Both grounded-PASS.
 
-**Honest framing of the Claude result (do not overstate):** the Claude PASS run
-completed with this environment's skill-delegation config (`~/.claude/CLAUDE.md`
-"invoke skills inside a subagent") **ON**. Orchestration depth is
-non-deterministic across runs — this run delegated shallowly (outputs
-recoverable, grounded-PASS), other runs delegated deeper and became unrecoverable
-(reported honestly as DEGRADED, never a pass). **We did NOT isolate config vs.
-runtime as the cause** of the delegation, so we make no claim that "the prompt
-nudge fixed it," that this is a "fair two-runtime comparison," or that "the
-Claude runtime does/doesn't delegate."
+**Honest framing of the Claude result (do not overstate):** this environment's
+global `~/.claude/CLAUDE.md` carries a "invoke Agent Skills inside a subagent"
+instruction. Across runs with that config **ON**, Claude's orchestration depth is
+**non-deterministic**: `claude_003` stayed fully parent-level (0 subagents,
+recoverable, grounded-PASS), while `_001`/`_002` delegated into subagents whose
+outputs weren't exposed in the parent trace (reported honestly as DEGRADED, never
+a pass). A single run with that config line **removed** (`_004`, see below) also
+stayed parent-level — but it timed out before writing a brief, so n=1 and
+incomplete. Taken together the evidence supports: **the config plausibly
+increases the propensity to delegate, but is NOT proven to be the sole cause** —
+`claude_003` (config-ON, parent-level) directly shows config-ON does not force
+delegation. We make **no** claim that "the prompt nudge fixed it," that this is a
+"fair two-runtime comparison," or that delegation is purely config- vs.
+runtime-driven.
 
-**Future work (not a blocker):** a controlled run with the skill-delegation
-config neutralized at the harness level (`claude -p --bare` or a minimal
-`--settings`), prompt byte-identical, with the exact command recorded — would
-isolate config vs. runtime as the cause of subagent delegation. Out of scope for
-this demo; documented for completeness.
+**Supporting note — controlled suppression attempt (`runs/claude_spaceship-titanic_004/`):**
+a run with `~/.claude/CLAUDE.md:8` (the skill-in-subagent line) neutralized for
+the run and restored immediately after (audit trail in `cmd.txt`; `--bare` was
+tested and rejected because it disables the Skill tool entirely). Behaviorally it
+showed **0 subagent dispatches, 7 workflows parent-level**, but **timed out before
+producing a brief** (slow API, not a delegation issue). It is **n=1 and not a
+grounded-PASS exemplar** — kept in the repo only as the verifiable artifact behind
+the "config increases delegation propensity" observation, NOT as a 4th headline
+exhibit. The cached-notebook recovery path in `analyze_run.py` is likewise proven
+on a synthetic trace of the right shape, **not** exercised end-to-end by any of
+the three frozen exhibits (their cited refs reconcile via tool stdout).
