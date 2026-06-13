@@ -1,4 +1,4 @@
-# Research Brief (agentic)
+# Research Brief
 
 Use this when the user asks you to **research a Kaggle competition and write a
 strategy brief** — typically a natural request like *"research this competition
