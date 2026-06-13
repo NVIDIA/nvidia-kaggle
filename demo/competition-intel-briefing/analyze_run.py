@@ -214,44 +214,66 @@ def _count_subagent_dispatches(trace_path: Path, runtime: str) -> int:
     return n
 
 
-# Run-dir subdirs that hold the agent's *gathered output* (skill workflow
-# results it saved), as opposed to its *authored output* (brief.md, plots/).
-# A value present in one of these is gathered-this-run evidence, the same as a
-# value in the trace — codex --json doesn't echo every workflow's stdout into
-# the trace, so a real gathered number (e.g. a kernel's vote count written to
-# research/kernels_top.json) can be absent from trace.jsonl yet genuinely
-# fetched. We harvest refs from these too so we stop false-flagging correct
-# gathered data. GUARDRAIL: only these gathering-output subdirs are counted —
-# NOT brief.md or plots/ (the agent's own output, which is what we're checking),
-# and NOT data/ (multi-GB downloaded CSVs, handled via recompute-and-match). A
-# fabricated ref absent from trace + these dirs still fails (verified on
-# _004/_008), so this widening doesn't weaken fabrication detection.
+# The agent saves skill-workflow results (its *gathered output*) in varying
+# places run-to-run: a `research/` or `raw/` subdir (e.g. _010, _012), OR
+# directly in the run-dir root as redirected query JSON (e.g. _015's
+# `kernel_query_top30.json`, `discussion_query_*.json`). codex --json logs the
+# REDIRECT COMMAND, not the file contents, so a genuinely-gathered value (a
+# kernel vote in kernel_query_top30.json) is absent from trace.jsonl yet real.
+# We harvest from all of these so we stop false-flagging correct gathered data.
+#
+# GUARDRAIL (this is a widening — the dangerous direction): we count only files
+# that are workflow GATHERING OUTPUT, never the agent's AUTHORED output (which
+# is what we're checking for fabrication): brief.md, prompt.txt, cmd.txt, and
+# the entire plots/ dir are EXCLUDED, and data/ (multi-GB CSVs, handled via
+# recompute-and-match) is EXCLUDED. Root files are included only if their name
+# matches a gathering-workflow pattern. A fabricated value absent from trace +
+# these stays absent (verified _004/_008), so the widening can't launder one.
 _GATHERED_ARTIFACT_DIRS = ("research", "raw")
 _GATHERED_ARTIFACT_EXTS = (".json", ".txt", ".tsv", ".csv", ".md")
+# Run-dir-root files that are gathering output (redirected skill-workflow JSON).
+_GATHERED_ROOT_RE = re.compile(
+    r"^(kernel_query|kernel_ingest|kernel_read|discussion_query|discussion_ingest"
+    r"|discussion_read|fetch_|top_kernel|kernels_top|discussions_top|leaderboard"
+    r"|writeups?)[\w.-]*\.(json|txt|tsv|csv|md)$",
+    re.IGNORECASE,
+)
+# Authored output that must NEVER count as gathered evidence (it's what we check).
+_AUTHORED_NAMES = {"brief.md", "prompt.txt", "cmd.txt", "generated_briefing.md",
+                   "auto_brief.md", "briefing_raw.md", "generated_brief.md"}
+_EXCLUDED_DIRS = {"plots", "data"}
 
 
 def _harvest_gathered_artifacts(run_dir: Path) -> tuple[str, set]:
     """Return (concatenated text, refs) from the run's gathering-output files.
 
-    Reads only the allow-listed gathering subdirs (research/, raw/) — never the
-    agent-authored brief.md / plots/, and never data/. The text is returned so
-    callers can also do per-value provenance against gathered artifacts (not
-    just trace.jsonl); refs feed the gathered-ref allow-list.
+    Scans (a) the research/ and raw/ subdirs, and (b) run-dir-root files whose
+    name matches a gathering-workflow pattern (_GATHERED_ROOT_RE). NEVER reads
+    the agent-authored brief/prompt/cmd or the plots/ and data/ dirs — those are
+    the agent's output, which is exactly what the fabrication check inspects, so
+    counting them as "gathered" would let the agent launder its own numbers.
     """
     text_parts: list = []
     refs: set = set()
+    files: list = []
+    # (a) gathering subdirs, recursive
     for sub in _GATHERED_ARTIFACT_DIRS:
         d = run_dir / sub
-        if not d.is_dir():
+        if d.is_dir():
+            files += [f for f in d.rglob("*") if f.is_file()]
+    # (b) run-dir-root redirected query/ingest output (NOT authored, NOT plots/data)
+    for f in run_dir.iterdir():
+        if f.is_file() and f.name not in _AUTHORED_NAMES and _GATHERED_ROOT_RE.match(f.name):
+            files.append(f)
+    for f in files:
+        if f.suffix.lower() not in _GATHERED_ARTIFACT_EXTS:
             continue
-        for f in sorted(d.rglob("*")):
-            if f.is_file() and f.suffix.lower() in _GATHERED_ARTIFACT_EXTS:
-                try:
-                    txt = f.read_text(encoding="utf-8", errors="replace")
-                except OSError:
-                    continue
-                text_parts.append(txt)
-                refs |= _extract_refs(txt)
+        try:
+            txt = f.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        text_parts.append(txt)
+        refs |= _extract_refs(txt)
     return "\n".join(text_parts), refs
 
 
