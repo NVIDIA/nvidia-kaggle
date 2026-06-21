@@ -46,6 +46,76 @@ def kaggle_api():
     return api
 
 
+KAGGLE_WEB_SERVICE_BASE = "https://www.kaggle.com/api/i"
+
+
+class KaggleWebServiceClient:
+    """Calls Kaggle's internal JSON web service (``/api/i``) with XSRF auth.
+
+    Some data (leaderboard writeup links, forum topic content) is only served
+    by Kaggle's internal web service rather than the public REST API. These
+    endpoints need an XSRF token from an authenticated browser-style session,
+    seeded by first loading a Kaggle page. This avoids driving a real browser.
+    """
+
+    def __init__(self, max_retries: int = 3, retry_delay: float = 2.0):
+        import httpx
+
+        self._token = require_kaggle_token()
+        self._max_retries = max_retries
+        self._retry_delay = retry_delay
+        self._session = httpx.Client(
+            follow_redirects=True,
+            timeout=30.0,
+            headers={"Authorization": f"Bearer {self._token}"},
+        )
+        self._session.get("https://www.kaggle.com")
+        self._xsrf = dict(self._session.cookies).get("XSRF-TOKEN", "")
+        if not self._xsrf:
+            self._session.close()
+            raise RuntimeError("Failed to obtain XSRF token from Kaggle session.")
+
+    def post(self, service_method: str, body: dict) -> dict:
+        """POST to ``/api/i/<service_method>`` and return parsed JSON."""
+        import time
+
+        url = f"{KAGGLE_WEB_SERVICE_BASE}/{service_method}"
+        headers = {
+            "Authorization": f"Bearer {self._token}",
+            "Content-Type": "application/json",
+            "X-XSRF-TOKEN": self._xsrf,
+        }
+        last_exc: Exception | None = None
+        for attempt in range(self._max_retries):
+            try:
+                resp = self._session.post(url, json=body, headers=headers)
+                resp.raise_for_status()
+                return resp.json()
+            except Exception as exc:  # noqa: BLE001 - retried/re-raised below
+                last_exc = exc
+                if attempt < self._max_retries - 1:
+                    time.sleep(self._retry_delay * (attempt + 1))
+        raise RuntimeError(
+            f"Kaggle web service call '{service_method}' failed after "
+            f"{self._max_retries} retries: {last_exc}"
+        ) from last_exc
+
+    def close(self) -> None:
+        self._session.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
+
+def kaggle_web_service() -> "KaggleWebServiceClient":
+    """Return a ready KaggleWebServiceClient (loads .env, seeds XSRF session)."""
+    load_project_env()
+    return KaggleWebServiceClient()
+
+
 class _MarkdownTextParser(HTMLParser):
     """Render the subset of HTML Kaggle uses in competition pages to markdown.
 
