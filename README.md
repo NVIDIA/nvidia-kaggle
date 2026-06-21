@@ -173,7 +173,7 @@ Install the marketplace for your agent runtime.
 **Codex**
 
 ```bash
-codex plugin marketplace add https://gitlab-master.nvidia.com/kgmon-llm-tech/nvidia-kaggle.git#ad/ref-monoskill
+codex plugin marketplace add https://github.com/NVIDIA/nvidia-kaggle.git
 ```
 
 Then open a Codex session, run `/plugins`, choose the `nvidia-kaggle` marketplace, and install `nvidia-kaggle`.
@@ -181,7 +181,7 @@ Then open a Codex session, run `/plugins`, choose the `nvidia-kaggle` marketplac
 **Claude Code**
 
 ```bash
-claude plugin marketplace add https://gitlab-master.nvidia.com/kgmon-llm-tech/nvidia-kaggle.git#ad/ref-monoskill
+claude plugin marketplace add https://github.com/NVIDIA/nvidia-kaggle.git
 claude plugin install nvidia-kaggle@nvidia-kaggle --scope user
 ```
 
