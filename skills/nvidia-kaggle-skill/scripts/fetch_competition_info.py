@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
+"""Fetch a Kaggle competition overview through the Kaggle API (no browser)."""
+
 import argparse
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from browser import read_page_text
-from runtime import competition_slug
-from support.constants import DEFAULT_BROWSER_TIMEOUT_MS
+from runtime import competition_pages, competition_slug, html_to_markdown
 
 
 def parse_slug(slug_or_url: str) -> str:
@@ -15,31 +15,27 @@ def parse_slug(slug_or_url: str) -> str:
     return competition_slug(slug_or_url)
 
 
-def get_competition_overview(competition_slug: str) -> str:
-    url = f"https://www.kaggle.com/competitions/{competition_slug}"
-    text = read_page_text(url, timeout=DEFAULT_BROWSER_TIMEOUT_MS)
+def get_competition_overview(slug: str) -> str:
+    """Return the competition overview as markdown.
 
-    # The page body contains "Overview" multiple times: once in the nav tab
-    # bar and once as the section heading before the real content.  Skip past
-    # the nav occurrence by finding the *second* "Overview" and starting there.
-    start_marker = "Overview"
-    end_marker = "Citation"  # usually the last section on the overview page
+    The Kaggle API exposes the overview as separate content pages; the
+    'Description' and 'Evaluation' pages together make up the overview prose.
+    """
+    pages = competition_pages(slug)
 
-    first = text.find(start_marker)
-    if first == -1:
+    sections: list[str] = []
+    description = html_to_markdown(pages.get("description", ""))
+    if description:
+        sections.append(description)
+
+    evaluation = html_to_markdown(pages.get("evaluation", ""))
+    if evaluation:
+        sections.append("## Evaluation\n\n" + evaluation)
+
+    if not sections:
         return "Overview section not found."
-    second = text.find(start_marker, first + len(start_marker))
-    start = second if second != -1 else first
 
-    end = text.find(end_marker, start)
-
-    description = text[start + len(start_marker): end + len(end_marker) if end != -1 else None]
-
-    # Drop residual nav-bar items that may slip through
-    nav_items = {"Data", "Code", "Models", "Discussion", "Leaderboard", "Rules", "Overview"}
-    lines = [line.strip() for line in description.splitlines()]
-    lines = [line for line in lines if line and line not in nav_items]
-    return "\n\n".join(lines)
+    return "\n\n".join(sections)
 
 
 def main() -> None:
