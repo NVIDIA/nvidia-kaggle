@@ -93,7 +93,7 @@ python ./scripts/fetch_dataset_info.py <competition-slug-or-url>
 
 The scripts accept a bare competition slug or `https://www.kaggle.com/competitions/<slug>` URL and extract the slug automatically. Convert output to markdown when the user asks for saved documentation, using `{slug}_competition_overview.md` and `{slug}_dataset_description.md` in the current working directory.
 
-### Research Brief (agentic)
+### Research Brief
 
 Use this when the user asks you to **research a competition and write a strategy
 brief** in natural terms (e.g. "research this competition and brief me, with
