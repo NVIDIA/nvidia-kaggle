@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
-"""Fetch Kaggle writeup with UTF-8 output to file."""
+"""Fetch a Kaggle competition solution writeup as markdown via the Kaggle API.
+
+Replaces the previous headless-browser scraper: Kaggle serves the writeup's
+source markdown through its internal web service, so no browser or arbitrary
+JavaScript execution is required.
+
+A writeup URL has the form
+``.../competitions/<competition>/writeups/<writeup-slug>``. The writeup is a
+forum topic; its numeric topic id is found by matching the writeup slug against
+the competition leaderboard's per-team ``solutionWriteUpUrl``. The topic's
+``writeUp.message.rawMarkdown`` is the source markdown.
+"""
+
 import argparse
 import re
 import sys
@@ -7,131 +19,68 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from browser import evaluate_page
-from support.constants import LONG_BROWSER_TIMEOUT_MS
+from runtime import kaggle_web_service
 
-JS_CONVERT = r"""
-() => {
-    function nodeToMd(node, listDepth) {
-        if (node.nodeType === Node.TEXT_NODE) {
-            return node.textContent;
-        }
-        if (node.nodeType !== Node.ELEMENT_NODE) return '';
-        const tag = node.tagName.toLowerCase();
-        if (['nav', 'footer', 'header', 'svg', 'button', 'script', 'style', 'noscript'].includes(tag)) return '';
-        if (node.getAttribute('role') === 'navigation') return '';
-        let children = Array.from(node.childNodes).map(c => nodeToMd(c, listDepth)).join('');
-        switch (tag) {
-            case 'h1': return '\n# ' + children.trim() + '\n';
-            case 'h2': return '\n## ' + children.trim() + '\n';
-            case 'h3': return '\n### ' + children.trim() + '\n';
-            case 'h4': return '\n#### ' + children.trim() + '\n';
-            case 'h5': return '\n##### ' + children.trim() + '\n';
-            case 'h6': return '\n###### ' + children.trim() + '\n';
-            case 'p': return '\n' + children.trim() + '\n';
-            case 'br': return '\n';
-            case 'strong': case 'b': return '**' + children.trim() + '**';
-            case 'em': case 'i': return '*' + children.trim() + '*';
-            case 'code':
-                if (node.parentElement && node.parentElement.tagName.toLowerCase() === 'pre') {
-                    return children;
-                }
-                return '`' + children.trim() + '`';
-            case 'pre': {
-                let lang = '';
-                const codeEl = node.querySelector('code');
-                if (codeEl) {
-                    const cls = codeEl.className || '';
-                    const m = cls.match(/language-(\w+)/);
-                    if (m) lang = m[1];
-                }
-                return '\n```' + lang + '\n' + children.trim() + '\n```\n';
-            }
-            case 'a': {
-                const href = node.getAttribute('href') || '';
-                const text = children.trim();
-                if (!text) return '';
-                return '[' + text + '](' + href + ')';
-            }
-            case 'img': {
-                const alt = node.getAttribute('alt') || '';
-                const src = node.getAttribute('src') || '';
-                return '![' + alt + '](' + src + ')';
-            }
-            case 'ul': case 'ol':
-                return '\n' + children + '\n';
-            case 'li': {
-                const prefix = (node.parentElement && node.parentElement.tagName.toLowerCase() === 'ol')
-                    ? '1. ' : '- ';
-                const indent = '  '.repeat(listDepth);
-                return indent + prefix + children.trim() + '\n';
-            }
-            case 'blockquote':
-                return '\n' + children.trim().split('\n').map(l => '> ' + l).join('\n') + '\n';
-            case 'table': {
-                const rows = Array.from(node.querySelectorAll('tr'));
-                if (rows.length === 0) return children;
-                let table = '\n';
-                rows.forEach((row, i) => {
-                    const cells = Array.from(row.querySelectorAll('th, td'));
-                    const line = '| ' + cells.map(c => c.textContent.trim()).join(' | ') + ' |';
-                    table += line + '\n';
-                    if (i === 0) {
-                        table += '| ' + cells.map(() => '---').join(' | ') + ' |\n';
-                    }
-                });
-                return table + '\n';
-            }
-            case 'hr': return '\n---\n';
-            default:
-                return children;
-        }
-    }
-    let container = document.querySelector('[class*="writeup"]')
-        || document.querySelector('article')
-        || document.querySelector('[class*="discussion-detail"]')
-        || document.querySelector('[class*="comment-body"]')
-        || document.querySelector('main')
-        || document.body;
-    return nodeToMd(container, 0);
-}
-"""
+WRITEUP_URL_RE = re.compile(r"/competitions/(?P<competition>[^/]+)/writeups/(?P<slug>[^/?#]+)")
 
-NOISE_PATTERNS = [
-    r'^menu\s*$', r'^Skip to\s*$', r'^content\s*$', r'^Create\s*$',
-    r'^explore\s*$', r'^Home\s*$', r'^Sign In\s*$', r'^Register\s*$',
-    r'^Kaggle uses cookies.*$', r'^Learn more\s*$', r'^OK, Got it\.\s*$',
-    r'^emoji_events\s*$', r'^table_chart\s*$', r'^tenancy\s*$',
-    r'^leaderboard\s*$', r'^smart_toy\s*$', r'^code\s*$', r'^comment\s*$',
-    r'^school\s*$', r'^expand_more\s*$', r'^auto_awesome_motion\s*$',
-    r'^View Active Events\s*$', r'^more_horiz\s*$', r'^more_vert\s*$',
-    r'^arrow_drop_up\s*$', r'^arrow_drop_down\s*$', r'^Competitions\s*$',
-    r'^Datasets\s*$', r'^Models\s*$', r'^Benchmarks\s*$',
-    r'^Game Arena\s*$', r'^Code\s*$', r'^Discussions\s*$',
-    r'^Learn\s*$', r'^More\s*$',
-]
+
+def _resolve_topic_id(client, competition: str, writeup_slug: str) -> int:
+    """Map a writeup slug to its forum topic id via the competition leaderboard."""
+    competition_info = client.post(
+        "competitions.CompetitionService/GetCompetition",
+        {"competitionName": competition},
+    )
+    competition_id = competition_info.get("id") or (
+        competition_info.get("competition") or {}
+    ).get("id")
+    if not competition_id:
+        raise RuntimeError(f"Could not resolve competition id for '{competition}'.")
+
+    board = client.post(
+        "competitions.LeaderboardService/GetLeaderboard",
+        {"competitionId": competition_id},
+    )
+    for team in board.get("teams") or []:
+        url = team.get("solutionWriteUpUrl") or ""
+        topic_id = team.get("writeUpForumTopicId")
+        if topic_id and url.rstrip("/").endswith("/" + writeup_slug):
+            return topic_id
+
+    raise RuntimeError(
+        f"Could not find writeup '{writeup_slug}' in the leaderboard for "
+        f"'{competition}'. The writeup may be unlisted or removed."
+    )
+
 
 def fetch_writeup(url: str) -> str:
-    md = evaluate_page(url, JS_CONVERT, timeout=LONG_BROWSER_TIMEOUT_MS)
+    """Return the writeup's source markdown for a Kaggle writeup URL."""
+    match = WRITEUP_URL_RE.search(url)
+    if not match:
+        raise RuntimeError(
+            "URL must be a Kaggle writeup URL of the form "
+            "https://www.kaggle.com/competitions/<competition>/writeups/<slug>"
+        )
 
-    lines = md.split('\n')
-    cleaned = []
-    blank_count = 0
-    for line in lines:
-        if line.strip() == '':
-            blank_count += 1
-            if blank_count <= 2:
-                cleaned.append('')
-        else:
-            blank_count = 0
-            cleaned.append(line)
+    client = kaggle_web_service()
+    topic_id = _resolve_topic_id(client, match.group("competition"), match.group("slug"))
 
-    result = '\n'.join(cleaned).strip()
+    topic = client.post(
+        "discussions.DiscussionsService/GetForumTopicById",
+        {"forumTopicId": topic_id, "includeComments": False},
+    ).get("forumTopic", {})
 
-    noise_re = re.compile('|'.join(NOISE_PATTERNS), re.MULTILINE)
-    result = noise_re.sub('', result)
-    result = re.sub(r'\n{3,}', '\n\n', result)
-    return result.strip()
+    write_up = topic.get("writeUp") or {}
+    message = write_up.get("message") or {}
+    markdown = message.get("rawMarkdown") or message.get("content") or ""
+    if not markdown.strip():
+        raise RuntimeError(f"Writeup topic {topic_id} returned no content.")
+
+    title = write_up.get("title") or topic.get("name") or ""
+    body = markdown.strip()
+    if title and not body.lstrip().startswith("#"):
+        body = f"# {title}\n\n{body}"
+
+    return re.sub(r"\n{3,}", "\n\n", body).strip()
 
 
 def main() -> None:

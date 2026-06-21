@@ -52,8 +52,8 @@ Save each file as `<rank>th_place_writeup.md` unless a clearer rank suffix is ne
 
 ## Workflow-Specific Troubleshooting
 
-See [SKILL.md](SKILL.md#troubleshooting) for common browser, access, rate-limit, and page-structure failures.
+See [SKILL.md](SKILL.md#troubleshooting) for common access, rate-limit, and API failures.
 
 | Symptom | Action |
 |---|---|
-| Kaggle markup changed | Preserve raw script output and note any manual cleanup needed. |
+| Kaggle API response shape changed | Preserve raw script output and note any manual cleanup needed. |

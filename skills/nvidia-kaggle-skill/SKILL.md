@@ -26,7 +26,6 @@ Do not use it for unrelated ML training, generic notebook editing, general data 
 |---|---|---|
 | Kaggle slug, URL, writeup URL, kernel ref, or local folder | Depends on task | Primary target for the requested Kaggle action. |
 | `KAGGLE_API_TOKEN` | Required for API/CLI-backed workflows | KGAT token string for Kaggle API, CLI, and SDK calls. |
-| Playwright Chromium | Required for public web scraping | Used for competition pages, leaderboard writeup links, and writeup pages. |
 | Disk space | Required for kernel setup | Must fit input datasets, competition data, models, and extracted archives. |
 
 ## Prerequisites
@@ -34,26 +33,13 @@ Do not use it for unrelated ML training, generic notebook editing, general data 
 - Run commands from this skill directory unless a referenced workflow says otherwise.
 - Install only the runtime packages needed for the requested workflow.
 - Set `KAGGLE_API_TOKEN` before API, CLI, kernel, discussion, dataset, or submission workflows.
-- Install Playwright Chromium before public page or writeup scraping.
 - Confirm local disk space before downloading competition data, kernel inputs, or extracted archives.
 
 ## Runtime Dependencies
 
 Install only the packages needed for the requested task into the current environment, then run scripts with `python`.
 
-Public page and writeup scraping:
-
-```bash
-if command -v uv >/dev/null 2>&1; then
-  uv pip install playwright playwright-stealth
-else
-  python -m pip install playwright playwright-stealth
-fi
-
-python -m playwright install chromium
-```
-
-Kaggle API, CLI, kernels, discussions, and datasets:
+Kaggle API, CLI, kernels, discussions, datasets, competition pages, and writeups:
 
 ```bash
 if command -v uv >/dev/null 2>&1; then
@@ -157,7 +143,6 @@ Use this table for common failure modes across Kaggle workflows. Workflow files 
 | Symptom | Cause | Action |
 |---|---|---|
 | `KAGGLE_API_TOKEN` missing or invalid | API/CLI-backed workflow started without valid Kaggle credentials. | Stop before Kaggle API/CLI calls, set `KAGGLE_API_TOKEN`, and rerun the exact command. |
-| Browser launch or Chromium error | Playwright browser runtime is missing. | Run `python -m playwright install chromium` before retrying public scraping. |
 | Empty discussion or kernel query results | The local cache has not been populated for that competition. | Run the matching ingest script first, then query again. |
 | Private, restricted, or unavailable Kaggle content | The active account lacks access, rules were not accepted, or the content was removed. | Report the URL/ref and ask the user for access context before retrying. |
 | Kaggle API, SDK, rate-limit, or page-structure failure | Kaggle returned partial data, changed an API/layout, or limited requests. | Preserve the failing command and output, keep retries bounded, and label unavailable evidence. |

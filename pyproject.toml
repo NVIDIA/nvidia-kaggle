@@ -19,8 +19,6 @@ dependencies = [
     "nbformat",
     "numpy",
     "pandas",
-    "playwright",
-    "playwright-stealth",
     "pydantic",
     "pytest",
     "python-dotenv",
