@@ -8,7 +8,7 @@ from typing import Mapping, Protocol, Sequence
 from rich.console import Console
 from rich.table import Table
 
-from support.constants import DATE_PREVIEW_CHARS
+from constants import DATE_PREVIEW_CHARS
 
 
 class CompetitionSummary(Protocol):

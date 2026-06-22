@@ -18,7 +18,7 @@ from discussions.discussion_client import DiscussionClient
 from discussions.models import DiscussionRecord
 from discussions.paths import default_db_path
 from runtime import load_project_env
-from support.constants import DEFAULT_DISCUSSION_MAX_PAGES, DEFAULT_PAGE_SIZE
+from constants import DEFAULT_DISCUSSION_MAX_PAGES, DEFAULT_PAGE_SIZE
 
 load_project_env()
 
