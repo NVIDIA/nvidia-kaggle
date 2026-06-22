@@ -16,7 +16,7 @@ sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from kernels.kaggle_client import KaggleKernelClient
 from kernels.kaggle_search import KaggleKernelSearchClient, parse_competition_slug
-from support.constants import DEFAULT_KERNEL_SCORE_PAGE_SIZE
+from constants import DEFAULT_KERNEL_SCORE_PAGE_SIZE
 
 
 def fetch_kernel_scores(

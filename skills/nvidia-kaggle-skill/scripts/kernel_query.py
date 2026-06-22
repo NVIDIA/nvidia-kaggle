@@ -16,7 +16,7 @@ sys.path.insert(0, str(_SCRIPTS_DIR))
 from kernels.database import KernelDatabase
 from kernels.paths import default_db_path
 from runtime import load_project_env
-from support.constants import (
+from constants import (
     DATE_PREVIEW_CHARS,
     DEFAULT_QUERY_LIMIT,
     DEFAULT_REF_COLUMN_WIDTH,

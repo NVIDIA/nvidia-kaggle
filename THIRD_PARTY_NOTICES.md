@@ -18,10 +18,6 @@ The Kaggle website and service at [Kaggle](https://www.kaggle.com/) are used as 
   License: Apache-2.0  
   Upstream: [Kaggle/kagglesdk](https://github.com/Kaggle/kagglesdk)
 
-- playwright  
-  License: Apache-2.0  
-  Upstream: [microsoft/playwright-python](https://github.com/microsoft/playwright-python)
-
 - Codex CLI/SDK  
   License: Apache-2.0  
   Upstream: [openai/codex](https://github.com/openai/codex)
@@ -35,10 +31,6 @@ The Kaggle website and service at [Kaggle](https://www.kaggle.com/) are used as 
   Upstream: [rapidsai/cuml](https://github.com/rapidsai/cuml)
 
 ### MIT
-
-- playwright-stealth  
-  License: MIT  
-  Upstream: [Mattwmaster58/playwright_stealth](https://github.com/Mattwmaster58/playwright_stealth)
 
 - claude-agent-sdk  
   License: MIT  

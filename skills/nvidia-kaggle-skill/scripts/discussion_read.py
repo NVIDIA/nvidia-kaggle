@@ -16,7 +16,7 @@ sys.path.insert(0, str(_SCRIPTS_DIR))
 from discussions.database import DiscussionDatabase
 from discussions.paths import default_db_path
 from runtime import load_project_env
-from support.constants import DATE_PREVIEW_CHARS
+from constants import DATE_PREVIEW_CHARS
 
 load_project_env()
 

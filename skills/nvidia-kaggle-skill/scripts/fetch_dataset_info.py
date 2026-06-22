@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
+"""Fetch a Kaggle competition dataset description through the Kaggle API (no browser)."""
+
 import argparse
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from browser import read_page_text
-from runtime import competition_slug
-from support.constants import DEFAULT_BROWSER_TIMEOUT_MS
+from runtime import competition_pages, competition_slug, html_to_markdown
 
 
 def parse_slug(slug_or_url: str) -> str:
@@ -15,26 +15,15 @@ def parse_slug(slug_or_url: str) -> str:
     return competition_slug(slug_or_url)
 
 
-def get_dataset_description(competition_slug: str) -> str:
-    url = f"https://www.kaggle.com/competitions/{competition_slug}/data"
-    text = read_page_text(url, timeout=DEFAULT_BROWSER_TIMEOUT_MS)
+def get_dataset_description(slug: str) -> str:
+    """Return the dataset description as markdown via the Kaggle API."""
+    pages = competition_pages(slug)
 
-    # Start at "Dataset Description", end at "Data Explorer" (the file browser UI)
-    start_marker = "Dataset Description"
-    end_marker = "Data Explorer"
+    description = html_to_markdown(pages.get("data-description", ""))
+    if description:
+        return description
 
-    start = text.find(start_marker)
-    end = text.find(end_marker, start)
-
-    if start == -1:
-        return "Dataset Description section not found."
-
-    description = text[start + len(start_marker): end if end != -1 else None]
-
-    # Clean blank lines
-    lines = [line.strip() for line in description.splitlines()]
-    lines = [line for line in lines if line]
-    return "\n\n".join(lines)
+    return "Dataset Description section not found."
 
 
 def main() -> None:

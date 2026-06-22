@@ -15,7 +15,7 @@ from kernels.database import KernelDatabase
 from kernels.kaggle_client import KaggleKernelClient
 from kernels.paths import default_db_path
 from runtime import load_project_env
-from support.constants import DEFAULT_PAGE_SIZE
+from constants import DEFAULT_PAGE_SIZE
 
 load_project_env()
 

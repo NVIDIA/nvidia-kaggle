@@ -8,13 +8,7 @@ Clone the repo, then from the root:
 uv sync
 ```
 
-If you'll be touching public scraping workflows (writeups, leaderboard pages), install Playwright Chromium too:
-
-```bash
-uv run playwright install chromium
-```
-
-API-backed workflows (kernels, discussions, submissions, dataset upload) need a Kaggle token in your environment as `KAGGLE_API_TOKEN`. A `.env` at the repo root works fine.
+All workflows are API-backed and need a Kaggle token in your environment as `KAGGLE_API_TOKEN`. A `.env` at the repo root works fine.
 
 ## Layout
 

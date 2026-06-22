@@ -14,7 +14,7 @@ import re
 import subprocess
 import sys
 
-from support.constants import MAX_DATASET_SLUG_LENGTH, MIN_DATASET_SLUG_LENGTH
+from constants import MAX_DATASET_SLUG_LENGTH, MIN_DATASET_SLUG_LENGTH
 
 
 def has_kaggle_credentials() -> bool:

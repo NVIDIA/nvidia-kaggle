@@ -12,7 +12,7 @@ import os
 import sys
 import time
 
-from support.constants import (
+from constants import (
     DEFAULT_KERNEL_TIMEOUT_SECONDS,
     DEFAULT_POLL_INTERVAL_SECONDS,
     OUTPUT_SEPARATOR_WIDTH,
