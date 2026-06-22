@@ -41,6 +41,19 @@ PYTHONUNBUFFERED=1 python ./scripts/submit_kernel.py /tmp/<slug> --file submissi
 
 Critical: never rerun this script blindly. It is long-running and each successful submission call can spend one competition submission slot. Before retrying, confirm the previous process exited, read the full log, and diagnose the failure.
 
+## Submission Quota Check
+
+Use this before submitting to see how many daily submissions remain. Kaggle limits submissions per competition per day and resets the count at 00:00 UTC.
+
+```bash
+python ./scripts/submission_quota.py <competition-slug-or-url> [--as-json] [--limit-fallback N]
+```
+
+It reads the daily limit from the Kaggle SDK (`max_daily_submissions`) and counts submissions made since UTC midnight via the Kaggle CLI. Output fields: `limit`, `limit_source` (`sdk` or `fallback`), `used`, `remaining`, and `exhausted`.
+
+- If `exhausted` is true, do not submit — the slot would be wasted or rejected.
+- If `used`/`remaining` are `unknown` (e.g. the account has not joined the competition, or the submissions list is forbidden), this proactive check is unavailable; rely on the submit-time quota/429 error as the authoritative backstop. This is a guard, not a guarantee.
+
 ## Workflow
 
 1. Validate Kaggle credentials and kernel metadata.
