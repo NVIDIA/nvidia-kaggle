@@ -166,6 +166,16 @@ jupyter notebook titanic-wcg-xgboost-0-84688.irnb
 ```
 </details>
 
+### Demo: Competition Strategy Brief
+
+This demo chains the skill's research workflows — overview, discussions, kernels, writeups — into a single strategy brief: the metric and constraints, the winning techniques (each linked to its source), a baseline→top score ladder, and a few plots. Give the skill a natural-language prompt:
+
+> Research the rogii-wellbore-geology-prediction Kaggle competition with the nvidia-kaggle skill and write me a strategy brief on what it takes to do well. Include the key public notebooks and discussions as links, and a few plots for insight. Save the brief to brief.md and put any plots under plots/.
+
+Sample output briefs:
+- [Codex run](https://github.com/daxiongshu/competition-brief-demo/blob/main/codex_rogii-wellbore-geology-prediction_002/brief.md)
+- [Claude run](https://github.com/daxiongshu/competition-brief-demo/blob/main/claude_rogii-wellbore-geology-prediction_003/brief.md)
+
 ## Quick Install
 
 Install the marketplace for your agent runtime.

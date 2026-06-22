@@ -79,6 +79,17 @@ python ./scripts/fetch_dataset_info.py <competition-slug-or-url>
 
 The scripts accept a bare competition slug or `https://www.kaggle.com/competitions/<slug>` URL and extract the slug automatically. Convert output to markdown when the user asks for saved documentation, using `{slug}_competition_overview.md` and `{slug}_dataset_description.md` in the current working directory.
 
+### Research Brief
+
+Use this when the user asks you to **research a competition and write a strategy
+brief** in natural terms (e.g. "research this competition and brief me, with
+links and a few charts"). You chain the skill's individual research workflows
+yourself, write your own analysis/plotting code, and produce the brief. Read
+`./research-brief.md` for the principles that keep the brief accurate, informative,
+and useful to a reader — how to cite real sources as links, and how to make plots
+honest and legible (every plotted number traces to what you gathered). These
+principles live in the skill so the user does not have to spell them out.
+
 ### Writeups
 
 Use this when the user asks to fetch one writeup, fetch top-k writeups, discover leaderboard writeup links, or summarize solution posts. Read `./writeups.md`.
