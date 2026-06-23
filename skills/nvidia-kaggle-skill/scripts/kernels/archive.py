@@ -227,9 +227,44 @@ def _source_extension(source_text: str, language: str | None) -> str:
     return ".txt"
 
 
+def _scores_view(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Compact per-version score summary (no internal ids), sorted by version."""
+    view = [
+        {
+            "version_number": r["version_number"],
+            "title": r.get("title"),
+            "status": r.get("status"),
+            "date_created": r.get("date_created"),
+            "public_lb": r.get("public_lb"),
+            "public_lb_numeric": r.get("public_lb_numeric"),
+        }
+        for r in rows
+    ]
+    view.sort(key=lambda r: r["version_number"])
+    return view
+
+
+def kernel_version_scores(
+    kernel_ref: str, client: KaggleWebServiceClient | None = None
+) -> dict[str, Any]:
+    """Return every version's public-LB score for a kernel — no download.
+
+    Result: {owner_slug, kernel_slug, versions: [{version_number, title,
+    status, date_created, public_lb, public_lb_numeric}, ...]}.
+    """
+    ref = parse_kernel_ref(kernel_ref)
+    rows = resolve_kernel_versions(kernel_ref, client=client)
+    return {
+        "owner_slug": ref.owner_slug,
+        "kernel_slug": ref.kernel_slug,
+        "versions": _scores_view(rows),
+    }
+
+
 def _download_version(
     ref: KernelRef,
     selected: dict[str, Any],
+    rows: list[dict[str, Any]],
     output_dir: str | Path,
     client: KaggleWebServiceClient,
     *,
@@ -255,6 +290,7 @@ def _download_version(
         "kernel_slug": ref.kernel_slug,
         "selected_version": selected,
         "source": {"path": str(source_path), "bytes": source_path.stat().st_size},
+        "versions": _scores_view(rows),
     }
     metadata_path = version_dir / "metadata.json"
     metadata_path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -278,7 +314,7 @@ def archive_best_kernel_source(
     rows = resolve_kernel_versions(kernel_ref, client=client)
     selected = select_best_public_lb_version(rows, score_direction=score_direction)
     return _download_version(
-        ref, selected, output_dir, client, include_outputs=include_outputs, force=force
+        ref, selected, rows, output_dir, client, include_outputs=include_outputs, force=force
     )
 
 
@@ -304,5 +340,5 @@ def archive_kernel_version(
         )
     selected = {**selected, "selection_reason": f"explicit version {version_number}"}
     return _download_version(
-        ref, selected, output_dir, client, include_outputs=include_outputs, force=force
+        ref, selected, rows, output_dir, client, include_outputs=include_outputs, force=force
     )

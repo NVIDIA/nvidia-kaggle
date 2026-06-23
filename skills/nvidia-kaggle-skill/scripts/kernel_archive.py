@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from kernels.archive import (
     archive_best_kernel_source,
     archive_kernel_version,
-    resolve_kernel_versions,
+    kernel_version_scores,
 )
 
 
@@ -40,20 +40,21 @@ def main() -> None:
     parser.add_argument("--include-outputs", action="store_true", help="Include cell outputs in the source download")
     parser.add_argument("--force", action="store_true", help="Overwrite an existing source file")
     parser.add_argument(
+        "--scores-only",
         "--list",
+        dest="scores_only",
         action="store_true",
-        help="List all versions with scores as JSON instead of downloading",
+        help="Return every version's score as JSON without downloading any source",
     )
     args = parser.parse_args()
 
     try:
-        if args.list:
-            rows = resolve_kernel_versions(args.kernel_ref)
-            print(json.dumps(rows, indent=2))
+        if args.scores_only:
+            print(json.dumps(kernel_version_scores(args.kernel_ref), indent=2))
             return
 
         if not args.output_dir:
-            parser.error("output_dir is required unless --list is given")
+            parser.error("output_dir is required unless --scores-only is given")
 
         if args.version is not None:
             metadata = archive_kernel_version(
