@@ -9,16 +9,12 @@ web service (no browser). Use --list to inspect versions without downloading.
 import argparse
 import json
 import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from kernels.archive import (
     archive_best_kernel_source,
     archive_kernel_version,
     kernel_version_scores,
 )
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -76,7 +72,6 @@ def main() -> None:
     except Exception as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
-
 
 if __name__ == "__main__":
     main()

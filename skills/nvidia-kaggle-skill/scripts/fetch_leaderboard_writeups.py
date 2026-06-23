@@ -9,14 +9,10 @@ arbitrary JavaScript execution is required.
 import argparse
 import json
 import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from runtime import competition_slug, kaggle_web_service
 
 WEB_BASE = "https://www.kaggle.com"
-
 
 def fetch_writeup_links(leaderboard_url: str) -> list[dict]:
     """Return list of {rank, team, writeup_url} for teams that posted writeups.
@@ -78,7 +74,6 @@ def fetch_writeup_links(leaderboard_url: str) -> list[dict]:
     results.sort(key=lambda r: int(r["rank"]) if r["rank"].isdigit() else 10**9)
     return results
 
-
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Fetch writeup URLs from a Kaggle leaderboard"
@@ -95,7 +90,6 @@ def main() -> None:
     except Exception as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
-
 
 if __name__ == "__main__":
     main()
