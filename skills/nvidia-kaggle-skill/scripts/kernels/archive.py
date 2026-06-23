@@ -227,22 +227,16 @@ def _source_extension(source_text: str, language: str | None) -> str:
     return ".txt"
 
 
-def archive_best_kernel_source(
-    kernel_ref: str,
+def _download_version(
+    ref: KernelRef,
+    selected: dict[str, Any],
     output_dir: str | Path,
+    client: KaggleWebServiceClient,
     *,
-    score_direction: str = "auto",
-    include_outputs: bool = False,
-    force: bool = False,
-    client: KaggleWebServiceClient | None = None,
+    include_outputs: bool,
+    force: bool,
 ) -> dict[str, Any]:
-    """Find the best public-LB version of a kernel and save its source + metadata."""
-    ref = parse_kernel_ref(kernel_ref)
-    client = client or kaggle_web_service()
-
-    rows = resolve_kernel_versions(kernel_ref, client=client)
-    selected = select_best_public_lb_version(rows, score_direction=score_direction)
-
+    """Download a resolved version's source + write metadata.json under output_dir."""
     version_dir = Path(output_dir) / (
         f"v{selected['version_number']:03d}__scriptVersionId-{selected['kernel_session_id']}"
     )
@@ -266,3 +260,49 @@ def archive_best_kernel_source(
     metadata_path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     metadata["metadata_path"] = str(metadata_path)
     return metadata
+
+
+def archive_best_kernel_source(
+    kernel_ref: str,
+    output_dir: str | Path,
+    *,
+    score_direction: str = "auto",
+    include_outputs: bool = False,
+    force: bool = False,
+    client: KaggleWebServiceClient | None = None,
+) -> dict[str, Any]:
+    """Find the best public-LB version of a kernel and save its source + metadata."""
+    ref = parse_kernel_ref(kernel_ref)
+    client = client or kaggle_web_service()
+
+    rows = resolve_kernel_versions(kernel_ref, client=client)
+    selected = select_best_public_lb_version(rows, score_direction=score_direction)
+    return _download_version(
+        ref, selected, output_dir, client, include_outputs=include_outputs, force=force
+    )
+
+
+def archive_kernel_version(
+    kernel_ref: str,
+    output_dir: str | Path,
+    version_number: int,
+    *,
+    include_outputs: bool = False,
+    force: bool = False,
+    client: KaggleWebServiceClient | None = None,
+) -> dict[str, Any]:
+    """Archive a specific kernel version's source by version number."""
+    ref = parse_kernel_ref(kernel_ref)
+    client = client or kaggle_web_service()
+
+    rows = resolve_kernel_versions(kernel_ref, client=client)
+    selected = next((r for r in rows if r["version_number"] == version_number), None)
+    if selected is None:
+        available = ", ".join(str(r["version_number"]) for r in rows)
+        raise KernelArchiveError(
+            f"Version {version_number} not found for {kernel_ref}. Available versions: {available}"
+        )
+    selected = {**selected, "selection_reason": f"explicit version {version_number}"}
+    return _download_version(
+        ref, selected, output_dir, client, include_outputs=include_outputs, force=force
+    )

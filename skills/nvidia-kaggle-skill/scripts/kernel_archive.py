@@ -15,20 +15,27 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from kernels.archive import (
     archive_best_kernel_source,
+    archive_kernel_version,
     resolve_kernel_versions,
-    select_best_public_lb_version,
 )
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Archive the best public-LB version of a Kaggle kernel")
+    parser = argparse.ArgumentParser(
+        description="Archive a Kaggle kernel's source — a specific version, or the best public-LB version by default"
+    )
     parser.add_argument("kernel_ref", help="Kernel reference (owner/kernel-slug) or a Kaggle /code/ URL")
     parser.add_argument("output_dir", nargs="?", help="Directory to write the archived version into")
+    parser.add_argument(
+        "--version",
+        type=int,
+        help="Archive this specific version number instead of the best-scoring one",
+    )
     parser.add_argument(
         "--score-direction",
         choices=["auto", "minimize", "maximize"],
         default="auto",
-        help="Whether lower or higher LB is better (default: auto-infer from Kaggle metadata)",
+        help="When picking the best version, whether lower or higher LB is better (default: auto). Ignored with --version.",
     )
     parser.add_argument("--include-outputs", action="store_true", help="Include cell outputs in the source download")
     parser.add_argument("--force", action="store_true", help="Overwrite an existing source file")
@@ -48,13 +55,22 @@ def main() -> None:
         if not args.output_dir:
             parser.error("output_dir is required unless --list is given")
 
-        metadata = archive_best_kernel_source(
-            args.kernel_ref,
-            args.output_dir,
-            score_direction=args.score_direction,
-            include_outputs=args.include_outputs,
-            force=args.force,
-        )
+        if args.version is not None:
+            metadata = archive_kernel_version(
+                args.kernel_ref,
+                args.output_dir,
+                args.version,
+                include_outputs=args.include_outputs,
+                force=args.force,
+            )
+        else:
+            metadata = archive_best_kernel_source(
+                args.kernel_ref,
+                args.output_dir,
+                score_direction=args.score_direction,
+                include_outputs=args.include_outputs,
+                force=args.force,
+            )
         print(json.dumps(metadata, indent=2))
     except Exception as exc:
         print(f"Error: {exc}", file=sys.stderr)
