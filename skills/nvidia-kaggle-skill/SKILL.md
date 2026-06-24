@@ -2,6 +2,12 @@
 name: nvidia-kaggle-skill
 description: "Use for Kaggle competition overview fetches, writeups, discussion/kernel research, submissions, and dataset uploads. Not for unrelated ML code."
 license: MIT
+permissions:
+  - "shell: run the bundled scripts/, the Kaggle CLI (kaggle), basic file utilities (mkdir, cd, cp), and install runtime Python packages"
+  - "network: HTTPS to Kaggle APIs (kaggle.com, api.kaggle.com) and PyPI"
+  - "env: read environment variables, including KAGGLE_API_TOKEN, and load a project .env file"
+  - "file_read: read the project .env, inputs under the skill workspace, and user-specified paths"
+  - "file_write: write reports, caches, and downloads under the skill workspace and user-specified paths"
 metadata:
   short-description: "Kaggle competition workflows"
   author: "nvidia-kaggle maintainers"
@@ -34,6 +40,7 @@ Do not use it for unrelated ML training, generic notebook editing, general data 
 - Install only the runtime packages needed for the requested workflow.
 - Set `KAGGLE_API_TOKEN` before API, CLI, kernel, discussion, dataset, or submission workflows.
 - Confirm local disk space before downloading competition data, kernel inputs, or extracted archives.
+- Require explicit user confirmation before sensitive, externally visible actions: competition submissions (each can consume a daily slot), dataset uploads, and creating a public dataset. Treat `KAGGLE_API_TOKEN` as a secret — never print, log, or echo it.
 
 ## Runtime Dependencies
 
