@@ -109,18 +109,72 @@ def submissions_used_today(slug: str, *, now: datetime | None = None) -> int | N
     return count
 
 
-def submission_quota(slug: str, *, limit_fallback: int = 5, now: datetime | None = None) -> dict:
+def submissions_by_user_today(
+    slug: str, *, now: datetime | None = None, page_size: int = 200
+) -> dict[str, int] | None:
+    """Return ``{username: count}`` of today's submissions, grouped by submitter.
+
+    Uses the Kaggle SDK (``competition_submissions``), whose ``ApiSubmission``
+    objects carry ``submitted_by`` — the CLI CSV does not expose a submitter
+    column. Useful for attributing a team's shared daily quota across members.
+
+    Note: the daily limit is team-wide, not per-user; these counts attribute the
+    shared cap. Visibility is limited to what the authenticated account can see
+    (own submissions, and teammates' where the API returns them). Returns None
+    if the submission list cannot be fetched.
+    """
+    try:
+        from kaggle.api.kaggle_api_extended import KaggleApi
+
+        api = KaggleApi()
+        api.authenticate()
+        subs = api.competition_submissions(slug, page_size=page_size)
+    except Exception as exc:  # noqa: BLE001 — best-effort, like the rest of this module
+        print(f"[quota] could not fetch submissions for {slug}: {exc}", file=sys.stderr)
+        return None
+
+    now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    counts: dict[str, int] = {}
+    for sub in subs or []:
+        date_val = getattr(sub, "date", None)
+        # ApiSubmission.date may be a datetime or a string depending on SDK version.
+        dt = date_val if isinstance(date_val, datetime) else _parse_submission_date(str(date_val or ""))
+        if dt is None:
+            continue
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        if dt.astimezone(timezone.utc) < midnight:
+            continue
+        user = getattr(sub, "submitted_by", None) or getattr(sub, "submitted_by_ref", None) or "unknown"
+        counts[user] = counts.get(user, 0) + 1
+    return counts
+
+
+def submission_quota(
+    slug: str, *, limit_fallback: int = 5, by_user: bool = False, now: datetime | None = None
+) -> dict:
     """Return today's submission-quota state for a competition.
 
     Keys: ``competition``, ``limit``, ``limit_source`` ("sdk"|"fallback"),
     ``used`` (None if unknown), ``remaining`` (None if used unknown),
-    ``exhausted`` (True iff remaining is known and <= 0).
+    ``exhausted`` (True iff remaining is known and <= 0). When ``by_user`` is
+    set, also includes ``by_user`` ({username: count}) and uses its total as
+    ``used`` (since the per-user breakdown and the count come from one source).
     """
     sdk_limit = competition_daily_submission_limit(slug)
     limit = sdk_limit if sdk_limit is not None else limit_fallback
-    used = submissions_used_today(slug, now=now)
+
+    per_user: dict[str, int] | None = None
+    if by_user:
+        per_user = submissions_by_user_today(slug, now=now)
+        used = None if per_user is None else sum(per_user.values())
+    else:
+        used = submissions_used_today(slug, now=now)
+
     remaining = None if used is None else max(limit - used, 0)
-    return {
+    state = {
         "competition": slug,
         "limit": limit,
         "limit_source": "sdk" if sdk_limit is not None else "fallback",
@@ -128,6 +182,9 @@ def submission_quota(slug: str, *, limit_fallback: int = 5, now: datetime | None
         "remaining": remaining,
         "exhausted": remaining is not None and remaining <= 0,
     }
+    if by_user:
+        state["by_user"] = per_user
+    return state
 
 
 def main() -> None:
@@ -139,12 +196,18 @@ def main() -> None:
         default=5,
         help="Daily limit to assume when the SDK does not report one (default 5)",
     )
+    parser.add_argument(
+        "--by-user",
+        action="store_true",
+        help="Break today's submissions down by submitter (username: count) via the SDK. "
+        "Useful when teaming up; note the daily limit is team-wide, not per-user.",
+    )
     parser.add_argument("--as-json", action="store_true", help="Print the quota state as JSON")
     args = parser.parse_args()
 
     load_project_env()
     slug = competition_slug(args.competition)
-    state = submission_quota(slug, limit_fallback=args.limit_fallback)
+    state = submission_quota(slug, limit_fallback=args.limit_fallback, by_user=args.by_user)
 
     if args.as_json:
         print(json.dumps(state, indent=2))
@@ -156,6 +219,16 @@ def main() -> None:
     print(f"Daily limit: {state['limit']} ({state['limit_source']})")
     print(f"Used today (since 00:00 UTC): {used}")
     print(f"Remaining: {remaining}")
+    if args.by_user:
+        per_user = state.get("by_user")
+        if per_user is None:
+            print("By user: unknown (could not fetch submissions)")
+        elif not per_user:
+            print("By user: no submissions today")
+        else:
+            print("By user (team-wide limit; counts are attribution, not per-user caps):")
+            for user, count in sorted(per_user.items(), key=lambda kv: (-kv[1], kv[0])):
+                print(f"  {user}: {count}")
     if state["exhausted"]:
         print("Status: EXHAUSTED — no submissions left today.")
     elif state["remaining"] is None:

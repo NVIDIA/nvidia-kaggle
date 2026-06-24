@@ -46,13 +46,14 @@ Critical: never rerun this script blindly. It is long-running and each successfu
 Use this before submitting to see how many daily submissions remain. Kaggle limits submissions per competition per day and resets the count at 00:00 UTC.
 
 ```bash
-python ./scripts/submission_quota.py <competition-slug-or-url> [--as-json] [--limit-fallback N]
+python ./scripts/submission_quota.py <competition-slug-or-url> [--by-user] [--as-json] [--limit-fallback N]
 ```
 
 It reads the daily limit from the Kaggle SDK (`max_daily_submissions`) and counts submissions made since UTC midnight via the Kaggle CLI. Output fields: `limit`, `limit_source` (`sdk` or `fallback`), `used`, `remaining`, and `exhausted`.
 
 - If `exhausted` is true, do not submit — the slot would be wasted or rejected.
 - If `used`/`remaining` are `unknown` (e.g. the account has not joined the competition, or the submissions list is forbidden), this proactive check is unavailable; rely on the submit-time quota/429 error as the authoritative backstop. This is a guard, not a guarantee.
+- `--by-user` adds a `by_user` field (`{username: count}`) breaking today's submissions down by submitter, via the SDK (`competition_submissions`, whose records carry `submitted_by`; the CLI CSV has no submitter column). Useful when teaming up to see who has used the team's slots. Two caveats: the daily limit is **team-wide**, not per-user — these counts attribute the shared cap, they are not per-user limits; and visibility is limited to what the authenticated account can see (own submissions, plus teammates' where the API returns them).
 
 ## Workflow
 
