@@ -109,19 +109,13 @@ def submissions_used_today(slug: str, *, now: datetime | None = None) -> int | N
     return count
 
 
-def submissions_by_user_today(
-    slug: str, *, now: datetime | None = None, page_size: int = 200
-) -> dict[str, int] | None:
-    """Return ``{username: count}`` of today's submissions, grouped by submitter.
+def _fetch_submissions(slug: str, *, page_size: int = 200) -> list[tuple[str, datetime]] | None:
+    """Return ``[(submitter, utc_datetime), ...]`` for a competition via the SDK.
 
-    Uses the Kaggle SDK (``competition_submissions``), whose ``ApiSubmission``
-    objects carry ``submitted_by`` — the CLI CSV does not expose a submitter
-    column. Useful for attributing a team's shared daily quota across members.
-
-    Note: the daily limit is team-wide, not per-user; these counts attribute the
-    shared cap. Visibility is limited to what the authenticated account can see
-    (own submissions, and teammates' where the API returns them). Returns None
-    if the submission list cannot be fetched.
+    Uses ``competition_submissions``, whose ``ApiSubmission`` objects carry
+    ``submitted_by`` — the CLI CSV has no submitter column. Visibility is limited
+    to what the authenticated account can see (own submissions, and teammates'
+    where the API returns them). Returns None if the list cannot be fetched.
     """
     try:
         from kaggle.api.kaggle_api_extended import KaggleApi
@@ -133,10 +127,7 @@ def submissions_by_user_today(
         print(f"[quota] could not fetch submissions for {slug}: {exc}", file=sys.stderr)
         return None
 
-    now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
-    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-
-    counts: dict[str, int] = {}
+    out: list[tuple[str, datetime]] = []
     for sub in subs or []:
         date_val = getattr(sub, "date", None)
         # ApiSubmission.date may be a datetime or a string depending on SDK version.
@@ -145,23 +136,72 @@ def submissions_by_user_today(
             continue
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
-        if dt.astimezone(timezone.utc) < midnight:
-            continue
         user = getattr(sub, "submitted_by", None) or getattr(sub, "submitted_by_ref", None) or "unknown"
+        out.append((user, dt.astimezone(timezone.utc)))
+    return out
+
+
+def submissions_by_user_today(
+    slug: str, *, now: datetime | None = None, page_size: int = 200
+) -> dict[str, int] | None:
+    """Return ``{username: count}`` of today's (since 00:00 UTC) submissions."""
+    subs = _fetch_submissions(slug, page_size=page_size)
+    if subs is None:
+        return None
+    now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    counts: dict[str, int] = {}
+    for user, dt in subs:
+        if dt >= midnight:
+            counts[user] = counts.get(user, 0) + 1
+    return counts
+
+
+def submissions_overall(slug: str, *, page_size: int = 200) -> dict[str, int] | None:
+    """Return ``{username: count}`` across all visible submissions (all dates)."""
+    subs = _fetch_submissions(slug, page_size=page_size)
+    if subs is None:
+        return None
+    counts: dict[str, int] = {}
+    for user, _dt in subs:
         counts[user] = counts.get(user, 0) + 1
     return counts
 
 
+def submissions_by_day(slug: str, *, page_size: int = 200) -> dict[str, dict[str, int]] | None:
+    """Return ``{YYYY-MM-DD (UTC): {username: count}}`` across all visible submissions."""
+    subs = _fetch_submissions(slug, page_size=page_size)
+    if subs is None:
+        return None
+    by_day: dict[str, dict[str, int]] = {}
+    for user, dt in subs:
+        day = dt.date().isoformat()
+        day_counts = by_day.setdefault(day, {})
+        day_counts[user] = day_counts.get(user, 0) + 1
+    # Sort newest day first for readable output.
+    return {day: by_day[day] for day in sorted(by_day, reverse=True)}
+
+
 def submission_quota(
-    slug: str, *, limit_fallback: int = 5, by_user: bool = False, now: datetime | None = None
+    slug: str,
+    *,
+    limit_fallback: int = 5,
+    by_user: bool = False,
+    by_day: bool = False,
+    overall: bool = False,
+    now: datetime | None = None,
 ) -> dict:
     """Return today's submission-quota state for a competition.
 
     Keys: ``competition``, ``limit``, ``limit_source`` ("sdk"|"fallback"),
     ``used`` (None if unknown), ``remaining`` (None if used unknown),
-    ``exhausted`` (True iff remaining is known and <= 0). When ``by_user`` is
-    set, also includes ``by_user`` ({username: count}) and uses its total as
-    ``used`` (since the per-user breakdown and the count come from one source).
+    ``exhausted`` (True iff remaining is known and <= 0).
+
+    Optional breakdowns (all SDK-based, attributing the team-wide quota):
+      - ``by_user`` set -> add ``by_user`` ({username: count}, today) and use
+        its total as ``used``.
+      - ``by_day`` set  -> add ``by_day`` ({date: {username: count}}, all dates).
+      - ``overall`` set -> add ``overall`` ({username: count}, all dates).
     """
     sdk_limit = competition_daily_submission_limit(slug)
     limit = sdk_limit if sdk_limit is not None else limit_fallback
@@ -184,6 +224,10 @@ def submission_quota(
     }
     if by_user:
         state["by_user"] = per_user
+    if by_day:
+        state["by_day"] = submissions_by_day(slug)
+    if overall:
+        state["overall"] = submissions_overall(slug)
     return state
 
 
@@ -202,12 +246,28 @@ def main() -> None:
         help="Break today's submissions down by submitter (username: count) via the SDK. "
         "Useful when teaming up; note the daily limit is team-wide, not per-user.",
     )
+    parser.add_argument(
+        "--by-day",
+        action="store_true",
+        help="Add a per-day breakdown ({date: {username: count}}) across all visible submissions.",
+    )
+    parser.add_argument(
+        "--overall",
+        action="store_true",
+        help="Add an all-time breakdown ({username: count}) across all visible submissions.",
+    )
     parser.add_argument("--as-json", action="store_true", help="Print the quota state as JSON")
     args = parser.parse_args()
 
     load_project_env()
     slug = competition_slug(args.competition)
-    state = submission_quota(slug, limit_fallback=args.limit_fallback, by_user=args.by_user)
+    state = submission_quota(
+        slug,
+        limit_fallback=args.limit_fallback,
+        by_user=args.by_user,
+        by_day=args.by_day,
+        overall=args.overall,
+    )
 
     if args.as_json:
         print(json.dumps(state, indent=2))
@@ -229,6 +289,26 @@ def main() -> None:
             print("By user (team-wide limit; counts are attribution, not per-user caps):")
             for user, count in sorted(per_user.items(), key=lambda kv: (-kv[1], kv[0])):
                 print(f"  {user}: {count}")
+    if args.overall:
+        overall = state.get("overall")
+        if overall is None:
+            print("Overall: unknown (could not fetch submissions)")
+        else:
+            total = sum(overall.values())
+            print(f"Overall (all dates, {total} total):")
+            for user, count in sorted(overall.items(), key=lambda kv: (-kv[1], kv[0])):
+                print(f"  {user}: {count}")
+    if args.by_day:
+        by_day = state.get("by_day")
+        if by_day is None:
+            print("By day: unknown (could not fetch submissions)")
+        elif not by_day:
+            print("By day: no submissions")
+        else:
+            print("By day (UTC, newest first):")
+            for day, users in by_day.items():
+                parts = ", ".join(f"{u}: {c}" for u, c in sorted(users.items(), key=lambda kv: (-kv[1], kv[0])))
+                print(f"  {day}: {parts}")
     if state["exhausted"]:
         print("Status: EXHAUSTED — no submissions left today.")
     elif state["remaining"] is None:
