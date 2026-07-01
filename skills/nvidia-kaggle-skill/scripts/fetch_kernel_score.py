@@ -5,14 +5,8 @@ Usage: python fetch_kernel_score.py <kernel-slug-or-url>
 """
 
 import sys
-from pathlib import Path
-
-
-_SCRIPTS_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from kernels.kaggle_search import KaggleKernelSearchClient, parse_kernel_ref
-
 
 def fetch_kernel_score(kernel_ref: str) -> float | None:
     """Fetch the public LB score from Kaggle SDK search.
@@ -25,7 +19,6 @@ def fetch_kernel_score(kernel_ref: str) -> float | None:
     ref = parse_kernel_ref(kernel_ref)
     result = KaggleKernelSearchClient().get_kernel_score(ref)
     return result.score if result else None
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

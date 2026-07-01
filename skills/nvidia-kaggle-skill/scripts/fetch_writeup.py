@@ -17,12 +17,9 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
 from runtime import kaggle_web_service
 
 WRITEUP_URL_RE = re.compile(r"/competitions/(?P<competition>[^/]+)/writeups/(?P<slug>[^/?#]+)")
-
 
 def _resolve_topic_id(client, competition: str, writeup_slug: str) -> int:
     """Map a writeup slug to its forum topic id via the competition leaderboard."""
@@ -50,7 +47,6 @@ def _resolve_topic_id(client, competition: str, writeup_slug: str) -> int:
         f"Could not find writeup '{writeup_slug}' in the leaderboard for "
         f"'{competition}'. The writeup may be unlisted or removed."
     )
-
 
 def fetch_writeup(url: str) -> str:
     """Return the writeup's source markdown for a Kaggle writeup URL."""
@@ -82,7 +78,6 @@ def fetch_writeup(url: str) -> str:
 
     return re.sub(r"\n{3,}", "\n\n", body).strip()
 
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fetch a Kaggle writeup as markdown")
     parser.add_argument("url", help="Kaggle writeup URL")
@@ -104,7 +99,6 @@ def main() -> None:
     except Exception as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
-
 
 if __name__ == "__main__":
     main()

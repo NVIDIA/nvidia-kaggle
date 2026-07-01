@@ -2,14 +2,8 @@
 """Fetch kernels for a Kaggle competition and store them in the local database."""
 
 import argparse
-import sys
-from pathlib import Path
 
 from rich.console import Console
-
-
-_SCRIPTS_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from kernels.database import KernelDatabase
 from kernels.kaggle_client import KaggleKernelClient
@@ -18,7 +12,6 @@ from runtime import load_project_env
 from constants import DEFAULT_PAGE_SIZE
 
 load_project_env()
-
 
 def ingest(
     competition_id: str,
@@ -59,7 +52,6 @@ def ingest(
 
     console.print(f"[bold green]Done:[/bold green] {inserted} new, {updated} updated in {db_path}")
 
-
 def main():
     parser = argparse.ArgumentParser(description="Fetch Kaggle competition kernels")
     parser.add_argument("competition_id", help="Competition slug (e.g. 'titanic')")
@@ -73,7 +65,6 @@ def main():
         sort_by=args.sort_by,
         page_size=args.page_size,
     )
-
 
 if __name__ == "__main__":
     main()
