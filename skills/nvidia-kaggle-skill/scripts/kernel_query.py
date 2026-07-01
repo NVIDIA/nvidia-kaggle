@@ -3,15 +3,9 @@
 
 import argparse
 import json
-import sys
-from pathlib import Path
 
 from rich.console import Console
 from rich.table import Table
-
-
-_SCRIPTS_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from kernels.database import KernelDatabase
 from kernels.paths import default_db_path
@@ -24,7 +18,6 @@ from constants import (
 )
 
 load_project_env()
-
 
 def query(
     competition_id: str,
@@ -72,7 +65,6 @@ def query(
 
     console.print(table)
 
-
 def main():
     parser = argparse.ArgumentParser(description="Search and filter kernels")
     parser.add_argument("competition_id", help="Competition slug")
@@ -94,7 +86,6 @@ def main():
         limit=args.limit,
         as_json=args.as_json,
     )
-
 
 if __name__ == "__main__":
     main()

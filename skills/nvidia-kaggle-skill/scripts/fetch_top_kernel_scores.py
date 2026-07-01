@@ -8,16 +8,10 @@ Outputs CSV lines: ref,score
 
 import argparse
 import sys
-from pathlib import Path
-
-
-_SCRIPTS_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from kernels.kaggle_client import KaggleKernelClient
 from kernels.kaggle_search import KaggleKernelSearchClient, parse_competition_slug
 from constants import DEFAULT_KERNEL_SCORE_PAGE_SIZE
-
 
 def fetch_kernel_scores(
     competition_slug: str,
@@ -69,7 +63,6 @@ def fetch_kernel_scores(
         )
     return rows
 
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fetch public Kaggle kernel scores through the Kaggle SDK")
     parser.add_argument("competition", help="Competition slug or URL")
@@ -93,7 +86,6 @@ def main() -> None:
     except Exception as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
-
 
 if __name__ == "__main__":
     main()

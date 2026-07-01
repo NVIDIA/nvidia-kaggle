@@ -2,15 +2,10 @@
 """Show discussion database statistics and list available competitions."""
 
 import argparse
-import sys
 from pathlib import Path
 
 from rich.console import Console
 from rich.table import Table
-
-
-_SCRIPTS_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from db_info import show_competition_detail
 from discussions.database import DiscussionDatabase
@@ -19,7 +14,6 @@ from runtime import load_project_env
 from constants import DATE_PREVIEW_CHARS
 
 load_project_env()
-
 
 def _show_overview(console: Console, db: DiscussionDatabase) -> None:
     competitions = db.list_competitions()
@@ -45,7 +39,6 @@ def _show_overview(console: Console, db: DiscussionDatabase) -> None:
     console.print(table)
     console.print(f"\n[bold]Total:[/bold] {len(competitions)} competitions, {sum(c['cnt'] for c in competitions)} discussions")
 
-
 def db_info(competition_id: str = None):
     console = Console()
     db_path = default_db_path()
@@ -67,13 +60,11 @@ def db_info(competition_id: str = None):
         else:
             _show_overview(console, db)
 
-
 def main():
     parser = argparse.ArgumentParser(description="Show discussion database statistics")
     parser.add_argument("competition_id", nargs="?", default=None, help="Show details for a specific competition")
     args = parser.parse_args()
     db_info(args.competition_id)
-
 
 if __name__ == "__main__":
     main()

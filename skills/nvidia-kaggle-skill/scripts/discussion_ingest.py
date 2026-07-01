@@ -2,16 +2,10 @@
 """Fetch Kaggle competition discussions and store them in the local database."""
 
 import argparse
-import sys
 from datetime import UTC, datetime
-from pathlib import Path
 
 from rich.console import Console
 from rich.progress import Progress
-
-
-_SCRIPTS_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from discussions.database import DiscussionDatabase
 from discussions.discussion_client import DiscussionClient
@@ -21,7 +15,6 @@ from runtime import load_project_env
 from constants import DEFAULT_DISCUSSION_MAX_PAGES, DEFAULT_PAGE_SIZE
 
 load_project_env()
-
 
 def _apply_author_details(discussion: DiscussionRecord, op_author: dict | None) -> None:
     if not op_author:
@@ -35,7 +28,6 @@ def _apply_author_details(discussion: DiscussionRecord, op_author: dict | None) 
     if tier and not discussion.author_tier:
         discussion.author_tier = tier
 
-
 def _store_comments(
     db: DiscussionDatabase,
     competition_id: str,
@@ -48,7 +40,6 @@ def _store_comments(
         comment.competition_id = competition_id
     db.upsert_comments(comments)
     return len(comments)
-
 
 def _fetch_and_store_comments(
     client: DiscussionClient,
@@ -74,7 +65,6 @@ def _fetch_and_store_comments(
                 console.print(f"[red]  Failed #{discussion.discussion_id}: {e}[/red]")
             progress.advance(task)
     return total_comments
-
 
 def ingest(
     competition_id: str,
@@ -134,7 +124,6 @@ def ingest(
         f"[bold green]Done:[/bold green] {inserted} new, {updated_count} updated in {db_path}"
     )
 
-
 def main():
     parser = argparse.ArgumentParser(description="Fetch Kaggle competition discussions")
     parser.add_argument("competition_id", help="Competition slug (e.g. 'birdclef-2026')")
@@ -155,7 +144,6 @@ def main():
         page_size=args.page_size,
         fetch_comments=not args.nofetch_comments,
     )
-
 
 if __name__ == "__main__":
     main()

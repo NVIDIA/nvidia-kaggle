@@ -75,8 +75,8 @@ class KaggleWebServiceClient:
             self._session.close()
             raise RuntimeError("Failed to obtain XSRF token from Kaggle session.")
 
-    def post(self, service_method: str, body: dict) -> dict:
-        """POST to ``/api/i/<service_method>`` and return parsed JSON."""
+    def _request(self, service_method: str, body: dict):
+        """POST to ``/api/i/<service_method>`` with retries; return the response."""
         import time
 
         url = f"{KAGGLE_WEB_SERVICE_BASE}/{service_method}"
@@ -90,7 +90,7 @@ class KaggleWebServiceClient:
             try:
                 resp = self._session.post(url, json=body, headers=headers)
                 resp.raise_for_status()
-                return resp.json()
+                return resp
             except Exception as exc:  # noqa: BLE001 - retried/re-raised below
                 last_exc = exc
                 if attempt < self._max_retries - 1:
@@ -99,6 +99,18 @@ class KaggleWebServiceClient:
             f"Kaggle web service call '{service_method}' failed after "
             f"{self._max_retries} retries: {last_exc}"
         ) from last_exc
+
+    def post(self, service_method: str, body: dict) -> dict:
+        """POST to ``/api/i/<service_method>`` and return parsed JSON."""
+        return self._request(service_method, body).json()
+
+    def post_text(self, service_method: str, body: dict) -> str:
+        """POST to ``/api/i/<service_method>`` and return the raw response text.
+
+        Used when the response body should be written verbatim (e.g. notebook
+        source) rather than parsed.
+        """
+        return self._request(service_method, body).text
 
     def close(self) -> None:
         self._session.close()

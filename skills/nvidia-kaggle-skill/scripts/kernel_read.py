@@ -2,22 +2,15 @@
 """Download and display the source code of a Kaggle kernel."""
 
 import argparse
-import sys
-from pathlib import Path
 
 from rich.console import Console
 from rich.markdown import Markdown
-
-
-_SCRIPTS_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from kernels.notebook_reader import NotebookReader
 from kernels.paths import default_notebook_cache_dir
 from runtime import load_project_env
 
 load_project_env()
-
 
 def read_kernel(
     kernel_ref: str,
@@ -52,7 +45,6 @@ def read_kernel(
 
     console.print(Markdown(rendered))
 
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Download and display a Kaggle kernel")
     parser.add_argument("kernel_ref", help="Kernel reference (e.g. 'username/kernel-slug')")
@@ -74,7 +66,6 @@ def main() -> None:
     except Exception as exc:
         Console(stderr=True).print(f"[red]Error:[/red] {exc}")
         raise SystemExit(1) from exc
-
 
 if __name__ == "__main__":
     main()

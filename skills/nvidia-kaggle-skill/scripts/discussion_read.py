@@ -2,16 +2,10 @@
 """Display a Kaggle discussion thread with its comments."""
 
 import argparse
-import sys
-from pathlib import Path
 
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
-
-
-_SCRIPTS_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from discussions.database import DiscussionDatabase
 from discussions.paths import default_db_path
@@ -19,7 +13,6 @@ from runtime import load_project_env
 from constants import DATE_PREVIEW_CHARS
 
 load_project_env()
-
 
 def read_discussion(discussion_id: int, competition_id: str = None):
     console = Console()
@@ -71,14 +64,12 @@ def read_discussion(discussion_id: int, competition_id: str = None):
     else:
         console.print("\n[dim]No comments.[/dim]")
 
-
 def main():
     parser = argparse.ArgumentParser(description="Display a discussion thread with comments")
     parser.add_argument("discussion_id", type=int, help="Numeric discussion ID")
     parser.add_argument("--competition-id", help="Competition slug (searches all if omitted)")
     args = parser.parse_args()
     read_discussion(args.discussion_id, competition_id=args.competition_id)
-
 
 if __name__ == "__main__":
     main()

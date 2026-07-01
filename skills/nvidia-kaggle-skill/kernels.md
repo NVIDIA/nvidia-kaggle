@@ -18,6 +18,7 @@ python ./scripts/kernel_ingest.py <competition_id> [--max-pages N] [--sort-by FI
 python ./scripts/kernel_query.py <competition_id> [--search TERM] [--min-votes N] [--author NAME] [--limit N] [--as-json]
 python ./scripts/kernel_read.py <kernel_ref> [--competition-id ID] [--raw] [--force]
 python ./scripts/kernel_db_info.py [competition_id]
+python ./scripts/kernel_archive.py <kernel_ref> [output_dir] [--scores-only] [--version N] [--score-direction auto|minimize|maximize] [--include-outputs] [--force]
 ```
 
 Sort options for ingest are `hotness`, `dateCreated`, `dateRun`, and `voteCount`.
@@ -59,6 +60,25 @@ Extract evidence from `kernel-metadata.json` (`kernel_sources`, `dataset_sources
 
 Write `top_kernels_research.md` unless the user requests another path. Include leaderboard snapshot, verified public scores, lineage chains with `[metadata]` or `[code ref]` labels, observed techniques, open questions, and links.
 
+## Best-Version Archiving
+
+Use this when the user wants a *specific* or the *best-scoring historical* version of a kernel, not just its latest version. `kernel_read.py` and `kaggle kernels pull` only return the current version; `kernel_archive.py` inspects every version's public leaderboard score and downloads either a requested version or the best one.
+
+```bash
+python ./scripts/kernel_archive.py <kernel_ref> --scores-only
+python ./scripts/kernel_archive.py <kernel_ref> <output_dir> [--version N]
+python ./scripts/kernel_archive.py <kernel_ref> <output_dir> [--score-direction auto|minimize|maximize]
+```
+
+- `--scores-only` (alias `--list`) returns every version's public LB score as JSON and downloads nothing — use it when you just want the score history. Output: `{owner_slug, kernel_slug, versions: [{version_number, title, status, date_created, public_lb, public_lb_numeric}, ...]}`.
+- `--version N` downloads that exact version number (any version, scored or not). Errors with the list of available versions if N does not exist.
+- Without `--version`, it selects the best public-LB version. `--score-direction` defaults to `auto`, inferring whether lower or higher is better from Kaggle's own best-submission metadata; if the direction cannot be inferred (e.g. all versions tie, or metadata is absent), pass `minimize` or `maximize` explicitly. (`--score-direction` is ignored when `--version` is given.)
+- A download writes the source plus a `metadata.json` under `<output_dir>/v<NNN>__scriptVersionId-<id>/`.
+- The command always prints JSON to stdout. On download it includes the `selected_version`, the saved `source` path, and the same `versions` score list, so you always get every version's score regardless of mode.
+- `--include-outputs` keeps cell outputs in the downloaded source; `--force` overwrites an existing source file.
+
+This uses Kaggle's internal web service (token + XSRF), so `KAGGLE_API_TOKEN` is required. Versions with no numeric score are skipped during best-version selection, but can still be fetched directly with `--version`.
+
 ## Storage
 
 | Path | Contents |
@@ -66,6 +86,7 @@ Write `top_kernels_research.md` unless the user requests another path. Include l
 | `data/kernels.db` | SQLite kernel metadata and competition info |
 | `data/notebooks/<comp>/<ref>/` | Cached notebooks and `kernel-metadata.json` |
 | `top_kernels_research.md` | Optional top-kernel and lineage report |
+| `<output_dir>/v<NNN>__scriptVersionId-<id>/` | Archived best-version source + `metadata.json` |
 | `data/kernel_research/<competition_id>` | Temporary pulled kernel evidence |
 
 ## Workflow-Specific Troubleshooting
