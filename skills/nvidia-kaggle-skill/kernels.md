@@ -51,8 +51,8 @@ Collect leaderboard and source evidence:
 ```bash
 kaggle kernels list --competition <competition_id> --sort-by voteCount --page-size 40 -v
 kaggle competitions leaderboard <competition_id> --show -v
-mkdir -p /tmp/kernel_research/<short-name>
-cd /tmp/kernel_research/<short-name>
+mkdir -p data/kernel_research/<competition_id>
+cd data/kernel_research/<competition_id>
 kaggle kernels pull <owner/slug> -m
 ```
 
@@ -87,7 +87,7 @@ This uses Kaggle's internal web service (token + XSRF), so `KAGGLE_API_TOKEN` is
 | `data/notebooks/<comp>/<ref>/` | Cached notebooks and `kernel-metadata.json` |
 | `top_kernels_research.md` | Optional top-kernel and lineage report |
 | `<output_dir>/v<NNN>__scriptVersionId-<id>/` | Archived best-version source + `metadata.json` |
-| `/tmp/kernel_research/<short-name>` | Temporary pulled kernel evidence |
+| `data/kernel_research/<competition_id>` | Temporary pulled kernel evidence |
 
 ## Workflow-Specific Troubleshooting
 

@@ -112,6 +112,29 @@ def create_version(data_path: str, version_notes: str, dir_mode: str) -> subproc
     return subprocess.run(cmd, capture_output=True, text=True)
 
 
+# Matches ANSI/OSC and other C0/C1 control sequences. Kaggle CLI / server
+# output is untrusted (it can reflect dataset names, version notes, or remote
+# error text), so escape sequences are stripped before the text is printed or
+# returned to an agent, where they could spoof terminal/log output.
+_ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b[@-_][^\x1b]*?(?:\x07|\x1b\\)|\x1b[@-Z\\-_]")
+_CONTROL_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+_MAX_CLI_OUTPUT_CHARS = 8000
+
+
+def sanitize_cli_output(text: str, *, max_chars: int = _MAX_CLI_OUTPUT_CHARS) -> str:
+    """Strip terminal escape/control sequences and bound the length of CLI output.
+
+    Tabs and newlines are preserved; other control characters and ANSI/OSC
+    escape sequences are removed so untrusted command output cannot manipulate
+    the terminal or be mistaken for trusted instructions.
+    """
+    cleaned = _ANSI_ESCAPE_RE.sub("", text)
+    cleaned = _CONTROL_CHARS_RE.sub("", cleaned)
+    if len(cleaned) > max_chars:
+        cleaned = cleaned[:max_chars] + "\n... [output truncated]"
+    return cleaned
+
+
 def parse_collaborator(value: str) -> dict[str, str]:
     """Parse a 'username:role' string. Role defaults to 'reader'."""
     parts = value.split(":", maxsplit=1)
@@ -260,8 +283,9 @@ def main():
         print("Creating dataset...")
         result = create_dataset(data_path, args.dir_mode, public=args.public)
 
-    # Handle output
-    output = (result.stdout + result.stderr).strip()
+    # Handle output. Kaggle CLI output is untrusted, so strip terminal
+    # escape/control sequences and bound its length before printing.
+    output = sanitize_cli_output((result.stdout + result.stderr)).strip()
     if result.returncode != 0:
         print(f"Upload failed:\n{output}", file=sys.stderr)
         if "already exists" in output.lower() and not args.version_notes:
