@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import time
+from datetime import datetime, timezone
 
 from constants import (
     DEFAULT_KERNEL_TIMEOUT_SECONDS,
@@ -20,6 +21,9 @@ from constants import (
 )
 
 OUTPUT_SEPARATOR = "=" * OUTPUT_SEPARATOR_WIDTH
+# Timestamped so each run's default message is unique — avoids exact-match
+# collisions with a prior run's submission that used the same default message.
+DEFAULT_SUBMISSION_MESSAGE = f"Submitted via skill ({datetime.now(timezone.utc):%Y-%m-%dT%H:%M:%SZ})"
 
 
 def has_kaggle_credentials() -> bool:
@@ -147,8 +151,10 @@ def poll_submission(api, competition: str, message: str, poll_interval: int, tim
             if s.description == message:
                 target = s
                 break
-        # Fallback: if default message, just take the most recent submission
-        if target is None and subs:
+        # Fallback only applies to the default message: a custom --message that
+        # hasn't matched yet (e.g. API lag) should keep waiting rather than risk
+        # reporting the status of a different, unrelated submission.
+        if target is None and subs and message == DEFAULT_SUBMISSION_MESSAGE:
             target = subs[0]
 
         if target is None:
@@ -175,7 +181,7 @@ def main():
     parser = argparse.ArgumentParser(description="Submit a Kaggle kernel and measure runtime.")
     parser.add_argument("path", help="Path to kernel folder (must contain kernel-metadata.json)")
     parser.add_argument("--file", help="Output filename produced by the kernel for submission (e.g., submission.csv)")
-    parser.add_argument("--message", default="Submitted via skill", help="Competition submission message")
+    parser.add_argument("--message", default=DEFAULT_SUBMISSION_MESSAGE, help="Competition submission message")
     parser.add_argument(
         "--poll-interval",
         type=int,
