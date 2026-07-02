@@ -1,0 +1,13 @@
+{
+  "name": "nvidia-kaggle",
+  "version": "0.1.0",
+  "description": "Codex plugin for Kaggle competition workflows.",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "NVIDIA Kaggle",
+    "shortDescription": "Kaggle competition plugin",
+    "longDescription": "A reusable Codex plugin for Kaggle competition research, setup, submission, discussions, kernels, writeups, and datasets.",
+    "category": "Data Science"  
+  }
+}

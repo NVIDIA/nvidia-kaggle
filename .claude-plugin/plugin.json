@@ -1,0 +1,8 @@
+{
+  "name": "nvidia-kaggle",
+  "description": "Claude Code plugin for Kaggle competition workflows.",
+  "license": "MIT",
+  "skills": [
+    "./skills/nvidia-kaggle-skill/"
+  ]
+}
