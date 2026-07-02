@@ -13,7 +13,7 @@
       "source": {
         "source": "url",
         "url": "https://github.com/NVIDIA/nvidia-kaggle.git",
-        "ref": "fix/install-issues"
+        "ref": "main"
       },
       "description": "Claude Code plugin for Kaggle competition workflows.",
       "category": "data-science",

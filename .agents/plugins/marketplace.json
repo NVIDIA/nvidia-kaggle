@@ -9,7 +9,7 @@
       "source": {
         "source": "url",
         "url": "https://github.com/NVIDIA/nvidia-kaggle.git",
-        "ref": "fix/install-issues"
+        "ref": "main"
       },
       "policy": {
         "installation": "AVAILABLE",
