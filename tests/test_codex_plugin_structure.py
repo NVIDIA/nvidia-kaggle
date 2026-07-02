@@ -58,6 +58,7 @@ def test_codex_core_manifest_lives_in_project_root():
     assert (ROOT / ".codex-plugin" / "plugin.json").exists()
     assert packaged_manifest["name"] == "nvidia-kaggle"
     assert "plugin" in packaged_manifest["description"].lower()
+    assert packaged_manifest["license"] == "MIT"
     assert packaged_manifest["skills"] == "./skills/"
     assert isinstance(packaged_manifest["skills"], str)
 

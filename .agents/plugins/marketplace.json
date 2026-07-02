@@ -1,0 +1,21 @@
+{
+  "name": "nvidia-kaggle",
+  "interface": {
+    "displayName": "NVIDIA Kaggle"
+  },
+  "plugins": [
+    {
+      "name": "nvidia-kaggle",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/NVIDIA/nvidia-kaggle.git",
+        "ref": "fix/install-issues"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

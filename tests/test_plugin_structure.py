@@ -14,7 +14,7 @@ def test_plugin_manifest_exists_and_names_plugin():
     manifest = _read_json(ROOT / ".claude-plugin" / "plugin.json")
 
     assert manifest["name"] == "nvidia-kaggle"
-    assert manifest["version"]
+    assert manifest["license"] == "MIT"
     assert "Kaggle" in manifest["description"]
     assert "plugin" in manifest["description"].lower()
 
