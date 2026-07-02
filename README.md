@@ -12,6 +12,8 @@ The skill accepts whatever's natural — a competition slug, a Kaggle URL, a ker
 
 ![Demo: asking Claude Code to summarize the top AIMO Progress Prize 2 solutions](demo/demo.gif)
 
+Examples of supported workflows include:
+
 | Workflow | What it does |
 |---|---|
 | Competition context | Fetches the overview, rules, evaluation, timeline, and dataset description. |
