@@ -80,8 +80,11 @@ blocks, links, and tables from `brief.md` paste in unchanged. The one thing
 that never works unmodified is the local `![alt](plots/foo.png)` image
 references: Kaggle fetches whatever the `![]()` target resolves to, so it must
 already be a public URL serving raw image bytes, not a local path or an HTML
-share/viewer page (a GitHub *blob* URL returns `text/html`, not the image; a
-`raw.githubusercontent.com` link or a GitHub Pages URL does work).
+share/viewer page. **Any** host that returns `image/*` bytes works — the choice
+is the user's, not GitHub specifically: `raw.githubusercontent.com`, GitHub
+Pages, or any static host / public object store (S3, GCS, R2) / CDN all serve.
+What does *not* work: a GitHub *blob* URL or a Drive/Dropbox "share" link (both
+return `text/html`), or a local path.
 
 If the user wants a paste-ready version and the brief's folder (e.g. `plots/`)
 has already been published somewhere public, rewrite the image links with:
@@ -98,3 +101,11 @@ This only rewrites local (non-`http`, non-`data:`) `![]()` targets to
 `image/*` content, catching exactly the share-page-vs-raw-link mistake above
 before the user trusts the output enough to paste it. Output defaults to
 `<input>.kaggle.md` next to the source file.
+
+If the folder is **not** published anywhere public yet and the user has given
+you no base-url, don't pretend the brief is paste-ready — its local
+`![](plots/…)` paths will render broken on Kaggle. Deliver `brief.md` with its
+local paths (complete and version-controllable), tell the user the one
+remaining step (host the `plots/` folder at a public raw-bytes URL — see the
+options above, or drag-drop the images in Kaggle's editor by hand), and offer
+to run the rewrite + `--verify` once they give you the base-url.

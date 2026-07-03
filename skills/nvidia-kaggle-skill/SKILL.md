@@ -158,14 +158,22 @@ Defaults:
 
 This applies to **every** workflow that writes a markdown report with images (research brief, top-kernel report, writeups, or any custom report) — not just the research brief. A report that renders locally is **not** automatically drop-in ready for a Kaggle discussion post: Kaggle's editor fetches each `![alt](path)` target like a browser, so local paths (`plots/foo.png`) and HTML share/blob pages render as **broken images**. Text, tables, links, and code paste through fine — images are the one thing that breaks.
 
-Whenever the user asks for a report they can paste/publish to Kaggle, treat the image rewrite as a required final step, and **verify** it rather than assuming:
+**Any public URL that serves raw image bytes works — the host is the user's choice, not GitHub specifically.** The export step hosts nothing; it only rewrites each local `![](plots/foo.png)` to `<base-url>/plots/foo.png`. The only requirement is that the report's image folder is reachable at some public URL returning `image/*` bytes. Options that work:
+
+- `https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<report-folder>` — push the folder to a public repo (easiest, and what most demos use)
+- GitHub Pages, or any static host / public object store (S3, GCS, R2) / CDN
+
+What does **not** work as a base-url — all return HTML, not image bytes: a GitHub *blob* page (`.../blob/...`), Google Drive / Dropbox "share" links, or a local path.
+
+Run this after the images are published, and trust the output only if `--verify` passes:
 
 ```bash
-python ./scripts/kaggle_markdown_export.py <report>.md \
-  --base-url https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<report-folder> --verify
+python ./scripts/kaggle_markdown_export.py <report>.md --base-url <public-folder-url> --verify
 ```
 
-`--verify` fetches every resulting URL and confirms it returns `image/*` bytes, catching the local-path and share-page mistakes before the user trusts the output. The images must already be published at a public raw-bytes URL (e.g. committed to a repo, served via `raw.githubusercontent.com`), so this step usually comes *after* the report folder is pushed. See `research-brief.md` (§ "Sharing the brief as a Kaggle discussion post") for the full rules on which URL forms work.
+`--verify` fetches every resulting URL and confirms it returns `image/*` bytes, catching the local-path and share-page mistakes before the user trusts the output.
+
+**If the user has not given you a public location:** do not silently ship a report full of local `![](plots/…)` paths and call it paste-ready — every image will render broken on Kaggle. Instead, deliver the report with its local paths (so it is complete and version-controllable) and state plainly that one step remains: the image folder must be hosted at a public raw-bytes URL. Offer the options above, ask for the base-url, then run the rewrite + `--verify`. A no-hosting alternative is Kaggle's own discussion editor, which accepts drag-drop image uploads in the browser — but that is a manual step outside this automated flow, so prefer a base-url when the user wants a one-shot paste-ready file. See `research-brief.md` (§ "Sharing the brief as a Kaggle discussion post") for the confirmed Kaggle-markdown feature set.
 
 ## Troubleshooting
 
