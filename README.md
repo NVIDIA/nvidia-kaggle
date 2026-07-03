@@ -231,6 +231,10 @@ The copied directory must include `SKILL.md`, the workflow markdown files, and t
 
 Kaggle API workflows require `KAGGLE_API_TOKEN`, expected to contain a KGAT token string. Keep it in your environment, `.env`.
 
+## Evaluation
+
+See [BENCHMARK.md](BENCHMARK.md) for the skill evaluation summary, including evaluated agents, task coverage, metrics, and with-skill uplift against baseline runs.
+
 ## Development
 
 Run the default test suite:
