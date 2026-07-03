@@ -21,6 +21,7 @@ from constants import (
     OUTPUT_SEPARATOR_WIDTH,
     SECONDS_PER_MINUTE,
 )
+from submission_log import EVALUATION_EVENT, SUBMIT_EVENT, append_record
 
 OUTPUT_SEPARATOR = "=" * OUTPUT_SEPARATOR_WIDTH
 # Timestamped so each run's default message is unique — avoids exact-match
@@ -121,24 +122,48 @@ def poll_kernel(api, slug: str, poll_interval: int, timeout: int) -> tuple[str, 
 
 def submit_to_competition(api, slug: str, competition: str, file: str, version: int, message: str) -> bool:
     print(f"\nSubmitting to '{competition}' (file: {file}, version: {version}) ...")
+    error = None
     try:
         api.competition_submit_code(file, message, competition, kernel=slug, kernel_version=version)
         print("Submission accepted.")
-        return True
     except Exception as e:
         print(f"Submission failed: {e}", file=sys.stderr)
-        return False
+        error = str(e)
+    record = {
+        "event": SUBMIT_EVENT,
+        "kernel": slug,
+        "version": version,
+        "competition": competition,
+        "file": file,
+        "message": message,
+        "accepted": error is None,
+    }
+    if error is not None:
+        record["error"] = error
+    append_record(record)
+    return error is None
 
 
 def poll_submission(api, competition: str, message: str, poll_interval: int, timeout: int) -> tuple[str, str | None, float]:
     """Poll submission evaluation. Returns (status_name, public_score, elapsed)."""
     start = time.time()
     print(f"\nPolling evaluation every {poll_interval}s (timeout {format_duration(timeout)}) ...")
+
+    def finish(status: str, score: str | None, elapsed: float) -> tuple[str, str | None, float]:
+        append_record({
+            "event": EVALUATION_EVENT,
+            "competition": competition,
+            "message": message,
+            "status": status,
+            "public_score": score,
+        })
+        return status, score, elapsed
+
     while True:
         elapsed = time.time() - start
         if elapsed > timeout:
             print(f"\nEval timeout after {format_duration(elapsed)}.", file=sys.stderr)
-            return "timeout", None, elapsed
+            return finish("timeout", None, elapsed)
 
         try:
             subs = api.competition_submissions(competition)
@@ -169,10 +194,10 @@ def poll_submission(api, competition: str, message: str, poll_interval: int, tim
         if status == "COMPLETE":
             score = str(target.public_score) if target.public_score is not None else None
             print(f"  [{format_duration(elapsed)}] complete — public score: {score}")
-            return "complete", score, elapsed
+            return finish("complete", score, elapsed)
         elif status == "ERROR":
             print(f"  [{format_duration(elapsed)}] evaluation error")
-            return "error", None, elapsed
+            return finish("error", None, elapsed)
         else:
             print(f"  [{format_duration(elapsed)}] evaluation: {status.lower()}")
 

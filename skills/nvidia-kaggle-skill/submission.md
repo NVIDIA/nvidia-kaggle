@@ -39,7 +39,7 @@ PYTHONUNBUFFERED=1 python ./scripts/submit_kernel.py <kernel-folder> --file subm
 PYTHONUNBUFFERED=1 python ./scripts/submit_kernel.py /tmp/<slug> --file submission.csv -v <version>
 ```
 
-Critical: never rerun this script blindly. It is long-running and each successful submission call can spend one competition submission slot. Before retrying, confirm the previous process exited, read the full log, and diagnose the failure.
+Critical: never rerun this script blindly. It is long-running and each successful submission call can spend one competition submission slot. Before retrying, confirm the previous process exited, read the full log, and diagnose the failure. Check the local submission history first — it records what previous runs already submitted even when their terminal output is gone.
 
 ## Submission Quota Check
 
@@ -56,6 +56,25 @@ It reads the daily limit from the Kaggle SDK (`max_daily_submissions`) and count
 - `--by-user` adds a `by_user` field (`{username: count}`) breaking today's submissions down by submitter, via the SDK (`competition_submissions`, whose records carry `submitted_by`; the CLI CSV has no submitter column). Useful when teaming up to see who has used the team's slots. With `--by-user`, the today `used`/`remaining` count is taken from the SDK too (so it works even where the CLI submissions list is forbidden).
 - `--by-day` adds a `by_day` field (`{YYYY-MM-DD (UTC): {username: count}}`) across all visible submissions, newest day first. `--overall` adds an `overall` field (`{username: count}`) across all dates. Both are SDK-based.
 - Caveats for all three breakdowns: the daily limit is **team-wide**, not per-user — these counts attribute the shared cap, they are not per-user limits; and visibility is limited to what the authenticated account can see (own submissions, plus teammates' where the API returns them).
+
+## Submission History Log
+
+`submit_kernel.py` appends every submission attempt and finished evaluation to a local JSONL log, so a later run can check what already happened before spending another daily submission slot — including runs that crashed mid-poll or whose terminal output is gone. Read it before any rerun:
+
+```bash
+python ./scripts/submission_history.py [competition-slug-or-url] [--kernel owner/slug] [--limit N] [--as-json]
+```
+
+Each row is one submission attempt: kernel, version, competition, message, whether Kaggle accepted it, and the evaluation status and public score once known. The command is local-only — no Kaggle API calls and no credentials needed.
+
+Storage:
+
+| Path | Contents |
+|---|---|
+| `data/submissions.jsonl` | Append-only JSONL log of submission attempts and evaluation results |
+
+- If a submission shows as `accepted` without an evaluation status yet, the slot may already be spent — verify on Kaggle (e.g. with `submission_quota.py`) before submitting again.
+- The log is best-effort local bookkeeping: submissions made outside `submit_kernel.py` do not appear in it, and it is not the authoritative quota source.
 
 ## Workflow
 
@@ -76,4 +95,4 @@ See [SKILL.md](SKILL.md#troubleshooting) for common credential, rate-limit, and 
 | Missing metadata or source file | Stop before pushing and ask for a corrected kernel folder. |
 | Kernel execution failure | Report the terminal Kaggle status and do not retry automatically. |
 | Missing `--file` | Skip competition submission and explain that the notebook output filename is required. |
-| Long-running or uncertain previous run | Monitor existing logs instead of launching another process. |
+| Long-running or uncertain previous run | Monitor existing logs and check `submission_history.py` instead of launching another process. |
