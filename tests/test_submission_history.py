@@ -116,6 +116,45 @@ def test_attempts_merge_targets_latest_unevaluated_attempt():
     assert attempts[1]["public_score"] == "0.6"
 
 
+def test_attempts_later_evaluation_overwrites_timeout():
+    # timeout is not a terminal Kaggle state — a later evaluation event for
+    # the same (competition, message) must replace it.
+    records = [
+        _submit_record(message="slow run"),
+        _evaluation_record(message="slow run", status="timeout", public_score=None),
+        _evaluation_record(message="slow run", status="complete", public_score="0.8"),
+    ]
+
+    attempts = submission_attempts(records)
+
+    assert len(attempts) == 1
+    assert attempts[0]["eval_status"] == "complete"
+    assert attempts[0]["public_score"] == "0.8"
+
+
+def test_attempts_terminal_evaluation_is_not_overwritten():
+    records = [
+        _submit_record(message="done run"),
+        _evaluation_record(message="done run", status="complete", public_score="0.7"),
+        _evaluation_record(message="done run", status="error", public_score=None),
+    ]
+
+    attempts = submission_attempts(records)
+
+    assert len(attempts) == 1
+    assert attempts[0]["eval_status"] == "complete"
+    assert attempts[0]["public_score"] == "0.7"
+
+
+def test_append_record_timestamp_is_authoritative(tmp_path):
+    log_path = tmp_path / "submissions.jsonl"
+
+    append_record(_submit_record(logged_at="1999-01-01T00:00:00+00:00"), path=log_path)
+
+    record = read_records(log_path)[0]
+    assert record["logged_at"] != "1999-01-01T00:00:00+00:00"
+
+
 def test_attempts_filters_and_limit():
     records = [
         _submit_record(competition="titanic", message="t1"),

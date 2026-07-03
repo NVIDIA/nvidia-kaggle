@@ -39,8 +39,10 @@ def append_record(record: dict, path: Path | None = None) -> None:
         target = path or default_log_path()
         target.parent.mkdir(parents=True, exist_ok=True)
         entry = {
-            "logged_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             **record,
+            # Set last so the log's own timestamp is authoritative and can
+            # never be overridden by a caller-provided field.
+            "logged_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         }
         with target.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(entry, default=str) + "\n")
@@ -78,6 +80,8 @@ def submission_attempts(
     An ``evaluation`` event is folded into the latest prior ``submit`` attempt
     for the same ``(competition, message)`` that has no evaluation yet — the
     same key ``submit_kernel.py`` uses to match its submission on Kaggle.
+    A ``timeout`` is not a terminal Kaggle state (evaluation keeps running
+    after we stop polling), so a later evaluation event may overwrite it.
     """
     attempts: list[dict] = []
     for record in records:
@@ -87,7 +91,7 @@ def submission_attempts(
         elif event == EVALUATION_EVENT:
             key = (record.get("competition"), record.get("message"))
             for attempt in reversed(attempts):
-                if (attempt.get("competition"), attempt.get("message")) == key and "eval_status" not in attempt:
+                if (attempt.get("competition"), attempt.get("message")) == key and attempt.get("eval_status") in (None, "timeout"):
                     attempt["eval_status"] = record.get("status")
                     attempt["public_score"] = record.get("public_score")
                     break
