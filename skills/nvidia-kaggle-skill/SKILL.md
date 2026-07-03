@@ -154,6 +154,19 @@ Defaults:
 - Dataset upload writes `dataset-metadata.json` in the data folder and prints the Kaggle dataset URL.
 - Referenced workflows may write markdown reports, notebook caches, local kernel workspaces, or submission logs as described in their markdown files.
 
+### Making any report paste-ready for a Kaggle post
+
+This applies to **every** workflow that writes a markdown report with images (research brief, top-kernel report, writeups, or any custom report) — not just the research brief. A report that renders locally is **not** automatically drop-in ready for a Kaggle discussion post: Kaggle's editor fetches each `![alt](path)` target like a browser, so local paths (`plots/foo.png`) and HTML share/blob pages render as **broken images**. Text, tables, links, and code paste through fine — images are the one thing that breaks.
+
+Whenever the user asks for a report they can paste/publish to Kaggle, treat the image rewrite as a required final step, and **verify** it rather than assuming:
+
+```bash
+python ./scripts/kaggle_markdown_export.py <report>.md \
+  --base-url https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<report-folder> --verify
+```
+
+`--verify` fetches every resulting URL and confirms it returns `image/*` bytes, catching the local-path and share-page mistakes before the user trusts the output. The images must already be published at a public raw-bytes URL (e.g. committed to a repo, served via `raw.githubusercontent.com`), so this step usually comes *after* the report folder is pushed. See `research-brief.md` (§ "Sharing the brief as a Kaggle discussion post") for the full rules on which URL forms work.
+
 ## Troubleshooting
 
 Use this table for common failure modes across Kaggle workflows. Workflow files may add only narrow entries that are not covered here.
@@ -166,6 +179,7 @@ Use this table for common failure modes across Kaggle workflows. Workflow files 
 | Kaggle API, SDK, rate-limit, or page-structure failure | Kaggle returned partial data, changed an API/layout, or limited requests. | Preserve the failing command and output, keep retries bounded, and label unavailable evidence. |
 | Disk space or archive extraction failure | Competition data, kernel inputs, models, or extracted archives exceed local capacity or extraction failed. | Stop, report the partial workspace state, and ask before deleting files or retrying. |
 | Submission retry or uncertain submission status | A successful submit can spend a competition submission slot. | Read existing logs and require explicit user intent before rerunning a submission workflow. |
+| Report "looks done" but images would break when pasted to Kaggle | The report embeds local `![](plots/…)` paths; Kaggle only renders images from public raw-bytes URLs. | Publish the report folder, then run `kaggle_markdown_export.py --verify` to rewrite and confirm every image URL before calling it paste-ready. |
 
 ## Runtime Compatibility
 
