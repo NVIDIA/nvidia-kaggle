@@ -70,3 +70,31 @@ legible. Principles:
 Every plotted entity should also appear in the brief's prose/tables so a reader
 who sees a bar can look it up. You choose the plotting approach and format; write
 the code yourself.
+
+## Sharing the brief as a Kaggle discussion post
+
+Kaggle's discussion editor renders standard Markdown plus GFM-style tables and
+`![alt](url =WxH)` image sizing (confirmed via
+https://www.kaggle.com/product-feedback/82853) — headings, bold/italic, code
+blocks, links, and tables from `brief.md` paste in unchanged. The one thing
+that never works unmodified is the local `![alt](plots/foo.png)` image
+references: Kaggle fetches whatever the `![]()` target resolves to, so it must
+already be a public URL serving raw image bytes, not a local path or an HTML
+share/viewer page (a GitHub *blob* URL returns `text/html`, not the image; a
+`raw.githubusercontent.com` link or a GitHub Pages URL does work).
+
+If the user wants a paste-ready version and the brief's folder (e.g. `plots/`)
+has already been published somewhere public, rewrite the image links with:
+
+```bash
+python ./scripts/kaggle_markdown_export.py brief.md \
+  --base-url https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path-to-brief-folder> \
+  --verify
+```
+
+This only rewrites local (non-`http`, non-`data:`) `![]()` targets to
+`<base-url>/<same-relative-path>` and leaves everything else untouched.
+`--verify` fetches every resulting image URL and checks it returns
+`image/*` content, catching exactly the share-page-vs-raw-link mistake above
+before the user trusts the output enough to paste it. Output defaults to
+`<input>.kaggle.md` next to the source file.
