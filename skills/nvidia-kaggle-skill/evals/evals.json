@@ -1,0 +1,278 @@
+[
+  {
+    "id": "fetch-comp-001",
+    "question": "Fetch the competition details for arc-prize-2026-arc-agi-3 and save the overview and dataset description as markdown files.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": "fetch_competition_info.py",
+    "expected_outputs": [
+      "*overview*.md",
+      "*dataset*.md"
+    ],
+    "ground_truth": "The agent fetched the competition overview (goals, evaluation metric, timeline) and dataset description (data format, files) for the ARC Prize 2026 competition using the nvidia-kaggle-skill scripts, saving them as markdown files.",
+    "expected_behavior": [
+      "The agent read nvidia-kaggle-skill/SKILL.md to understand the available scripts",
+      "The agent ran fetch_competition_info.py with 'arc-prize-2026-arc-agi-3' to get the competition overview",
+      "The agent ran fetch_dataset_info.py with 'arc-prize-2026-arc-agi-3' to get the dataset description",
+      "The agent saved output as markdown files containing the overview and dataset description",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "fetch-comp-002",
+    "question": "Fetch the competition overview and dataset description for playground-series-s6e5 and save them as markdown files.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": "fetch_competition_info.py",
+    "expected_outputs": [
+      "*overview*.md",
+      "*dataset*.md"
+    ],
+    "ground_truth": "The agent ran fetch_competition_info.py and fetch_dataset_info.py with 'playground-series-s6e5', saving the overview and dataset description as markdown files following the SKILL.md naming convention ({slug}_competition_overview.md and {slug}_dataset_description.md).",
+    "expected_behavior": [
+      "The agent ran fetch_competition_info.py with 'playground-series-s6e5' to get the overview",
+      "The agent ran fetch_dataset_info.py with 'playground-series-s6e5' to get the dataset description",
+      "The agent saved the overview and dataset description as markdown files",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "fetch-comp-003",
+    "question": "Can you help me debug my pandas DataFrame merge? I'm getting duplicate rows when I do a left join.",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "The agent provided debugging advice for the pandas merge issue without invoking any nvidia-kaggle-skill scripts, since this is a general programming question.",
+    "expected_behavior": [
+      "The agent did not invoke fetch_competition_info.py or fetch_dataset_info.py",
+      "The agent provided relevant pandas merge debugging advice",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "fetch-writeup-001",
+    "question": "Fetch the top 3 writeups from the stanford-rna-3d-folding-2 Kaggle competition and save them as markdown files plus a summary.md.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": "fetch_leaderboard_writeups.py",
+    "expected_outputs": [
+      "summary.md"
+    ],
+    "ground_truth": "The agent fetched the top 3 competition writeups using the batch fetch script, producing 3 individual writeup markdown files plus a summary.md with a comparison table.",
+    "expected_behavior": [
+      "The agent read nvidia-kaggle-skill/SKILL.md to understand batch mode",
+      "The agent ran fetch_leaderboard_writeups.py with 'stanford-rna-3d-folding-2' and top=3",
+      "The agent produced 3 separate writeup markdown files (1st through 3rd place)",
+      "The agent produced a summary.md with a comparison table of all writeups",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "fetch-writeup-002",
+    "question": "Fetch this Kaggle writeup and save it as markdown: https://www.kaggle.com/competitions/vesuvius-challenge-surface-detection/writeups/1st-place-solution-for-the-vesuvius-challenge-su",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": "fetch_writeup.py",
+    "expected_outputs": [
+      "*vesuvius*.md"
+    ],
+    "ground_truth": "The agent fetched the single writeup using fetch_writeup.py and saved it as a markdown file named after the writeup slug (1st-place-solution-for-the-vesuvius-challenge-su.md).",
+    "expected_behavior": [
+      "The agent ran fetch_writeup.py with the writeup URL",
+      "The agent saved the writeup as a markdown file named after the writeup slug",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "fetch-writeup-003",
+    "question": "Can you review my model training code and suggest improvements to reduce overfitting?",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "The agent provided model training advice without invoking any nvidia-kaggle-skill scripts, since this is a general ML question.",
+    "expected_behavior": [
+      "The agent did not invoke fetch_writeup.py or fetch_leaderboard_writeups.py",
+      "The agent provided relevant advice about reducing overfitting",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "discussions-001",
+    "question": "Fetch Kaggle discussions for the playground-series-s6e5 competition (max 1 page), query the top-voted discussions, and read the highest-voted thread. Save a summary to ps_s6e5_discussions.md.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": "discussion_ingest.py",
+    "expected_outputs": [
+      "ps_s6e5_discussions.md"
+    ],
+    "ground_truth": "The agent fetched discussions for the playground-series-s6e5 competition, queried the database for top-voted threads, read the highest-voted one, and produced a markdown summary with discussion titles, authors, vote counts, and thread content.",
+    "expected_behavior": [
+      "The agent read nvidia-kaggle-skill/SKILL.md to understand the workflow",
+      "The agent ran discussion_ingest.py with 'playground-series-s6e5' to ingest discussions into the database",
+      "The agent ran discussion_query.py to find top-voted discussions",
+      "The agent read the highest-voted discussion thread",
+      "The agent saved a summary markdown file with titles, authors, and vote counts",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "discussions-002",
+    "question": "Ingest discussions for playground-series-s6e5 (max 1 page), find the top 3 discussions by votes, and save a summary of their titles and vote counts to top3_discussions.md.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": "discussion_ingest.py",
+    "expected_outputs": [
+      "top3_discussions.md"
+    ],
+    "ground_truth": "The agent ingested discussions for playground-series-s6e5, queried for the top 3 by votes, and saved a markdown summary with titles and vote counts.",
+    "expected_behavior": [
+      "The agent ran discussion_ingest.py with 'playground-series-s6e5' to ingest discussions",
+      "The agent ran discussion_query.py to find the top 3 discussions by votes",
+      "The agent saved top3_discussions.md with titles and vote counts",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "discussions-003",
+    "question": "Can you explain the difference between gradient boosting and random forests?",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "The agent explained the ML concepts without invoking any nvidia-kaggle-skill scripts, since this is a general ML knowledge question.",
+    "expected_behavior": [
+      "The agent did not invoke discussion_ingest.py or discussion_query.py",
+      "The agent provided a relevant explanation of gradient boosting vs random forests",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "kernels-001",
+    "question": "Ingest kernels for the playground-series-s6e5 competition (max 1 page), query the top-voted kernels, read the highest-voted one, and save a summary to top_kernels_summary.md.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": "kernel_ingest.py",
+    "expected_outputs": [
+      "top_kernels_summary.md"
+    ],
+    "ground_truth": "The agent fetched kernels for playground-series-s6e5, queried the database for top-voted kernels, read the highest-voted kernel's code, and produced a markdown summary with kernel titles, authors, vote counts, and approach description.",
+    "expected_behavior": [
+      "The agent read nvidia-kaggle-skill/SKILL.md to understand the workflow",
+      "The agent ran kernel_ingest.py with 'playground-series-s6e5' to ingest kernels",
+      "The agent ran kernel_query.py to find top-voted kernels",
+      "The agent ran kernel_read.py to read the highest-voted kernel's code",
+      "The agent saved a summary markdown file with titles, authors, vote counts, and approach",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "kernels-002",
+    "question": "Ingest kernels for the playground-series-s6e5 competition (max 1 page), find the top 3 kernels by votes, read each one, and save a techniques summary to top3_techniques.md.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": "kernel_ingest.py",
+    "expected_outputs": [
+      "top3_techniques.md"
+    ],
+    "ground_truth": "The agent ingested kernels for playground-series-s6e5, queried for the top 3 by votes, read each kernel's code, and saved a markdown summary describing the ML techniques used in each.",
+    "expected_behavior": [
+      "The agent ran kernel_ingest.py with 'playground-series-s6e5' to ingest kernels",
+      "The agent ran kernel_query.py to find the top 3 kernels by votes",
+      "The agent ran kernel_read.py to read each of the top 3 kernels",
+      "The agent saved top3_techniques.md with titles, authors, vote counts, and techniques",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "kernels-003",
+    "question": "How do I set up a virtual environment in Python using venv?",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "The agent explained how to set up a Python virtual environment without invoking any nvidia-kaggle-skill scripts, since this is a general Python question.",
+    "expected_behavior": [
+      "The agent did not invoke kernel_ingest.py, kernel_query.py, or kernel_read.py",
+      "The agent provided relevant instructions for creating a Python virtual environment",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "setup-kernel-001",
+    "question": "Set up and reproduce this Kaggle kernel locally: https://www.kaggle.com/code/sarcasmos/predicting-f1-pit-stops. Save everything into the output folder.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": null,
+    "expected_outputs": [
+      "*.ipynb"
+    ],
+    "ground_truth": "The agent downloaded the kernel using kaggle CLI, set up the local environment with dependencies, and created a README with reproduction instructions. The kernel notebook/script and requirements are present in the output folder.",
+    "expected_behavior": [
+      "The agent read nvidia-kaggle-skill/SKILL.md to understand the reproduction workflow",
+      "The agent used kaggle kernels pull to download the kernel",
+      "The agent identified and installed dependencies (requirements.txt or pip install)",
+      "The agent ensured the notebook/script file exists in the output folder",
+      "The agent created a README with reproduction instructions",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "setup-kernel-002",
+    "question": "I want to reproduce this kernel locally: https://www.kaggle.com/code/cdeotte/eda-predicting-f1-pit-stops. Download it, install the requirements, and set it up so I can run it.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": null,
+    "expected_outputs": [
+      "*.ipynb"
+    ],
+    "ground_truth": "The agent pulled the kernel, set up dependencies, and prepared the local environment for running the notebook.",
+    "expected_behavior": [
+      "The agent used kaggle kernels pull to download the kernel",
+      "The agent inspected the kernel for dependencies",
+      "The agent installed required packages",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "setup-kernel-003",
+    "question": "Can you explain what cross-validation is and when to use k-fold vs stratified k-fold?",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "The agent explained cross-validation concepts without invoking the nvidia-kaggle-skill, since this is a general ML question.",
+    "expected_behavior": [
+      "The agent did not attempt to download or set up any Kaggle kernels",
+      "The agent provided a relevant explanation of cross-validation techniques",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "upload-dataset-001",
+    "question": "Create a tiny CSV file with 3 rows (id, name, value) and upload it as a private Kaggle dataset with title 'Eval Test Upload'. Save the dataset URL to upload_result.md.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": "upload_dataset.py",
+    "expected_outputs": [
+      "upload_result.md"
+    ],
+    "ground_truth": "The agent created a small CSV file, ran upload_dataset.py to upload it as a private Kaggle dataset, and saved the resulting dataset URL to upload_result.md.",
+    "expected_behavior": [
+      "The agent read nvidia-kaggle-skill/SKILL.md to understand the upload workflow",
+      "The agent created a CSV file with 3 rows containing id, name, and value columns",
+      "The agent ran upload_dataset.py with appropriate arguments to upload the dataset as private",
+      "The agent saved the Kaggle dataset URL to upload_result.md",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "upload-dataset-002",
+    "question": "Create a folder called 'my-data' with a small train.csv (5 rows: id, feature, target) and test.csv (3 rows: id, feature). Then upload the folder as a private Kaggle dataset called 'My Competition Data'. Save the dataset URL to upload_result.md.",
+    "expected_skill": "nvidia-kaggle-skill",
+    "expected_script": "upload_dataset.py",
+    "expected_outputs": [
+      "upload_result.md"
+    ],
+    "ground_truth": "The agent created my-data/ with train.csv and test.csv, ran upload_dataset.py to upload the folder as a private Kaggle dataset, and saved the dataset URL to upload_result.md.",
+    "expected_behavior": [
+      "The agent created my-data/ with train.csv and test.csv",
+      "The agent read nvidia-kaggle-skill/SKILL.md to understand the upload workflow",
+      "The agent ran upload_dataset.py with the folder path and dataset title",
+      "The agent saved the dataset URL to upload_result.md",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  },
+  {
+    "id": "upload-dataset-003",
+    "question": "How do I read a parquet file in Python using pandas?",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "The agent explained how to read parquet files without invoking upload-dataset scripts, since this is a general Python question.",
+    "expected_behavior": [
+      "The agent did not invoke upload_dataset.py",
+      "The agent provided relevant pandas parquet reading instructions",
+      "The agent did not run destructive commands or access resources outside the workspace"
+    ]
+  }
+]
