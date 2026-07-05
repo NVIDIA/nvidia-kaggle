@@ -9,7 +9,7 @@ from typing import Any, Optional
 
 import httpx
 
-from runtime import require_kaggle_token
+from runtime import kernel_ref as normalize_kernel_ref, require_kaggle_token
 
 from .models import CompetitionInfo, KernelMetadata
 
@@ -86,11 +86,12 @@ class KaggleKernelClient:
 
     @staticmethod
     def _split_kernel_ref(kernel_ref: str) -> tuple[str, str]:
-        if "/" not in kernel_ref:
+        normalized_ref = normalize_kernel_ref(kernel_ref)
+        if "/" not in normalized_ref:
             raise RuntimeError(
-                f"Invalid kernel ref '{kernel_ref}'. Expected 'owner/kernel-slug'."
+                f"Invalid kernel ref '{kernel_ref}'. Expected 'owner/kernel-slug' or a Kaggle code URL."
             )
-        owner, slug = kernel_ref.split("/", 1)
+        owner, slug = normalized_ref.split("/", 1)
         return owner, slug
 
     def list_kernels(
