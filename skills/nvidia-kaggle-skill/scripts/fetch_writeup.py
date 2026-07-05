@@ -57,13 +57,13 @@ def fetch_writeup(url: str) -> str:
             "https://www.kaggle.com/competitions/<competition>/writeups/<slug>"
         )
 
-    client = kaggle_web_service()
-    topic_id = _resolve_topic_id(client, match.group("competition"), match.group("slug"))
+    with kaggle_web_service() as client:
+        topic_id = _resolve_topic_id(client, match.group("competition"), match.group("slug"))
 
-    topic = client.post(
-        "discussions.DiscussionsService/GetForumTopicById",
-        {"forumTopicId": topic_id, "includeComments": False},
-    ).get("forumTopic", {})
+        topic = client.post(
+            "discussions.DiscussionsService/GetForumTopicById",
+            {"forumTopicId": topic_id, "includeComments": False},
+        ).get("forumTopic", {})
 
     write_up = topic.get("writeUp") or {}
     message = write_up.get("message") or {}
