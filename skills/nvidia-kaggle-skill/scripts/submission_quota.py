@@ -17,9 +17,6 @@ import json
 import subprocess
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from runtime import competition_slug, load_project_env
 
