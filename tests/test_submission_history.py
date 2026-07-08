@@ -116,6 +116,23 @@ def test_attempts_merge_targets_latest_unevaluated_attempt():
     assert attempts[1]["public_score"] == "0.6"
 
 
+def test_attempts_evaluation_skips_failed_attempt_with_same_message():
+    # Accepted submit -> failed retry with the same message -> evaluation:
+    # the score belongs to the accepted attempt, not the newer failed one.
+    records = [
+        _submit_record(message="baseline v1", version=1),
+        _submit_record(message="baseline v1", version=2, accepted=False, error="quota exceeded"),
+        _evaluation_record(message="baseline v1", public_score="0.9"),
+    ]
+
+    attempts = submission_attempts(records)
+
+    assert [a["version"] for a in attempts] == [1, 2]
+    assert attempts[0]["eval_status"] == "complete"
+    assert attempts[0]["public_score"] == "0.9"
+    assert "eval_status" not in attempts[1]
+
+
 def test_attempts_later_evaluation_overwrites_timeout():
     # timeout is not a terminal Kaggle state — a later evaluation event for
     # the same (competition, message) must replace it.
@@ -261,3 +278,12 @@ def test_history_cli_reports_empty_log(monkeypatch, tmp_path, capsys):
     submission_history.history(competition="titanic")
 
     assert "No logged submissions" in capsys.readouterr().out
+
+
+def test_history_cli_json_is_valid_for_empty_log(monkeypatch, tmp_path, capsys):
+    # --as-json must emit parseable JSON even when nothing is logged yet.
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
+
+    submission_history.history(competition="titanic", as_json=True)
+
+    assert json.loads(capsys.readouterr().out) == []

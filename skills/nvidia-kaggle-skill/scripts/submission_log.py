@@ -80,6 +80,9 @@ def submission_attempts(
     An ``evaluation`` event is folded into the latest prior ``submit`` attempt
     for the same ``(competition, message)`` that has no evaluation yet — the
     same key ``submit_kernel.py`` uses to match its submission on Kaggle.
+    Attempts Kaggle rejected (``accepted`` false) never get an evaluation, so
+    they are skipped when matching: a failed retry with a reused message must
+    not swallow the score of the earlier accepted submission.
     A ``timeout`` is not a terminal Kaggle state (evaluation keeps running
     after we stop polling), so a later evaluation event may overwrite it.
     """
@@ -91,7 +94,11 @@ def submission_attempts(
         elif event == EVALUATION_EVENT:
             key = (record.get("competition"), record.get("message"))
             for attempt in reversed(attempts):
-                if (attempt.get("competition"), attempt.get("message")) == key and attempt.get("eval_status") in (None, "timeout"):
+                if (
+                    (attempt.get("competition"), attempt.get("message")) == key
+                    and attempt.get("accepted")
+                    and attempt.get("eval_status") in (None, "timeout")
+                ):
                     attempt["eval_status"] = record.get("status")
                     attempt["public_score"] = record.get("public_score")
                     break

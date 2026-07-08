@@ -37,13 +37,15 @@ def history(
         limit=limit,
     )
 
+    # JSON mode always emits valid JSON — an empty log prints [] — so agents
+    # can parse the output unconditionally.
+    if as_json:
+        print(json.dumps(attempts, indent=2, default=str))
+        return
+
     if not attempts:
         scope = f" for '{competition}'" if competition else ""
         console.print(f"[yellow]No logged submissions{scope} in {log_path}[/yellow]")
-        return
-
-    if as_json:
-        print(json.dumps(attempts, indent=2, default=str))
         return
 
     title_scope = f" for {competition}" if competition else ""
