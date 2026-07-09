@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Domain models for Kaggle discussion metadata."""
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -17,7 +17,7 @@ class CompetitionInfo(BaseModel):
     evaluation_metric: str = ""
     url: str = ""
     deadline: Optional[str] = None
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class DiscussionRecord(BaseModel):
@@ -37,7 +37,7 @@ class DiscussionRecord(BaseModel):
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
     last_fetched_at: Optional[str] = None
-    ingested_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    ingested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class DiscussionComment(BaseModel):

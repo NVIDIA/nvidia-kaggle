@@ -4,7 +4,7 @@
 """Fetch Kaggle competition discussions and store them in the local database."""
 
 import argparse
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from rich.console import Console
 from rich.progress import Progress
@@ -95,7 +95,7 @@ def ingest(
             console.print("[yellow]No discussions found.[/yellow]")
             return
 
-        now = datetime.now(UTC).isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         for d in discussions:
             d.last_fetched_at = now
 

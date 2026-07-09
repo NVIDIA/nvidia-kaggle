@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Domain models for Kaggle kernel metadata and notebook content."""
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
@@ -17,7 +17,7 @@ class CompetitionInfo(BaseModel):
     evaluation_metric: str = ""
     url: str = ""
     deadline: Optional[str] = None
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class KernelMetadata(BaseModel):
@@ -30,7 +30,7 @@ class KernelMetadata(BaseModel):
     total_votes: int = 0
     last_run_time: Optional[datetime] = None
     is_private: bool = False
-    ingested_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    ingested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property
     def slug(self) -> str:
