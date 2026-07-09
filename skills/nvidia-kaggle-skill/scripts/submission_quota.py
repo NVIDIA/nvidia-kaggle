@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 """Report today's Kaggle submission quota for a competition.
 
 Kaggle limits daily submissions per competition and resets the count at 00:00

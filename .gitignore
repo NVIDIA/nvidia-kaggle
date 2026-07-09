@@ -1,0 +1,40 @@
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*$py.class
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Packaging / build output
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Test / coverage output
+reports/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Credentials and account artifacts (see CONTRIBUTING.md)
+.env
+.env.*
+kaggle.json
+
+# Local competition data / scratch (see pyproject sdist excludes)
+data/
+rapids-svd-oof-0-80/
+titanic-wcg-xgboost-0-84688/
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store

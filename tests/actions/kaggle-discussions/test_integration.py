@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 """Integration tests for kaggle-discussions (hit real Kaggle API).
 
 Run with: uv run pytest tests/actions/kaggle-discussions/test_integration.py --run-integration -v

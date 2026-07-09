@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 """Archive the best public-LB version of a Kaggle kernel.
 
 Kaggle's REST API only exposes a kernel's latest version. To find and download

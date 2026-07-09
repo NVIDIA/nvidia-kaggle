@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 """Kaggle REST API client with KGAT bearer-token auth, pagination, and notebook downloading."""
 
 import json

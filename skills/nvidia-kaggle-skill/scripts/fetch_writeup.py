@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 """Fetch a Kaggle competition solution writeup as markdown via the Kaggle API.
 
 Replaces the previous headless-browser scraper: Kaggle serves the writeup's

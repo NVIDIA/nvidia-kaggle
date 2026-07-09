@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 """Shared numeric defaults for Kaggle skill script entry points."""
 
 DATE_PREVIEW_CHARS = 10

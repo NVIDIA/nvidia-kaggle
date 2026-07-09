@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 """Fetch the public LB score for a single Kaggle kernel through the Kaggle SDK.
 
 Usage: python fetch_kernel_score.py <kernel-slug-or-url>
