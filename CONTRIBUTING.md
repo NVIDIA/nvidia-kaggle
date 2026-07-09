@@ -26,6 +26,37 @@ A few light conventions:
 
 For CLI output: `print` is for the main thing a user (or follow-up command) is going to read, `console.print` is for Rich tables and formatted output, and `logging` is for diagnostics that aren't part of the command's data output.
 
+Start each change from a focused branch with a short owner prefix:
+
+```bash
+git checkout -b <owner>/<short-change-name>
+```
+
+### Developer Certificate of Origin
+
+All commits must include a DCO sign-off. The easiest way to do that is to commit with `-s`:
+
+```bash
+git commit -s -m "Describe the change"
+```
+
+If you already made a commit and need to add the sign-off, amend it before opening the PR:
+
+```bash
+git commit --amend -s --no-edit
+```
+
+### License Headers
+
+New non-markdown code files need SPDX license headers. For Python files, add this at the top of the file after any shebang:
+
+```python
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
+```
+
+For other code file types, use the file's native comment syntax and include both `SPDX-FileCopyrightText` and `SPDX-License-Identifier`. Documentation and markdown files do not need SPDX headers.
+
 ## Credentials
 
 Please don't commit `.env`, `kaggle.json`, generated private notebooks, or other account artifacts. Skills should read credentials from `KAGGLE_API_TOKEN` (or another environment variable), not from a file checked into the repo.
@@ -60,4 +91,4 @@ Manual Claude Agent SDK smoke tests live under `tests/actions/<capability>/` —
 
 ## Submitting Changes
 
-Branches use a short owner prefix (e.g. `ad/readme-clarify`). When you're ready, open a PR and keep the description focused on *why* the change is needed — the diff already covers *what*.
+Branches use a short owner prefix (e.g. `ad/readme-clarify`). When you're ready, open a PR and keep the description focused on *why* the change is needed — the diff already covers *what*. Confirm that tests pass, every commit is signed off, and new code files include the required SPDX headers before requesting review.
