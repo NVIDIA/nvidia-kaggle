@@ -1,0 +1,27 @@
+name: License
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  license-header:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for SPDX license headers in Python files
+        run: |
+          echo "Checking for SPDX-License-Identifier headers in Python files..."
+          missing=$(git ls-files '*.py' | xargs grep -L "SPDX-License-Identifier:" || true)
+          if [ -n "$missing" ]; then
+            echo "Error: the following files are missing an SPDX license header:"
+            echo "$missing"
+            echo ""
+            echo "Add the following header to the top of each file (after the shebang, if any):"
+            echo "  # SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved."
+            echo "  # SPDX-License-Identifier: MIT"
+            exit 1
+          fi
+          echo "Success: all Python files have SPDX license headers."

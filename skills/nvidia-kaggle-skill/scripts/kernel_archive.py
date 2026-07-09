@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 """Archive the best public-LB version of a Kaggle kernel.
 
 Lists every version of a kernel, reads each version's public leaderboard score,

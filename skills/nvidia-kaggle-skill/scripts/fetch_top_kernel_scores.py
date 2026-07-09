@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: MIT
 """Fetch public kernel scores for a Kaggle competition through the Kaggle SDK.
 
 Usage: python fetch_top_kernel_scores.py <competition-slug-or-url> [--sort ascending|descending|hotness]
