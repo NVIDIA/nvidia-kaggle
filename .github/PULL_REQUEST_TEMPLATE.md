@@ -9,6 +9,7 @@ Description of your PR. Fixes # (issue) (if applicable)
 Before submitting a PR, please make sure:
 
 - [ ] Tests pass (`uv run pytest`)
+- [ ] All commits are signed off (DCO) using `git commit -s`
 - [ ] License header (`SPDX-FileCopyrightText` / `SPDX-License-Identifier`) is included on new non-markdown code files
 - [ ] The change stays focused on one workflow where possible (see `CONTRIBUTING.md`)
 - [ ] Credentials are read from `KAGGLE_API_TOKEN` (or another env var) — no `.env`, `kaggle.json`, or account artifacts committed
