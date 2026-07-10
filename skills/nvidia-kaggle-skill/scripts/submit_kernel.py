@@ -248,6 +248,8 @@ def main():
         print(f"Status:      {status}")
         print(f"Runtime:     {format_duration(elapsed)} (±{args.poll_interval}s)")
 
+    overall_success = status == "complete"
+
     if competitions:
         if not args.file:
             print("Submission:  skipped (--file not specified; read the notebook to find the output filename)")
@@ -262,14 +264,19 @@ def main():
                     print(f"Eval time:   {format_duration(eval_elapsed)} (±{args.poll_interval}s)")
                     if score:
                         print(f"Public score: {score}")
+                    if eval_status != "complete":
+                        overall_success = False
+                else:
+                    overall_success = False
         else:
             print(f"Submission:  skipped (kernel status is '{status}')")
+            overall_success = False
     else:
         print("Submission:  n/a (no competition_sources in metadata)")
 
     print(OUTPUT_SEPARATOR)
 
-    if status != "complete":
+    if not overall_success:
         sys.exit(1)
 
 
