@@ -25,20 +25,20 @@ def fetch_writeup_links(leaderboard_url: str) -> list[dict]:
     competitions that have no private standings yet).
     """
     slug = competition_slug(leaderboard_url)
-    client = kaggle_web_service()
 
-    competition = client.post(
-        "competitions.CompetitionService/GetCompetition",
-        {"competitionName": slug},
-    )
-    competition_id = competition.get("id") or (competition.get("competition") or {}).get("id")
-    if not competition_id:
-        raise RuntimeError(f"Could not resolve competition id for '{slug}'.")
+    with kaggle_web_service() as client:
+        competition = client.post(
+            "competitions.CompetitionService/GetCompetition",
+            {"competitionName": slug},
+        )
+        competition_id = competition.get("id") or (competition.get("competition") or {}).get("id")
+        if not competition_id:
+            raise RuntimeError(f"Could not resolve competition id for '{slug}'.")
 
-    board = client.post(
-        "competitions.LeaderboardService/GetLeaderboard",
-        {"competitionId": competition_id},
-    )
+        board = client.post(
+            "competitions.LeaderboardService/GetLeaderboard",
+            {"competitionId": competition_id},
+        )
 
     teams = board.get("teams") or []
     private_board = board.get("privateLeaderboard") or []

@@ -119,44 +119,49 @@ def resolve_kernel_versions(
 ) -> list[dict[str, Any]]:
     """Return every version of a kernel, enriched with its public LB score."""
     ref = parse_kernel_ref(kernel_ref)
-    client = client or kaggle_web_service()
+    is_local_client = client is None
+    client_to_use = client or kaggle_web_service()
 
-    initial = _get_view_model(client, ref, tab="output")
-    kernel_id = (initial.get("kernel") or {}).get("id")
-    if not kernel_id:
-        raise KernelArchiveError("Could not resolve kernel id from Kaggle view model")
+    try:
+        initial = _get_view_model(client_to_use, ref, tab="output")
+        kernel_id = (initial.get("kernel") or {}).get("id")
+        if not kernel_id:
+            raise KernelArchiveError("Could not resolve kernel id from Kaggle view model")
 
-    total = int(initial.get("totalVersionCount") or 0)
-    data = client.post(
-        LIST_VERSIONS,
-        {"kernelId": int(kernel_id), "sortOption": "VERSION_ID", "pageSize": max(total, 200)},
-    )
-    items = data.get("items") or []
-    if not isinstance(items, list):
-        raise KernelArchiveError("Unexpected ListKernelVersions response: items is not a list")
-
-    versions = [rec for item in items if (rec := _version_record(item))]
-    versions.sort(key=lambda row: row["version_number"])
-
-    records: list[dict[str, Any]] = []
-    for version in versions:
-        view = _get_view_model(client, ref, version_number=version["version_number"], tab="output")
-        submission = view.get("submission") or {}
-        kernel_run = view.get("kernelRun") or {}
-        public_lb = submission.get("scoreFormatted")
-        records.append(
-            {
-                "owner_slug": ref.owner_slug,
-                "kernel_slug": ref.kernel_slug,
-                "kernel_id": int(kernel_id),
-                **version,
-                "public_lb": public_lb,
-                "public_lb_numeric": parse_public_score(public_lb),
-                "best_submission_score_for_kernel": view.get("bestSubmissionScore"),
-                "language": kernel_run.get("language"),
-            }
+        total = int(initial.get("totalVersionCount") or 0)
+        data = client_to_use.post(
+            LIST_VERSIONS,
+            {"kernelId": int(kernel_id), "sortOption": "VERSION_ID", "pageSize": max(total, 200)},
         )
-    return records
+        items = data.get("items") or []
+        if not isinstance(items, list):
+            raise KernelArchiveError("Unexpected ListKernelVersions response: items is not a list")
+
+        versions = [rec for item in items if (rec := _version_record(item))]
+        versions.sort(key=lambda row: row["version_number"])
+
+        records: list[dict[str, Any]] = []
+        for version in versions:
+            view = _get_view_model(client_to_use, ref, version_number=version["version_number"], tab="output")
+            submission = view.get("submission") or {}
+            kernel_run = view.get("kernelRun") or {}
+            public_lb = submission.get("scoreFormatted")
+            records.append(
+                {
+                    "owner_slug": ref.owner_slug,
+                    "kernel_slug": ref.kernel_slug,
+                    "kernel_id": int(kernel_id),
+                    **version,
+                    "public_lb": public_lb,
+                    "public_lb_numeric": parse_public_score(public_lb),
+                    "best_submission_score_for_kernel": view.get("bestSubmissionScore"),
+                    "language": kernel_run.get("language"),
+                }
+            )
+        return records
+    finally:
+        if is_local_client:
+            client_to_use.close()
 
 
 def _infer_direction(scored_rows: list[dict[str, Any]]) -> str | None:
@@ -311,13 +316,18 @@ def archive_best_kernel_source(
 ) -> dict[str, Any]:
     """Find the best public-LB version of a kernel and save its source + metadata."""
     ref = parse_kernel_ref(kernel_ref)
-    client = client or kaggle_web_service()
+    is_local_client = client is None
+    client_to_use = client or kaggle_web_service()
 
-    rows = resolve_kernel_versions(kernel_ref, client=client)
-    selected = select_best_public_lb_version(rows, score_direction=score_direction)
-    return _download_version(
-        ref, selected, rows, output_dir, client, include_outputs=include_outputs, force=force
-    )
+    try:
+        rows = resolve_kernel_versions(kernel_ref, client=client_to_use)
+        selected = select_best_public_lb_version(rows, score_direction=score_direction)
+        return _download_version(
+            ref, selected, rows, output_dir, client_to_use, include_outputs=include_outputs, force=force
+        )
+    finally:
+        if is_local_client:
+            client_to_use.close()
 
 
 def archive_kernel_version(
@@ -331,16 +341,21 @@ def archive_kernel_version(
 ) -> dict[str, Any]:
     """Archive a specific kernel version's source by version number."""
     ref = parse_kernel_ref(kernel_ref)
-    client = client or kaggle_web_service()
+    is_local_client = client is None
+    client_to_use = client or kaggle_web_service()
 
-    rows = resolve_kernel_versions(kernel_ref, client=client)
-    selected = next((r for r in rows if r["version_number"] == version_number), None)
-    if selected is None:
-        available = ", ".join(str(r["version_number"]) for r in rows)
-        raise KernelArchiveError(
-            f"Version {version_number} not found for {kernel_ref}. Available versions: {available}"
+    try:
+        rows = resolve_kernel_versions(kernel_ref, client=client_to_use)
+        selected = next((r for r in rows if r["version_number"] == version_number), None)
+        if selected is None:
+            available = ", ".join(str(r["version_number"]) for r in rows)
+            raise KernelArchiveError(
+                f"Version {version_number} not found for {kernel_ref}. Available versions: {available}"
+            )
+        selected = {**selected, "selection_reason": f"explicit version {version_number}"}
+        return _download_version(
+            ref, selected, rows, output_dir, client_to_use, include_outputs=include_outputs, force=force
         )
-    selected = {**selected, "selection_reason": f"explicit version {version_number}"}
-    return _download_version(
-        ref, selected, rows, output_dir, client, include_outputs=include_outputs, force=force
-    )
+    finally:
+        if is_local_client:
+            client_to_use.close()
