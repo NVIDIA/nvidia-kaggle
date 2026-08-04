@@ -19,6 +19,7 @@ python ./scripts/kernel_query.py <competition_id> [--search TERM] [--min-votes N
 python ./scripts/kernel_read.py <kernel_ref> [--competition-id ID] [--raw] [--force]
 python ./scripts/kernel_db_info.py [competition_id]
 python ./scripts/kernel_archive.py <kernel_ref> [output_dir] [--scores-only] [--version N] [--score-direction auto|minimize|maximize] [--include-outputs] [--force]
+python ./scripts/diff_kernel_versions.py <kernel_ref> [output_dir] [--versions 1,3,6] [--all] [--json]
 ```
 
 Sort options for ingest are `hotness`, `dateCreated`, `dateRun`, and `voteCount`.
@@ -60,6 +61,8 @@ Extract evidence from `kernel-metadata.json` (`kernel_sources`, `dataset_sources
 
 Write `top_kernels_research.md` unless the user requests another path. Include leaderboard snapshot, verified public scores, lineage chains with `[metadata]` or `[code ref]` labels, observed techniques, open questions, and links.
 
+If the report embeds plots/images and the user wants it **paste-ready for a Kaggle discussion post**, local `![](plots/…)` paths render as broken images on Kaggle — finish with the image-rewrite step (`scripts/kaggle_markdown_export.py --verify`) after the report folder is published. This is easy to forget because it is the last step; see [SKILL.md](SKILL.md#making-any-report-paste-ready-for-a-kaggle-post).
+
 ## Best-Version Archiving
 
 Use this when the user wants a *specific* or the *best-scoring historical* version of a kernel, not just its latest version. `kernel_read.py` and `kaggle kernels pull` only return the current version; `kernel_archive.py` inspects every version's public leaderboard score and downloads either a requested version or the best one.
@@ -78,6 +81,21 @@ python ./scripts/kernel_archive.py <kernel_ref> <output_dir> [--score-direction 
 - `--include-outputs` keeps cell outputs in the downloaded source; `--force` overwrites an existing source file.
 
 This uses Kaggle's internal web service (token + XSRF), so `KAGGLE_API_TOKEN` is required. Versions with no numeric score are skipped during best-version selection, but can still be fetched directly with `--version`.
+
+### Diffing versions (real change vs identical rerun)
+
+A per-version score list alone is misleading: because many kernels are **stochastic** (random seeds, particle filters), the *same code* can post different public-LB scores across versions, and a notebook's title often advertises its luckiest rerun. So when the user asks "what changed between versions" or "is this version actually better", do not infer it from the scores — **diff the code**:
+
+```bash
+python ./scripts/diff_kernel_versions.py <kernel_ref> [output_dir] [--versions 1,3,6] [--all] [--json]
+```
+
+It downloads each version, extracts code only (code cells, outputs/exec-counts stripped; handles `.ipynb` *and* `.py`, which a kernel can switch between), normalizes trivial whitespace churn, hashes it, and unified-diffs consecutive versions. Each row reports the verified public LB, `IDENTICAL rerun` vs `CHANGED` (+added/−removed), and a code SHA:
+
+- **identical normalized code ⇒ identical rerun** — any score delta is run-to-run noise; report it as such and pick the best-scoring rerun, not "the latest".
+- **non-empty diff ⇒ real change** — report the added/removed lines and read the actual edit.
+
+The tool also lists `identical_code_groups` (versions sharing one SHA). An identical code hash across two *different* kernels is strong evidence of a fork/copy that `kernel-metadata.json` will not show (`kernel_sources` usually lists only auto-generated `packagemanager/pm-…` offline-package snapshots, not real notebook lineage) — run the script on each kernel and compare SHAs. Cross-check lineage by code hash, not metadata alone.
 
 ## Storage
 
