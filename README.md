@@ -217,6 +217,24 @@ claude plugin marketplace add .
 claude plugin install nvidia-kaggle@nvidia-kaggle --scope user
 ```
 
+**pi**
+
+The repository doubles as a [pi](https://github.com/badlogic/pi-coding-agent) package: `package.json` maps `pi.skills` to `skills/`, so the skill is discovered automatically.
+
+```bash
+pi install git:github.com/NVIDIA/nvidia-kaggle
+```
+
+Or point pi at a local checkout from `~/.pi/agent/settings.json` (updates with `git pull`):
+
+```json
+{
+  "skills": ["/absolute/path/to/nvidia-kaggle/skills"]
+}
+```
+
+Verify with `/skill:nvidia-kaggle-skill` in a pi session, or run the gated smoke tests: `RUN_PI_SMOKE=1 uv run pytest tests/test_pi_smoke.py`.
+
 **Other Harnesses**
 
 For any agent runtime that supports Agent Skills directly, copy the whole skill directory into that runtime's skills directory:
