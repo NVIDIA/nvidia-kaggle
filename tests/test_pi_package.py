@@ -13,8 +13,11 @@ Skills standard validation rules documented in its docs/skills.md:
 """
 
 import json
+import os
 import py_compile
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -77,6 +80,41 @@ def test_pi_package_manifest_exists_and_valid():
     assert manifest["name"]
     assert manifest["license"] == "MIT"
     assert manifest["pi"]["skills"] == ["skills"]
+
+
+def test_pi_discovers_skill_from_package(tmp_path):
+    """Exercise package discovery with the real CLI, without a model call."""
+    pi = shutil.which("pi")
+    if pi is None:
+        pytest.skip("pi CLI not on PATH")
+    agent_dir = tmp_path / "agent"
+    agent_dir.mkdir()
+    (agent_dir / "settings.json").write_text(json.dumps({"packages": [str(ROOT)]}))
+    result = subprocess.run(
+        [
+            pi, "--mode", "rpc", "--no-session", "--offline",
+            "--no-extensions", "--no-context-files", "--no-prompt-templates", "--no-themes",
+        ],
+        input=json.dumps({"type": "get_commands", "id": "package-skills"}) + "\n",
+        capture_output=True,
+        text=True,
+        timeout=60,
+        cwd=tmp_path,
+        env={**os.environ, "PI_CODING_AGENT_DIR": str(agent_dir)},
+    )
+    assert result.returncode == 0, (result.stdout + result.stderr)[-2000:]
+    responses = [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
+    response = next(item for item in responses if item.get("id") == "package-skills")
+    assert response["success"], response
+    skills = [
+        command for command in response["data"]["commands"]
+        if command["name"] == "skill:nvidia-kaggle-skill"
+    ]
+    assert len(skills) == 1, response
+    assert skills[0]["source"] == "skill"
+    # Newer pi versions nest the source path under sourceInfo.
+    source = skills[0].get("sourceInfo", skills[0])
+    assert Path(source["path"]).resolve() == SKILL_MD.resolve()
 
 
 def test_pi_skills_paths_map_to_discoverable_skills():
