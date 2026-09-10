@@ -28,7 +28,10 @@ dependencies = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["integration: tests that hit the real Kaggle API (require KAGGLE_API_TOKEN)"]
+markers = [
+    "integration: tests that hit the real Kaggle API (require KAGGLE_API_TOKEN)",
+    "pi: tests that spawn the real pi CLI (set RUN_PI_SMOKE=1)",
+]
 norecursedirs = [
     "reports",
     ".venv",

@@ -1,0 +1,9 @@
+{
+  "name": "nvidia-kaggle",
+  "version": "1.0.0",
+  "description": "pi package wrapper exposing the NVIDIA Kaggle skill to the pi coding agent",
+  "license": "MIT",
+  "pi": {
+    "skills": ["skills"]
+  }
+}
